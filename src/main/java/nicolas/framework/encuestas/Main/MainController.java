@@ -1,18 +1,14 @@
 package nicolas.framework.encuestas.Main;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1")
-@RequiredArgsConstructor
 public class MainController {
 
-    @PostMapping(value = "main")
-    public String welcome() {
-        return "Welcome form secure endpoint";
+    @GetMapping("/api/v1/main")
+    public ResponseEntity<String> main() {
+        return ResponseEntity.ok("SOLO LLEGAN A ESTA PANTALLA USUARIOS AUTENTICADOS");
     }
-
 }

@@ -1,8 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  // Asegurate del slash final para no tener que preocuparte por "/" al llamar:
-  baseURL: 'http://localhost:8080/auth/',
+  baseURL: 'http://localhost:8080',
   headers: { 'Content-Type': 'application/json' }
 });
 

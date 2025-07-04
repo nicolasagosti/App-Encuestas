@@ -1,10 +1,14 @@
-// src/App.js
-import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './AuthContext';
+import { AuthProvider, useAuth } from './AuthContext';
 import LoginPage from './LoginPage';
+import Dashboard from './Dashboard';
 
-function App() {
+function PrivateRoute({ children }) {
+    const { isLogged } = useAuth();
+    return isLogged ? children : <Navigate to="/login" replace />;
+}
+
+export default function App() {
     return (
         <AuthProvider>
             <BrowserRouter>
@@ -14,7 +18,9 @@ function App() {
                     <Route
                         path="/dashboard"
                         element={
-                            <Navigate to="/login" replace />
+                            <PrivateRoute>
+                                <Dashboard />
+                            </PrivateRoute>
                         }
                     />
                 </Routes>
@@ -22,5 +28,3 @@ function App() {
         </AuthProvider>
     );
 }
-
-export default App;

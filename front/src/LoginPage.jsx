@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from './api';
 import { useAuth } from './AuthContext';
+import logo from './bbva-2019.svg'
+import './Styles/LoginPage.css';
 
 export default function LoginPage() {
     const [username, setUsername] = useState('');
@@ -14,41 +16,32 @@ export default function LoginPage() {
         e.preventDefault();
         setError('');
         try {
-            // POST a http://localhost:8080/auth/login
-            const { data } = await api.post('login', { username, password });
-            console.log('✅ Login successful, token:', data.token);
-
-            // guardo el token y marco como logueado
+            const { data } = await api.post('/auth/login', { username, password });
             localStorage.setItem('token', data.token);
             login();
-
-            // redirijo a la pantalla privada
             navigate('/dashboard');
         } catch (err) {
-            console.error('❌ Login error:', err);
-
-            // Si viene respuesta del servidor (ej. 401), muestro mensaje adecuado
             if (err.response) {
-                if (err.response.status === 401) {
-                    setError('Usuario o contraseña incorrectos');
-                } else {
-                    setError(`Error ${err.response.status}: ${err.response.statusText}`);
-                }
+                setError(
+                    err.response.status === 401
+                        ? 'Usuario o contraseña incorrectos'
+                        : `Error ${err.response.status}: ${err.response.statusText}`
+                );
             } else {
-                // Sin respuesta del servidor suele ser CORS o caída del backend
-                setError('Error de conexión. Verifica CORS y que el backend esté levantado.');
+                setError('Error de conexión. Verifica CORS y el backend.');
             }
         }
     };
 
     return (
-        <div style={{ maxWidth: 320, margin: '80px auto', fontFamily: 'sans-serif' }}>
-            <h2>Iniciar sesión</h2>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
+        <div className="login-container">
+            <img src={logo} alt="Banco Francés" className="login-logo" />
+            <h2 className="login-title">Iniciar sesión</h2>
+            {error && <p className="login-error">{error}</p>}
 
-            <form onSubmit={handleSubmit}>
-                <div style={{ marginBottom: 12 }}>
-                    <label htmlFor="username">Usuario (email)</label><br/>
+            <form className="login-form" onSubmit={handleSubmit}>
+                <div className="login-field">
+                    <label htmlFor="username">Usuario (email)</label>
                     <input
                         id="username"
                         type="email"
@@ -56,12 +49,11 @@ export default function LoginPage() {
                         onChange={e => setUsername(e.target.value)}
                         placeholder="me@example.com"
                         required
-                        style={{ width: '100%', padding: 8 }}
                     />
                 </div>
 
-                <div style={{ marginBottom: 12 }}>
-                    <label htmlFor="password">Contraseña</label><br/>
+                <div className="login-field">
+                    <label htmlFor="password">Contraseña</label>
                     <input
                         id="password"
                         type="password"
@@ -69,11 +61,10 @@ export default function LoginPage() {
                         onChange={e => setPassword(e.target.value)}
                         placeholder="••••••••"
                         required
-                        style={{ width: '100%', padding: 8 }}
                     />
                 </div>
 
-                <button type="submit" style={{ padding: '8px 16px' }}>
+                <button type="submit" className="login-button">
                     Ingresar
                 </button>
             </form>

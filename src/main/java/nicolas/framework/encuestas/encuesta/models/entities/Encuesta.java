@@ -13,6 +13,9 @@ public class Encuesta {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column
+    private String periodo;
+
     @ManyToMany
     @JoinTable(
             name = "encuesta_x_pregunta",

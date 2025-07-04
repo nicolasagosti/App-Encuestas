@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './AuthContext';
 import LoginPage from './LoginPage';
+import RegisterPage from './RegisterPage';
 import Dashboard from './Dashboard';
 
 function PrivateRoute({ children }) {
@@ -15,6 +16,7 @@ export default function App() {
                 <Routes>
                     <Route path="/" element={<Navigate to="/login" replace />} />
                     <Route path="/login" element={<LoginPage />} />
+                    <Route path="/register" element={<RegisterPage />} />    {/* ← Ruta de registro */}
                     <Route
                         path="/dashboard"
                         element={

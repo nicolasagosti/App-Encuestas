@@ -17,7 +17,7 @@ export default function RegisterPage() {
         e.preventDefault();
         setError('');
 
-        // Validación de contraseñas al apretar el botón
+
         if (password !== confirmPassword) {
             setError('Las contraseñas no coinciden');
             return;
@@ -46,7 +46,6 @@ export default function RegisterPage() {
             <img src={logo} alt="Banco Francés" className="login-logo" />
             <h2 className="login-title">Crear cuenta</h2>
 
-            {/* Aquí se muestra el mensaje de error (backend o mismatch) */}
             {error && <p className="login-error">{error}</p>}
 
             <form className="login-form" onSubmit={handleSubmit}>

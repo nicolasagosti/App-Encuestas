@@ -21,7 +21,7 @@ public class Encuesta {
     @Column
     private String periodo;
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(
             name = "encuesta_x_pregunta",
             joinColumns = @JoinColumn(name = "encuesta_id"),

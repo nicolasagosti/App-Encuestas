@@ -18,12 +18,14 @@ public class Pregunta {
     private Long id;
 
     @ManyToMany(mappedBy = "preguntas")
+    @Nullable
     private List<Encuesta> encuestas;
 
     @Column
     private String texto;
 
     @Column
+    @Nullable
     private int puntaje;
 
     @Column

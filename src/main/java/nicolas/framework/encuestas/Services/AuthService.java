@@ -1,5 +1,6 @@
 package nicolas.framework.encuestas.Services;
 
+import lombok.AllArgsConstructor;
 import nicolas.framework.encuestas.Auth.AuthResponse;
 import nicolas.framework.encuestas.Auth.LoginRequest;
 import nicolas.framework.encuestas.Auth.RegisterRequest;
@@ -22,6 +23,16 @@ public class AuthService {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+
+    public AuthService(UserRepository userRepository,
+                       JwtService jwtService,
+                       PasswordEncoder passwordEncoder,
+                       AuthenticationManager authenticationManager) {
+        this.userRepository = userRepository;
+        this.jwtService = jwtService;
+        this.passwordEncoder = passwordEncoder;
+        this.authenticationManager = authenticationManager;
+    }
 
     public AuthResponse login(LoginRequest request) {
         authenticationManager.authenticate(

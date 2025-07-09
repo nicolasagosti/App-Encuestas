@@ -1,9 +1,7 @@
 package nicolas.framework.encuestas.Auth;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
 
 @Data
 @Builder
@@ -12,4 +10,12 @@ import lombok.NoArgsConstructor;
 public class LoginRequest {
     private String username;
     private String password;
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
 }

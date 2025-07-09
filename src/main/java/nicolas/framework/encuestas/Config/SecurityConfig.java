@@ -22,11 +22,15 @@ import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtFilter;
     private final AuthenticationProvider authProvider;
+
+    public SecurityConfig(JwtAuthenticationFilter jwtFilter, AuthenticationProvider authProvider) {
+        this.jwtFilter = jwtFilter;
+        this.authProvider = authProvider;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {

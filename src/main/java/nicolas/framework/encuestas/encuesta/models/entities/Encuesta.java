@@ -3,12 +3,16 @@ package nicolas.framework.encuestas.encuesta.models.entities;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import nicolas.framework.encuestas.encuesta.dtos.EncuestaInputDTO;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "encuesta")
-@Builder
+@Data
+@NoArgsConstructor
 public class Encuesta {
 
     @Id
@@ -18,46 +22,21 @@ public class Encuesta {
     @Column
     private String periodo;
 
-    @ManyToMany(
-            cascade = { CascadeType.PERSIST, CascadeType.MERGE },
-            fetch   = FetchType.EAGER
-    )
+    @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(
-            name               = "encuesta_x_pregunta",
-            joinColumns        = @JoinColumn(name = "encuesta_id"),
+            name = "encuesta_x_pregunta",
+            joinColumns = @JoinColumn(name = "encuesta_id"),
             inverseJoinColumns = @JoinColumn(name = "pregunta_id")
     )
-    @JsonManagedReference
-    private List<Pregunta> preguntas;
+    private List<Pregunta> preguntas = new ArrayList<>();
 
-    public Encuesta() { }
+    public Encuesta(EncuestaInputDTO encuestaDTO) {
 
-    public Encuesta(String periodo, List<Pregunta> preguntas) {
-        this.periodo   = periodo;
-        this.preguntas = preguntas;
+        this.periodo = encuestaDTO.getPeriodo();
+
+        for(int i = 0; i < encuestaDTO.getPreguntas().size(); i++) {
+            this.preguntas.add(new Pregunta(encuestaDTO.getPreguntas().get(i)));
+        }
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getPeriodo() {
-        return periodo;
-    }
-
-    public void setPeriodo(String periodo) {
-        this.periodo = periodo;
-    }
-
-    public List<Pregunta> getPreguntas() {
-        return preguntas;
-    }
-
-    public void setPreguntas(List<Pregunta> preguntas) {
-        this.preguntas = preguntas;
-    }
 }

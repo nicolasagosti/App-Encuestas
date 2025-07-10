@@ -1,22 +1,20 @@
 package nicolas.framework.encuestas.Jwt;
 
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import nicolas.framework.encuestas.Services.JwtService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.util.UrlPathHelper;
 
 import java.io.IOException;
 
@@ -31,6 +29,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         this.userDetailsService = userDetailsService;
     }
 
+    /**
+     * Evita que el filtro se ejecute en las rutas de login y register
+     */
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = new UrlPathHelper().getPathWithinApplication(request);
+        return path.startsWith("/auth/");
+    }
 
     @Override
     protected void doFilterInternal(
@@ -47,7 +53,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 username = jwtService.getUsernameFromToken(token);
             } catch (ExpiredJwtException ex) {
-                logger.warn("JWT expirado: {}");
+                logger.warn("JWT expirado", ex);
                 SecurityContextHolder.clearContext();
             }
         }
@@ -63,7 +69,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                 userDetails.getAuthorities()
                         );
                 authToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
+                        new org.springframework.security.web.authentication.WebAuthenticationDetailsSource()
+                                .buildDetails(request)
                 );
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }

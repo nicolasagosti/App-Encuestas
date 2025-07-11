@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import nicolas.framework.encuestas.cliente.models.entities.Proyecto;
 import nicolas.framework.encuestas.encuesta.dtos.EncuestaInputDTO;
 
 import java.util.ArrayList;
@@ -28,6 +29,9 @@ public class Encuesta {
             inverseJoinColumns = @JoinColumn(name = "pregunta_id")
     )
     private List<Pregunta> preguntas = new ArrayList<>();
+
+    @OneToMany
+    private List<Proyecto> proyectos = new ArrayList<>();
 
     public Encuesta(EncuestaInputDTO encuestaDTO) {
 

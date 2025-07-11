@@ -5,6 +5,7 @@ import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import nicolas.framework.encuestas.cliente.models.entities.Respuesta;
 
 import java.util.List;
 
@@ -24,13 +25,8 @@ public class Pregunta {
     @Column
     private String texto;
 
-    @Column
-    @Nullable
-    private int puntaje;
-
-    @Column
-    @Nullable
-    private String justificacion;
+    @OneToMany
+    private List<Respuesta> respuestas;
 
     public Pregunta(String texto) {
         this.texto = texto;

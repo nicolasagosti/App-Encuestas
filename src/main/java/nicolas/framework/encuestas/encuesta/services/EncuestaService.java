@@ -6,6 +6,8 @@ import nicolas.framework.encuestas.encuesta.models.repositories.EncuestaReposito
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 
 @Service
 public class EncuestaService implements IEncuestaService {
@@ -18,6 +20,11 @@ public class EncuestaService implements IEncuestaService {
 
        Encuesta encuesta = new Encuesta(encuestaDTO);
        encuestaRepository.save(encuesta);
+    }
+
+    @Override
+    public Optional<Encuesta> getEncuestaById(Long id) {
+        return Optional.of(this.encuestaRepository.findById(id).get());
     }
 
 

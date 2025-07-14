@@ -1,0 +1,21 @@
+package nicolas.framework.encuestas.encuesta.dtos;
+
+import nicolas.framework.encuestas.encuesta.models.entities.Pregunta;
+
+public class PregugntaOutputDTO {
+    private Long id;
+    private String texto;
+
+    public void PreguntaOutputDTO(Pregunta p) {
+        this.id = p.getId();
+        this.texto = p.getTexto();
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getTexto() {
+        return texto;
+    }
+}

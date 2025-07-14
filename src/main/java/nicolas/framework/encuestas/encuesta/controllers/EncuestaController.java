@@ -2,6 +2,7 @@ package nicolas.framework.encuestas.encuesta.controllers;
 
 import nicolas.framework.encuestas.encuesta.dtos.EncuestaInputDTO;
 import nicolas.framework.encuestas.encuesta.dtos.PreguntaInputDTO;
+import nicolas.framework.encuestas.encuesta.dtos.PreguntaOutputDTO;
 import nicolas.framework.encuestas.encuesta.models.entities.Encuesta;
 import nicolas.framework.encuestas.encuesta.models.entities.Pregunta;
 import nicolas.framework.encuestas.encuesta.services.IEncuestaService;

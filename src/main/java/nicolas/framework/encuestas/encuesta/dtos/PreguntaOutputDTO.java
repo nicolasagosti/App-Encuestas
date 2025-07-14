@@ -2,7 +2,7 @@ package nicolas.framework.encuestas.encuesta.dtos;
 
 import nicolas.framework.encuestas.encuesta.models.entities.Pregunta;
 
-public class PregugntaOutputDTO {
+public class PreguntaOutputDTO {
     private Long id;
     private String texto;
 

@@ -29,7 +29,7 @@ export default function LoginPage() {
       console.log('Respuesta del servidor:', data);
       localStorage.setItem('token', data.token);
       login();
-      navigate('/dashboard');
+      navigate('/encuestas');
 
     } catch (err) {
       console.log('Error response body:', err.response?.data);

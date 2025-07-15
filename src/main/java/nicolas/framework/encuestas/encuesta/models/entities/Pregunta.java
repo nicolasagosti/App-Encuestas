@@ -42,4 +42,7 @@ public class Pregunta {
     public Pregunta(PreguntaInputDTO dto) {
         this.texto = dto.getTexto();
     }
+
+    public Pregunta() {
+    }
 }

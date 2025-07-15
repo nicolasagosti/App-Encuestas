@@ -10,10 +10,10 @@ export default function Dashboard() {
   useEffect(() => {
     async function fetchMain() {
       try {
-        const { data } = await api.get('/api/v1/main');
+        const { data } = await api.get('/encuestas/preguntas');
         setPayload(data);
       } catch (err) {
-        console.error('Error al llamar /api/v1/main', err);
+        console.error('Error al llamar /encuestas/preguntas', err);
         const status = err.response?.status;
         const msg =
           err.response?.data?.message ||

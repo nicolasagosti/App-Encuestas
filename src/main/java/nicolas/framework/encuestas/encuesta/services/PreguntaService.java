@@ -32,4 +32,9 @@ public class PreguntaService implements IPreguntaService {
     public List<Pregunta> buscarPreguntasPorId(List<Long> id) {
         return preguntaRepository.findAllById(id);
     }
+
+    @Override
+    public void eliminarPregunta(Long id) {
+        preguntaRepository.deleteById(id);
+    }
 }

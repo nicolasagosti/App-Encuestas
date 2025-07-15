@@ -1,22 +1,30 @@
-// front/src/pages/Encuestas.jsx
 import React from 'react';
+import '../Styles/Encuestas.css';
 import PreguntaForm from '../components/PreguntaForm';
 import EncuestaForm from '../components/EncuestaForm';
 
 export default function Encuestas() {
   return (
-    <div className="min-h-screen p-8 bg-gray-100">
-      <h1 className="text-4xl font-bold text-center mb-8 text-blue-600">
-        Panel de Administración
-      </h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="bg-white p-6 rounded-2xl shadow-xl">
+    <div className="encuestas-page">
+      <header className="encuestas-header">
+        <h1 className="encuestas-title">
+          Panel de Administración
+        </h1>
+      </header>
+      <main className="encuestas-main">
+        <section className="encuestas-card">
+          <h2 className="card-title">
+
+          </h2>
           <PreguntaForm />
-        </div>
-        <div className="bg-white p-6 rounded-2xl shadow-xl">
+        </section>
+
+        <section className="encuestas-card">
+          <h2 className="card-title">
+          </h2>
           <EncuestaForm />
-        </div>
-      </div>
+        </section>
+      </main>
     </div>
   );
 }

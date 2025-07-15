@@ -1,5 +1,7 @@
+// front/src/components/EncuestaForm.jsx
 import { useState, useEffect } from 'react';
 import { obtenerPreguntas, crearEncuesta, obtenerGrupos } from '../services/api';
+import './EncuestaForm.css'; // Asegurate de crear este CSS si querés estilos específicos
 
 export default function EncuestaForm() {
   const [periodo, setPeriodo] = useState('');
@@ -38,27 +40,39 @@ export default function EncuestaForm() {
   };
 
   return (
-    <div>
-      <h2 className="text-2xl font-semibold mb-4">Crear Encuesta</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          value={periodo}
-          onChange={(e) => setPeriodo(e.target.value)}
-          placeholder="Periodo (ej: Q3-2025)"
-          required
-          className="w-full border rounded-lg p-2"
-        />
+    <div className="encuesta-form-container">
+      <h2 className="form-title">Crear Encuesta</h2>
+      <form onSubmit={handleSubmit} className="encuesta-form">
+        {/* 1) Input de periodo + botón */}
+        <div className="form-row">
+          <input
+            value={periodo}
+            onChange={(e) => setPeriodo(e.target.value)}
+            placeholder="Periodo (ej: Q3-2025)"
+            required
+            className="input-periodo"
+          />
+          <button type="submit" className="btn-crear">
+            Crear encuesta
+          </button>
+        </div>
 
-        <div>
-          <h4 className="font-medium mb-1">Seleccioná preguntas:</h4>
-          <div className="space-y-1 max-h-32 overflow-y-auto">
+        {/* 2) Selección de preguntas */}
+        <div className="form-group">
+          <h4 className="group-label">Seleccioná preguntas:</h4>
+          <div className="checkbox-list">
             {preguntasDisponibles.map((p) => (
-              <label key={p.id} className="block">
+              <label key={p.id} className="checkbox-item">
                 <input
                   type="checkbox"
                   checked={preguntaIdsSeleccionadas.includes(p.id)}
-                  onChange={() => handleCheckbox(p.id, preguntaIdsSeleccionadas, setPreguntaIdsSeleccionadas)}
-                  className="mr-2"
+                  onChange={() =>
+                    handleCheckbox(
+                      p.id,
+                      preguntaIdsSeleccionadas,
+                      setPreguntaIdsSeleccionadas
+                    )
+                  }
                 />
                 {p.texto}
               </label>
@@ -66,31 +80,31 @@ export default function EncuestaForm() {
           </div>
         </div>
 
-        <div>
-          <h4 className="font-medium mb-1">Seleccioná grupos:</h4>
-          <div className="space-y-1 max-h-32 overflow-y-auto">
+        {/* 3) Selección de grupos */}
+        <div className="form-group">
+          <h4 className="group-label">Seleccioná grupos:</h4>
+          <div className="checkbox-list">
             {gruposDisponibles.map((g) => (
-              <label key={g.id} className="block">
+              <label key={g.id} className="checkbox-item">
                 <input
                   type="checkbox"
                   checked={grupoIdsSeleccionados.includes(g.id)}
-                  onChange={() => handleCheckbox(g.id, grupoIdsSeleccionados, setGrupoIdsSeleccionados)}
-                  className="mr-2"
+                  onChange={() =>
+                    handleCheckbox(
+                      g.id,
+                      grupoIdsSeleccionados,
+                      setGrupoIdsSeleccionados
+                    )
+                  }
                 />
-                {g.descripcion} ({g.cantidadDeColaboradores} colaboradores)
+                {g.descripcion} ({g.cantidadDeColaboradores})
               </label>
             ))}
           </div>
         </div>
-
-        <button
-          type="submit"
-          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
-        >
-          Crear encuesta
-        </button>
       </form>
-      {mensaje && <p className="mt-4 text-sm text-green-700">{mensaje}</p>}
+
+      {mensaje && <p className="form-mensaje">{mensaje}</p>}
     </div>
-  );
+);
 }

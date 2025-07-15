@@ -29,6 +29,12 @@ public class EncuestaController {
         return new ResponseEntity<>(pregunta, HttpStatus.CREATED);
     }
 
+    @DeleteMapping("/preguntas/{id}")
+    public ResponseEntity<Void> eliminarPregunta(@PathVariable Long id) {
+        preguntaService.eliminarPregunta(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/preguntas")
     public ResponseEntity<List<Pregunta>> obtenerTodas() {
         return ResponseEntity.ok(preguntaService.listarPreguntas());

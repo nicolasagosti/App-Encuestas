@@ -11,4 +11,6 @@ public interface IPreguntaService {
     Pregunta crearPregunta(PreguntaInputDTO dto);
     public List<Pregunta> listarPreguntas();
     public List<Pregunta> buscarPreguntasPorId(List<Long> id);
+
+    public void eliminarPregunta(Long id);
 }

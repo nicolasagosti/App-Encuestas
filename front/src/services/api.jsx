@@ -1,13 +1,13 @@
-// src/api.jsx
+// src/api.js
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:8080'
+  baseURL: 'http://localhost:8080',
 });
 
 // Interceptor: añade el token salvo en login/register
 api.interceptors.request.use(
-  config => {
+  (config) => {
     // No tocar /auth/login ni /auth/register
     if (
       config.url?.endsWith('/auth/login') ||
@@ -22,21 +22,27 @@ api.interceptors.request.use(
     }
     return config;
   },
-  error => Promise.reject(error)
+  (error) => Promise.reject(error)
 );
 
 // Preguntas
-export const crearPregunta = texto =>
+export const crearPregunta = (texto) =>
   api.post('/encuestas/preguntas', { texto });
 
 export const obtenerPreguntas = () =>
   api.get('/encuestas/preguntas');
 
+export const eliminarPregunta = (id) =>
+  api.delete(`/encuestas/preguntas/${id}`);
+
 // Encuestas
-export const crearEncuesta = data =>
+export const crearEncuesta = (data) =>
   api.post('/encuestas', data);
 
-// (Si tienes rutas de grupos u otras, ajústalas aquí)
+export const obtenerEncuestas = () =>
+  api.get('/encuestas');
+
+// Grupos (ajustar endpoint si es necesario)
 export const obtenerGrupos = () =>
   api.get('/grupos');
 

@@ -7,6 +7,7 @@ import nicolas.framework.encuestas.encuesta.models.entities.Pregunta;
 import nicolas.framework.encuestas.encuesta.services.IEncuestaService;
 import nicolas.framework.encuestas.encuesta.services.IPreguntaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,7 +31,7 @@ public class EncuestaController {
     }
 
     @DeleteMapping("/preguntas/{id}")
-    public ResponseEntity<Void> eliminarPregunta(@PathVariable Long id) {
+    public ResponseEntity<Void> eliminarPregunta(@PathVariable Long id) throws ChangeSetPersister.NotFoundException {
         preguntaService.eliminarPregunta(id);
         return ResponseEntity.noContent().build();
     }

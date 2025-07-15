@@ -54,4 +54,7 @@ public class Encuesta {
     public List<Grupo> getGrupos() {
         return grupos;
     }
+
+    public Encuesta() {
+    }
 }

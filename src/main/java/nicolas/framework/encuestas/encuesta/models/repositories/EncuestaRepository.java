@@ -10,4 +10,5 @@ import java.util.List;
 public interface EncuestaRepository extends JpaRepository<Encuesta, Long> {
 
     List<Encuesta> findDistinctByGruposClientesId(Long clienteId);
+    List<Encuesta> findAllByPreguntas_Id(Long preguntaId);
 }

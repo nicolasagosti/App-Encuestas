@@ -41,20 +41,26 @@ public class PreguntaService implements IPreguntaService {
     @Override
     @Transactional
     public void eliminarPregunta(Long id) {
-        // 1) Cargar la pregunta
         Pregunta pregunta = preguntaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Pregunta no encontrada"));
 
-        // 2) Buscar todas las encuestas que la contienen
         List<Encuesta> encuestas = encuestaRepository.findAllByPreguntas_Id(id);
 
-        // 3) Desvincular la pregunta de cada encuesta y guardar cambios
         for (Encuesta enc : encuestas) {
             enc.getPreguntas().remove(pregunta);
             encuestaRepository.save(enc);
         }
 
-        // 4) Finalmente borrar la pregunta
         preguntaRepository.delete(pregunta);
+    }
+
+    @Override
+    @Transactional
+    public Pregunta editarPregunta(Long id, PreguntaInputDTO dto) {
+        Pregunta p = preguntaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pregunta no encontrada"));
+        p.setTexto(dto.getTexto());
+
+        return preguntaRepository.save(p);
     }
 }

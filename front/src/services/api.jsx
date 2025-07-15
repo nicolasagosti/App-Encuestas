@@ -46,4 +46,7 @@ export const obtenerEncuestas = () =>
 export const obtenerGrupos = () =>
   api.get('/grupos');
 
+ export const editarPregunta = (id, texto) =>
+    api.put(`/encuestas/preguntas/${id}`, { texto });
+
 export default api;

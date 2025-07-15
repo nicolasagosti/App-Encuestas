@@ -36,6 +36,15 @@ public class EncuestaController {
         return ResponseEntity.noContent().build();
     }
 
+    @PutMapping("/preguntas/{id}")
+    public ResponseEntity<Pregunta> actualizarPregunta(
+            @PathVariable Long id,
+            @RequestBody PreguntaInputDTO dto
+    ) {
+        Pregunta actualizada = preguntaService.editarPregunta(id, dto);
+        return ResponseEntity.ok(actualizada);
+    }
+
     @GetMapping("/preguntas")
     public ResponseEntity<List<Pregunta>> obtenerTodas() {
         return ResponseEntity.ok(preguntaService.listarPreguntas());

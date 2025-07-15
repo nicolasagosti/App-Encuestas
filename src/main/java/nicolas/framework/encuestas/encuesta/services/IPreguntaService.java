@@ -14,4 +14,5 @@ public interface IPreguntaService {
     public List<Pregunta> buscarPreguntasPorId(List<Long> id);
 
     public void eliminarPregunta(Long id) throws ChangeSetPersister.NotFoundException;
+    Pregunta editarPregunta(Long id, PreguntaInputDTO dto);
 }

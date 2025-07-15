@@ -1,14 +1,13 @@
 package nicolas.framework.encuestas.encuesta.models.entities;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import nicolas.framework.encuestas.encuesta.dtos.EncuestaInputDTO;
+
 
 import java.util.ArrayList;
 import java.util.List;
+
 
 @Entity
 @Data
@@ -30,15 +29,29 @@ public class Encuesta {
     )
     private List<Pregunta> preguntas = new ArrayList<>();
 
-    public Encuesta(EncuestaInputDTO encuestaDTO) {
+    @ManyToMany(mappedBy = "encuestas")
+    private List<Grupo> grupos = new ArrayList<>();
 
-        this.periodo = encuestaDTO.getPeriodo();
+    public Encuesta(String periodo, List<Grupo> grupos, List<Pregunta> preguntas) {
 
-        for(int i = 0; i < encuestaDTO.getPreguntas().size(); i++) {
-            this.preguntas.add(new Pregunta(encuestaDTO.getPreguntas().get(i)));
-        }
+        this.periodo = periodo;
+        this.grupos = grupos;
+        this.preguntas.addAll(preguntas);
     }
 
-    public Encuesta() {
+    public Long getId() {
+        return id;
+    }
+
+    public String getPeriodo() {
+        return periodo;
+    }
+
+    public List<Pregunta> getPreguntas() {
+        return preguntas;
+    }
+
+    public List<Grupo> getGrupos() {
+        return grupos;
     }
 }

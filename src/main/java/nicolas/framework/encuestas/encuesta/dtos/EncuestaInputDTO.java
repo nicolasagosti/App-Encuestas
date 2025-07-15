@@ -7,10 +7,15 @@ import java.util.List;
 @Data
 public class EncuestaInputDTO {
 
-    private List<String> preguntas;
+    private List<Long> grupos;
+    private List<Long> preguntas;
     private String periodo;
 
-    public List<String> getPreguntas() {
+    public List<Long> getGrupos() {
+        return grupos;
+    }
+
+    public List<Long> getPreguntas() {
         return preguntas;
     }
 

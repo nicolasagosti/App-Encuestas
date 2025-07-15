@@ -1,7 +1,10 @@
 package nicolas.framework.encuestas.encuesta.services;
 
+import nicolas.framework.encuestas.encuesta.dtos.PreguntaInputDTO;
+import nicolas.framework.encuestas.encuesta.dtos.PreguntaOutputDTO;
 import nicolas.framework.encuestas.encuesta.models.entities.Pregunta;
 import nicolas.framework.encuestas.encuesta.models.repositories.PreguntaRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,29 +13,23 @@ import java.util.Optional;
 @Service
 public class PreguntaService implements IPreguntaService {
 
-    private final PreguntaRepository repo;
+    @Autowired
+    private PreguntaRepository preguntaRepository;
 
-    public PreguntaService(PreguntaRepository repo) {
-        this.repo = repo;
+    @Override
+    public Pregunta crearPregunta(PreguntaInputDTO dto) {
+
+        System.out.println(dto);
+        Pregunta pregunta = new Pregunta(dto);
+        return preguntaRepository.save(pregunta);
     }
 
     @Override
-    public List<Pregunta> findAll() {
-        return repo.findAll();
+    public List<Pregunta> listarPreguntas() {
+        return preguntaRepository.findAll();
     }
 
-    @Override
-    public Optional<Pregunta> findById(Long id) {
-        return repo.findById(id);
-    }
-
-    @Override
-    public Pregunta save(Pregunta pregunta) {
-        return repo.save(pregunta);
-    }
-
-    @Override
-    public void deleteById(Long id) {
-        repo.deleteById(id);
+    public List<Pregunta> buscarPreguntasPorId(List<Long> id) {
+        return preguntaRepository.findAllById(id);
     }
 }

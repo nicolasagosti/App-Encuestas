@@ -1,7 +1,7 @@
 // src/LoginPage.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from './api';
+import api from './services/api';
 import { useAuth } from './AuthContext';
 import logo from './bbva-2019.svg';
 import './Styles/LoginPage.css';

@@ -6,6 +6,8 @@ import nicolas.framework.encuestas.encuesta.dtos.PreguntaOutputDTO;
 import nicolas.framework.encuestas.encuesta.models.entities.Encuesta;
 import nicolas.framework.encuestas.encuesta.models.entities.Pregunta;
 import nicolas.framework.encuestas.encuesta.services.IEncuestaService;
+import nicolas.framework.encuestas.encuesta.services.IPreguntaService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,11 +20,12 @@ import java.util.stream.Collectors;
 @RequestMapping("/encuesta")
 public class EncuestaController {
 
+    @Autowired
     private IEncuestaService encuestaService;
 
-    public EncuestaController(IEncuestaService encuestaService) {
-        this.encuestaService = encuestaService;
-    }
+    @Autowired
+    private IPreguntaService preguntaService;
+
     @PostMapping("/preguntas")
     public ResponseEntity<Pregunta> crearPregunta(@RequestBody PreguntaInputDTO dto) {
         Pregunta pregunta = preguntaService.crearPregunta(dto);
@@ -43,7 +46,6 @@ public class EncuestaController {
         this.encuestaService.crearEncuesta(encuesta);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
-
 
 
 

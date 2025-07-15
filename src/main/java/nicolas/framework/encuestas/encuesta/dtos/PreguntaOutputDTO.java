@@ -6,7 +6,7 @@ public class PreguntaOutputDTO {
     private Long id;
     private String texto;
 
-    public void PreguntaOutputDTO(Pregunta p) {
+    public PreguntaOutputDTO(Pregunta p) {
         this.id = p.getId();
         this.texto = p.getTexto();
     }

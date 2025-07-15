@@ -3,6 +3,7 @@ package nicolas.framework.encuestas.encuesta.models.entities;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+import nicolas.framework.encuestas.encuesta.dtos.PreguntaInputDTO;
 
 import java.util.List;
 
@@ -25,4 +26,20 @@ public class Pregunta {
     @ManyToMany(mappedBy = "preguntas")
     @JsonIgnore
     private List<Encuesta> encuestas;
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getTexto() {
+        return texto;
+    }
+
+    public List<Encuesta> getEncuestas() {
+        return encuestas;
+    }
+
+    public Pregunta(PreguntaInputDTO dto) {
+        this.texto = dto.getTexto();
+    }
 }

@@ -1,4 +1,4 @@
-package nicolas.framework.encuestas.Services;
+package nicolas.framework.encuestas.Auth.Services;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

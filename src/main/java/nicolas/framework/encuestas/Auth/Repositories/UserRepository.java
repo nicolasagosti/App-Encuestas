@@ -1,4 +1,4 @@
-package nicolas.framework.encuestas.Repositories;
+package nicolas.framework.encuestas.Auth.Repositories;
 
 
 import nicolas.framework.encuestas.User;

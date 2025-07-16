@@ -1,11 +1,11 @@
-package nicolas.framework.encuestas.Jwt;
+package nicolas.framework.encuestas.Auth.Jwt;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import nicolas.framework.encuestas.Services.JwtService;
+import nicolas.framework.encuestas.Auth.Services.JwtService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;

@@ -1,10 +1,10 @@
 package nicolas.framework.encuestas.Auth;
 
-import lombok.RequiredArgsConstructor;
-import nicolas.framework.encuestas.Services.AuthService;
+import nicolas.framework.encuestas.Auth.Services.AuthService;
+import nicolas.framework.encuestas.Auth.dtos.LoginRequest;
+import nicolas.framework.encuestas.Auth.dtos.RegisterRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;

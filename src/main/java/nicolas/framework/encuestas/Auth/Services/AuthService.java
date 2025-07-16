@@ -1,12 +1,10 @@
-package nicolas.framework.encuestas.Services;
+// src/main/java/nicolas/framework/encuestas/Auth/Services/AuthService.java
+package nicolas.framework.encuestas.Auth.Services;
 
-import lombok.AllArgsConstructor;
 import nicolas.framework.encuestas.Auth.AuthResponse;
-import nicolas.framework.encuestas.Auth.LoginRequest;
-import nicolas.framework.encuestas.Auth.RegisterRequest;
-
-import lombok.RequiredArgsConstructor;
-import nicolas.framework.encuestas.Repositories.UserRepository;
+import nicolas.framework.encuestas.Auth.dtos.LoginRequest;
+import nicolas.framework.encuestas.Auth.dtos.RegisterRequest;
+import nicolas.framework.encuestas.Auth.Repositories.UserRepository;
 import nicolas.framework.encuestas.Role;
 import nicolas.framework.encuestas.User;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -49,18 +47,31 @@ public class AuthService {
                 .build();
     }
 
-
     public AuthResponse register(RegisterRequest request) {
+        // Determinar el role; por defecto USER
+        Role roleEnum;
+        try {
+            if (request.getRole() != null) {
+                roleEnum = Role.valueOf(request.getRole().toUpperCase());
+            } else {
+                roleEnum = Role.USER;
+            }
+        } catch (IllegalArgumentException ex) {
+            // Si viene algo distinto de ADMIN/USER, usar USER
+            roleEnum = Role.USER;
+        }
+
         User user = User.builder()
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.USER)
+                .role(roleEnum)
                 .build();
 
         userRepository.save(user);
 
+        String token = jwtService.getToken(user);
         return AuthResponse.builder()
-                .token(jwtService.getToken(user))
+                .token(token)
                 .build();
     }
 }

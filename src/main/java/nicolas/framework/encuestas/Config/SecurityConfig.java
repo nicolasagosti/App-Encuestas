@@ -1,7 +1,6 @@
 package nicolas.framework.encuestas.Config;
 
-import lombok.RequiredArgsConstructor;
-import nicolas.framework.encuestas.Jwt.JwtAuthenticationFilter;
+import nicolas.framework.encuestas.Auth.Jwt.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;

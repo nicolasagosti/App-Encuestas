@@ -1,5 +1,9 @@
+// front/src/components/ResponderEncuestaForm.jsx
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import {
+  obtenerEncuestasDeCliente,
+  responderEncuesta
+} from '../services/api';
 
 export default function ResponderEncuestaForm() {
   const [encuestas, setEncuestas] = useState([]);
@@ -8,7 +12,7 @@ export default function ResponderEncuestaForm() {
   const clienteId = 1; // 👈 Simulado, sin login
 
   useEffect(() => {
-    axios.get(`http://localhost:8080/clientes/${clienteId}/encuestas`)
+    obtenerEncuestasDeCliente(clienteId)
       .then(res => setEncuestas(res.data))
       .catch(() => setMensaje('❌ Error al cargar encuestas'));
   }, []);
@@ -42,7 +46,7 @@ export default function ResponderEncuestaForm() {
       justificacion: data.puntaje < 8 ? data.justificacion || '' : ''
     }));
 
-    axios.post(`http://localhost:8080/clientes/${clienteId}/encuestas/${encuestaId}/respuestas`, payload)
+    responderEncuesta(clienteId, encuestaId, payload)
       .then(() => {
         setMensaje('✅ Encuesta respondida correctamente');
         setRespuestas({});
@@ -64,7 +68,11 @@ export default function ResponderEncuestaForm() {
               <select
                 className="mt-1 p-1 border rounded"
                 onChange={(e) =>
-                  handlePuntajeChange(pregunta.id, encuesta.grupos?.[0]?.id || 1, parseInt(e.target.value))
+                  handlePuntajeChange(
+                    pregunta.id,
+                    encuesta.grupos?.[0]?.id || 1,
+                    parseInt(e.target.value)
+                  )
                 }
               >
                 <option value="">Seleccionar puntaje</option>
@@ -78,7 +86,9 @@ export default function ResponderEncuestaForm() {
                   type="text"
                   className="mt-2 block w-full border p-1 rounded"
                   placeholder="Justificación (requerida)"
-                  onChange={(e) => handleJustificacionChange(pregunta.id, e.target.value)}
+                  onChange={(e) =>
+                    handleJustificacionChange(pregunta.id, e.target.value)
+                  }
                 />
               )}
             </div>

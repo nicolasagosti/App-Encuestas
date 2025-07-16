@@ -1,3 +1,4 @@
+// src/main/java/nicolas/framework/encuestas/encuesta/controllers/EncuestaController.java
 package nicolas.framework.encuestas.encuesta.controllers;
 
 import nicolas.framework.encuestas.encuesta.dtos.EncuestaInputDTO;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/encuestas")
 public class EncuestaController {
@@ -55,6 +57,5 @@ public class EncuestaController {
         this.encuestaService.crearEncuesta(encuesta);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
-
 
 }

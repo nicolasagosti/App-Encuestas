@@ -42,9 +42,14 @@ export const crearEncuesta = (data) =>
 export const obtenerEncuestas = () =>
   api.get('/encuestas');
 
-// Grupos (ajustar endpoint si es necesario)
 export const obtenerGrupos = () =>
   api.get('/grupos');
+
+export const responderEncuesta = (clienteId, encuestaId, respuestas) =>
+  api.post(`/clientes/${clienteId}/encuestas/${encuestaId}/respuestas`, respuestas);
+
+export const obtenerEncuestasDeCliente = (clienteId) =>
+  api.get(`/clientes/${clienteId}/encuestas`);
 
  export const editarPregunta = (id, texto) =>
     api.put(`/encuestas/preguntas/${id}`, { texto });

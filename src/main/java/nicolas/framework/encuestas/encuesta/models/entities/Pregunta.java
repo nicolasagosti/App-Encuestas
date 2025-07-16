@@ -11,10 +11,6 @@ import java.util.List;
 @Table(name = "pregunta")
 @Data
 public class Pregunta {
-    public Pregunta(String texto) {
-        this.texto = texto;
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -23,20 +19,12 @@ public class Pregunta {
     private String texto;
 
 
-    @ManyToMany(mappedBy = "preguntas")
-    @JsonIgnore
-    private List<Encuesta> encuestas;
-
     public Long getId() {
         return id;
     }
 
     public String getTexto() {
         return texto;
-    }
-
-    public List<Encuesta> getEncuestas() {
-        return encuestas;
     }
 
     public Pregunta(PreguntaInputDTO dto) {

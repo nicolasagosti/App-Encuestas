@@ -55,3 +55,22 @@
   color: #2b6cb0;
   margin-bottom: 16px;
 }
+
+.encuestas-toggle {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.toggle-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: #e2e8f0;
+  cursor: pointer;
+  border-radius: 0.375rem;
+}
+
+.toggle-btn.active {
+  background: #3182ce;
+  color: white;
+}

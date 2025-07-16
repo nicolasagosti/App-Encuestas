@@ -63,4 +63,13 @@ public class PreguntaService implements IPreguntaService {
 
         return preguntaRepository.save(p);
     }
+
+    public List<PreguntaInputDTO> buscarPreguntasDeEncuesta(Long encuestaId){
+
+        List<Pregunta> preguntas = preguntaRepository.findPreguntasByEncuestaId(encuestaId);
+
+        return preguntas.stream().map(
+                pregunta -> {return new PreguntaInputDTO(pregunta.getTexto());}
+        ).toList();
+    }
 }

@@ -10,4 +10,8 @@ public class PreguntaInputDTO {
     public String getTexto() {
         return texto;
     }
+
+    public PreguntaInputDTO(String texto) {
+        this.texto = texto;
+    }
 }

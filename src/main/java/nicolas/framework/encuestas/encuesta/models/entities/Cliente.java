@@ -28,4 +28,16 @@ public class Cliente {
 
     @OneToMany(mappedBy = "cliente")
     private List<Respuesta> respuestas;
+
+    public String getMail() {
+        return mail;
+    }
+
+    public List<Grupo> getGrupos() {
+        return grupos;
+    }
+
+    public Cliente(String mail) {
+        this.mail = mail;
+    }
 }

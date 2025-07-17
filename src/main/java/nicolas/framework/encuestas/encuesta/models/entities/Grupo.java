@@ -33,6 +33,14 @@ public class Grupo {
     @OneToMany(mappedBy = "grupo")
     private List<Respuesta> respuestas;
 
+    public Grupo(String descripcion, int cantidadDeColaboradores) {
+        this.descripcion = descripcion;
+        this.cantidadDeColaboradores = cantidadDeColaboradores;
+    }
+
+    public Grupo() {
+    }
+
     public Long getId() {
         return id;
     }

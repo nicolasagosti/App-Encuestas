@@ -1,4 +1,5 @@
 package nicolas.framework.encuestas.encuesta.services;
+import nicolas.framework.encuestas.encuesta.dtos.GrupoInputDTO;
 import nicolas.framework.encuestas.encuesta.dtos.GrupoOutputDTO;
 import nicolas.framework.encuestas.encuesta.models.entities.Grupo;
 import nicolas.framework.encuestas.encuesta.models.repositories.ClienteRepository;
@@ -31,6 +32,13 @@ public class GrupoService implements IGrupoService{
     @Override
     public List<Grupo> buscarGrupos(List<Long> ids) {
         return grupoRepository.findAllById(ids);
+    }
+
+    @Override
+    public void registrarGrupo(GrupoInputDTO dto) {
+
+        Grupo grupo = new Grupo(dto.getDescripcion(), dto.getCantidadDeColaboradores());
+        grupoRepository.save(grupo);
     }
 
 }

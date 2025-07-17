@@ -1,12 +1,12 @@
 package nicolas.framework.encuestas.encuesta.controllers;
 
+import nicolas.framework.encuestas.encuesta.dtos.GrupoInputDTO;
 import nicolas.framework.encuestas.encuesta.dtos.GrupoOutputDTO;
 import nicolas.framework.encuestas.encuesta.services.IGrupoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -16,6 +16,13 @@ public class GrupoController {
 
     @Autowired
     private IGrupoService grupoService;
+
+    @PostMapping
+    public ResponseEntity<HttpStatus> agregarGrupo(@RequestBody GrupoInputDTO grupo){
+
+        grupoService.registrarGrupo(grupo);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
 
     @GetMapping
     public ResponseEntity<List<GrupoOutputDTO>> obtenerGrupos() {

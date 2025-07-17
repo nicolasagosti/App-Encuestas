@@ -1,5 +1,6 @@
 package nicolas.framework.encuestas.encuesta.services;
 
+import nicolas.framework.encuestas.Exception.ResourceNotFoundException;
 import nicolas.framework.encuestas.encuesta.dtos.EncuestaInputDTO;
 import nicolas.framework.encuestas.encuesta.dtos.EncuestaOutputDTO;
 import nicolas.framework.encuestas.encuesta.dtos.GrupoOutputDTO;
@@ -9,10 +10,12 @@ import nicolas.framework.encuestas.encuesta.models.entities.Grupo;
 import nicolas.framework.encuestas.encuesta.models.entities.Pregunta;
 import nicolas.framework.encuestas.encuesta.models.repositories.EncuestaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -37,24 +40,48 @@ public class EncuestaService implements IEncuestaService {
     }
 
     @Override
-    public Optional<Encuesta> getEncuestaById(Long id) {
-        return Optional.of(this.encuestaRepository.findById(id).get());
+    public Encuesta getEncuestaById(Long id) {
+        return encuestaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Encuesta no encontrada con id " + id));
     }
 
     @Override
     public List<EncuestaOutputDTO> obtenerEncuestasDeCliente(Long clienteId) {
-        List<Encuesta> encuestas = encuestaRepository.findDistinctByGruposClientesId(clienteId);
+        List<Encuesta> encuestas = encuestaRepository
+                .findDistinctByGruposClientesId(clienteId);
 
-        return encuestas.stream().map(encuesta -> {
-            List<PreguntaOutputDTO> preguntas = encuesta.getPreguntas().stream()
-                    .map(p -> new PreguntaOutputDTO(p.getId(), p.getTexto()))
-                    .toList();
+        if (encuestas.isEmpty()) {
+            throw new ResourceNotFoundException(
+                    "No se encontraron encuestas para el cliente con id " + clienteId
+            );
+        }
 
-            List<GrupoOutputDTO> grupos = encuesta.getGrupos().stream()
-                    .map(g -> new GrupoOutputDTO(g.getId(), g.getDescripcion(), g.getCantidadDeColaboradores()))
-                    .toList();
+        return encuestas.stream()
+                .map(encuesta -> {
+                    List<PreguntaOutputDTO> preguntas = encuesta.getPreguntas().stream()
+                            .map(p -> new PreguntaOutputDTO(p.getId(), p.getTexto()))
+                            .collect(Collectors.toList());
 
-            return new EncuestaOutputDTO(encuesta.getId(), encuesta.getPeriodo(), preguntas, grupos);
-        }).toList();
+                    List<GrupoOutputDTO> grupos = encuesta.getGrupos().stream()
+                            .map(g -> new GrupoOutputDTO(
+                                    g.getId(),
+                                    g.getDescripcion(),
+                                    g.getCantidadDeColaboradores()
+                            ))
+                            .collect(Collectors.toList());
+
+                    return new EncuestaOutputDTO(
+                            encuesta.getId(),
+                            encuesta.getPeriodo(),
+                            preguntas,
+                            grupos
+                    );
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Encuesta> findAll() {
+        return encuestaRepository.findAll();
     }
 }

@@ -1,19 +1,18 @@
-// src/Dashboard.jsx
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';    // ← Importa Link
+import { Link } from 'react-router-dom';
 import api from './services/api';
+import './Styles/Dashboard.css'
 
 export default function Dashboard() {
   const [error, setError] = useState('');
-  const [payload, setPayload] = useState(null);
+  const [payload, setPayload] = useState([]);
 
   useEffect(() => {
     async function fetchMain() {
       try {
-        const { data } = await api.get('/encuestas/preguntas');
+        const { data } = await api.get('/encuestas');
         setPayload(data);
       } catch (err) {
-        console.error('Error al llamar /encuestas/preguntas', err);
         const status = err.response?.status;
         const msg =
           err.response?.data?.message ||
@@ -26,27 +25,36 @@ export default function Dashboard() {
   }, []);
 
   if (error) {
-    return <div style={{ color: 'red' }}>Error: {error}</div>;
+    return <div className="error-message">{error}</div>;
   }
 
   return (
-    <div className="p-6">
-      <header className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold">Dashboard</h1>
-        <Link
-          to="/encuestas"
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-        >
+    <div className="dashboard-container">
+      <header className="dashboard-header">
+        <h1 className="dashboard-title">Dashboard</h1>
+        <Link to="/encuestas" className="dashboard-button">
           Ir a Encuestas
         </Link>
       </header>
 
-      <section>
-        <h2 className="text-lg font-medium mb-2">Payload recibido:</h2>
-        <pre className="bg-gray-100 p-4 rounded-lg overflow-x-auto">
-          {JSON.stringify(payload, null, 2)}
-        </pre>
-      </section>
+      {payload.length === 0 ? (
+        <p className="no-encuestas">No hay encuestas disponibles.</p>
+      ) : (
+        <div className="encuesta-list">
+          {payload.map(encuesta => (
+            <div key={encuesta.id} className="encuesta-card">
+              <h2 className="encuesta-periodo">{encuesta.periodo}</h2>
+              <ul className="preguntas-list">
+                {encuesta.preguntas.map(p => (
+                  <li key={p.id} className="pregunta-item">
+                    {p.texto}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

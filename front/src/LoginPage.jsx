@@ -15,31 +15,39 @@ export default function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Paso por aca");
     setError('');
 
     try {
-      console.log(`Intentando login con: ${username} / ${password}`);
-      // Ahora enviamos username, tal como tu DTO LoginRequest espera
-      const { data } = await api.post('/auth/login', {
-        username,
-        password
+      const { data } = await api.post('/auth/login', { username, password });
+      const token = data.token;
+      localStorage.setItem('token', token);
+      login();
+
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      let isAdmin = false;
+      Object.values(payload).forEach((val) => {
+        if (typeof val === 'string' && val.toUpperCase().includes('ADMIN')) {
+          isAdmin = true;
+        }
+        if (Array.isArray(val) && val.some(item => typeof item === 'string' && item.toUpperCase().includes('ADMIN'))) {
+          isAdmin = true;
+        }
       });
 
-      console.log('Respuesta del servidor:', data);
-      localStorage.setItem('token', data.token);
-      login();
-      navigate('/encuestas');
+      if (isAdmin) {
+        navigate('/encuestas');
+      } else {
+        navigate('/dashboard');
+      }
 
     } catch (err) {
-      console.log('Error response body:', err.response?.data);
-
       if (err.response) {
-        setError(
-          err.response.status === 401
-            ? 'Usuario o contraseña incorrectos'
-            : `Error ${err.response.status}: ${err.response.statusText}`
-        );
+        const status = err.response.status;
+        if (status === 401 || status === 403) {
+          setError('Usuario o contraseña incorrectos');
+        } else {
+          setError(`Error ${status}: ${err.response.statusText}`);
+        }
       } else {
         setError('Error de conexión. Verifica CORS y el backend.');
       }

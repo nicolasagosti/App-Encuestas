@@ -1,57 +1,74 @@
-// src/api.js
+// src/services/api.js
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:8080',
+  baseURL: 'http://localhost:8080'
 });
 
-// Interceptor: añade el token salvo en login/register
+// Añade token a todas las peticiones excepto al login y registro
 api.interceptors.request.use(
   (config) => {
-    // No tocar /auth/login ni /auth/register
     if (
       config.url?.endsWith('/auth/login') ||
       config.url?.endsWith('/auth/register')
     ) {
       return config;
     }
-
     const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+    if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
   },
   (error) => Promise.reject(error)
 );
 
 // Preguntas
-export const crearPregunta = (texto) =>
-  api.post('/encuestas/preguntas', { texto });
-
-export const obtenerPreguntas = () =>
-  api.get('/encuestas/preguntas');
-
-export const eliminarPregunta = (id) =>
-  api.delete(`/encuestas/preguntas/${id}`);
+export function crearPregunta(texto) {
+  return api.post('/encuestas/preguntas', { texto });
+}
+export function obtenerPreguntas() {
+  return api.get('/encuestas/preguntas');
+}
+export function editarPregunta(id, texto) {
+  return api.put(`/encuestas/preguntas/${id}`, { texto });
+}
+export function eliminarPregunta(id) {
+  return api.delete(`/encuestas/preguntas/${id}`);
+}
 
 // Encuestas
-export const crearEncuesta = (data) =>
-  api.post('/encuestas', data);
+export function crearEncuesta(data) {
+  return api.post('/encuestas', data);
+}
+export function obtenerEncuestas() {
+  return api.get('/encuestas');
+}
 
-export const obtenerEncuestas = () =>
-  api.get('/encuestas');
+// Grupos
+export function obtenerGrupos() {
+  return api.get('/grupos');
+}
+export function agregarGrupo(data) {
+  return api.post('/grupos', data);
+}
 
-export const obtenerGrupos = () =>
-  api.get('/grupos');
+// Clientes
+export function cargarCliente(data) {
+  return api.post('/clientes', data);
+}
+export function asignarGruposACliente(clienteId, idGrupos) {
+  return api.post(`/clientes/${clienteId}/grupos`, idGrupos);
+}
 
-export const responderEncuesta = (clienteId, encuestaId, respuestas) =>
-  api.post(`/clientes/${clienteId}/encuestas/${encuestaId}/respuestas`, respuestas);
+// Encuestas de cliente y respuestas
+export function obtenerEncuestasDeCliente(clienteId) {
+  return api.get(`/clientes/${clienteId}/encuestas`);
+}
+export function responderEncuesta(clienteId, encuestaId, respuestas) {
+  return api.post(
+    `/clientes/${clienteId}/encuestas/${encuestaId}/respuestas`,
+    respuestas
+  );
+}
 
-export const obtenerEncuestasDeCliente = (clienteId) =>
-  api.get(`/clientes/${clienteId}/encuestas`);
-
- export const editarPregunta = (id, texto) =>
-    api.put(`/encuestas/preguntas/${id}`, { texto });
-
+// Export default para compatibilidad con import api
 export default api;

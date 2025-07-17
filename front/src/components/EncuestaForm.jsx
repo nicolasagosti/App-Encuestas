@@ -1,7 +1,7 @@
 // front/src/components/EncuestaForm.jsx
 import { useState, useEffect } from 'react';
 import { obtenerPreguntas, crearEncuesta, obtenerGrupos } from '../services/api';
-import './EncuestaForm.css'; // Asegurate de crear este CSS si querés estilos específicos
+import './ComponentsStyles/EncuestaForm.css';
 
 export default function EncuestaForm() {
   const [periodo, setPeriodo] = useState('');

@@ -5,7 +5,7 @@ import {
   eliminarPregunta,
   editarPregunta
 } from '../services/api';
-import './PreguntaForm.css';
+import './ComponentsStyles/PreguntaForm.css';
 
 export default function PreguntaForm() {
   const [texto, setTexto] = useState('');

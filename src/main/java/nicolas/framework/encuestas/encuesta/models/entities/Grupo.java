@@ -28,7 +28,7 @@ public class Grupo {
     private List<Encuesta> encuestas;
 
     @ManyToMany(mappedBy = "grupos")
-    private List<Cliente> clientes;
+    private List<User> clientes;
 
     @OneToMany(mappedBy = "grupo")
     private List<Respuesta> respuestas;
@@ -57,7 +57,7 @@ public class Grupo {
         return encuestas;
     }
 
-    public List<Cliente> getClientes() {
+    public List<User> getClientes() {
         return clientes;
     }
 

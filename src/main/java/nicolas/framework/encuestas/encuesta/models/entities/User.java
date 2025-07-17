@@ -1,4 +1,4 @@
-package nicolas.framework.encuestas;
+package nicolas.framework.encuestas.encuesta.models.entities;
 
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -16,7 +16,7 @@ import java.util.List;
 public class User implements UserDetails {
     @Id
     @GeneratedValue
-    private Integer id;
+    private Long id;
 
     @Column(nullable = false)
     private String username;
@@ -26,11 +26,20 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    // No-args constructor
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "cliente_x_grupo",
+            joinColumns = @JoinColumn(name = "cliente_id"),
+            inverseJoinColumns = @JoinColumn(name = "grupo_id")
+    )
+    private List<Grupo> grupos;
+
+    @OneToMany(mappedBy = "cliente")
+    private List<Respuesta> respuestas;
+
     public User() {}
 
-    // All-args constructor
-    public User(Integer id,
+    public User(Long id,
                 String username,
                 String password,
                 Role role) {
@@ -40,11 +49,11 @@ public class User implements UserDetails {
         this.role = role;
     }
 
-    // Getters & setters
-    public Integer getId() {
+
+    public Long getId() {
         return id;
     }
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
     @Override
@@ -66,6 +75,14 @@ public class User implements UserDetails {
     }
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public List<Grupo> getGrupos() {
+        return grupos;
+    }
+
+    public List<Respuesta> getRespuestas() {
+        return respuestas;
     }
 
     // UserDetails methods
@@ -95,12 +112,12 @@ public class User implements UserDetails {
         return new Builder();
     }
     public static class Builder {
-        private Integer id;
+        private Long id;
         private String username;
         private String password;
         private Role role;
 
-        public Builder id(Integer id) {
+        public Builder id(Long id) {
             this.id = id;
             return this;
         }

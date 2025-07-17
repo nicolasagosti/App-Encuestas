@@ -25,11 +25,6 @@ public class ClienteController {
         this.encuestaService = encuestaService;
     }
 
-    @PostMapping
-    public ResponseEntity<HttpStatus> cargarCliente(@RequestBody ClienteInputDTO clienteInputDTO ) {
-        clienteService.registrarCliente(clienteInputDTO);
-        return new ResponseEntity<>(HttpStatus.CREATED);
-    }
 
     @PostMapping("/{clienteId}/grupos")
     public ResponseEntity<HttpStatus> asignarGruposACliente(@PathVariable Long clienteId,
@@ -39,7 +34,7 @@ public class ClienteController {
     }
 
     @GetMapping("/{clienteId}/encuestas")
-    public ResponseEntity<List<EncuestaOutputDTO>> obtenerEncuestas(@PathVariable long clienteId) {
+    public ResponseEntity<List<EncuestaOutputDTO>> obtenerEncuestas(@PathVariable Long clienteId) {
         List<EncuestaOutputDTO> encuestas = encuestaService.obtenerEncuestasDeCliente(clienteId);
         return ResponseEntity.ok(encuestas);
     }

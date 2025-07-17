@@ -58,7 +58,6 @@ public class EncuestaController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    // Nuevo método para listar todas las encuestas
     @GetMapping
     public ResponseEntity<List<Encuesta>> getEncuestas() {
         List<Encuesta> encuestas = encuestaService.findAll();

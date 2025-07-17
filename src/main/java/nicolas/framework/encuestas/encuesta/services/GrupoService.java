@@ -2,8 +2,8 @@ package nicolas.framework.encuestas.encuesta.services;
 import nicolas.framework.encuestas.encuesta.dtos.GrupoInputDTO;
 import nicolas.framework.encuestas.encuesta.dtos.GrupoOutputDTO;
 import nicolas.framework.encuestas.encuesta.models.entities.Grupo;
-import nicolas.framework.encuestas.encuesta.models.repositories.ClienteRepository;
 import nicolas.framework.encuestas.encuesta.models.repositories.GrupoRepository;
+import nicolas.framework.encuestas.encuesta.models.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +16,7 @@ public class GrupoService implements IGrupoService{
     private GrupoRepository grupoRepository;
 
     @Autowired
-    private ClienteRepository clienteRepository;
+    private UserRepository clienteRepository;
 
     @Override
     public List<GrupoOutputDTO> todosLosGrupos() {

@@ -1,4 +1,3 @@
-// src/pages/Encuestas.jsx
 import React, { useState } from 'react';
 import '../Styles/Encuestas.css';
 import PreguntaForm from '../components/PreguntaForm';
@@ -14,20 +13,6 @@ export default function Encuestas() {
         <h1 className="encuestas-title">
           {vistaActiva === 'admin' ? 'Panel de Administración' : 'Responder Encuestas'}
         </h1>
-        <div className="encuestas-toggle">
-          <button
-            onClick={() => setVistaActiva('admin')}
-            className={vistaActiva === 'admin' ? 'toggle-btn active' : 'toggle-btn'}
-          >
-            🛠️ Panel Admin
-          </button>
-          <button
-            onClick={() => setVistaActiva('responder')}
-            className={vistaActiva === 'responder' ? 'toggle-btn active' : 'toggle-btn'}
-          >
-            ✅ Responder Encuestas
-          </button>
-        </div>
       </header>
 
       <main className="encuestas-main">
@@ -46,6 +31,21 @@ export default function Encuestas() {
           </section>
         )}
       </main>
+
+      <footer className="encuestas-footer">
+        <button
+          onClick={() => setVistaActiva('admin')}
+          className={vistaActiva === 'admin' ? 'toggle-btn active' : 'toggle-btn'}
+        >
+          🛠️ Panel Admin
+        </button>
+        <button
+          onClick={() => setVistaActiva('responder')}
+          className={vistaActiva === 'responder' ? 'toggle-btn active' : 'toggle-btn'}
+        >
+          ✅ Responder Encuestas
+        </button>
+      </footer>
     </div>
   );
 }

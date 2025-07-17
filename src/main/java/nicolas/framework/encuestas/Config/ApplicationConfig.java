@@ -1,6 +1,6 @@
 package nicolas.framework.encuestas.Config;
 
-import nicolas.framework.encuestas.Auth.Repositories.UserRepository;
+import nicolas.framework.encuestas.encuesta.models.repositories.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;

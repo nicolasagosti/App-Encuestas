@@ -1,13 +1,10 @@
 package nicolas.framework.encuestas.encuesta.services;
 
 import nicolas.framework.encuestas.Exception.DatabaseException;
-import nicolas.framework.encuestas.Exception.ResourceNotFoundException;
-import nicolas.framework.encuestas.encuesta.dtos.ClienteInputDTO;
-import nicolas.framework.encuestas.encuesta.models.entities.Cliente;
 import nicolas.framework.encuestas.encuesta.models.entities.Grupo;
-import nicolas.framework.encuestas.encuesta.models.repositories.ClienteRepository;
+import nicolas.framework.encuestas.encuesta.models.entities.User;
 import nicolas.framework.encuestas.encuesta.models.repositories.GrupoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import nicolas.framework.encuestas.encuesta.models.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,27 +14,18 @@ import java.util.stream.Collectors;
 @Service
 public class ClienteService implements IClienteService {
 
-    private final ClienteRepository clienteRepository;
+    private final UserRepository clienteRepository;
     private final GrupoRepository grupoRepository;
 
-    public ClienteService(ClienteRepository clienteRepository,
+    public ClienteService(UserRepository clienteRepository,
                           GrupoRepository grupoRepository) {
         this.clienteRepository = clienteRepository;
         this.grupoRepository = grupoRepository;
     }
 
     @Override
-    public void registrarCliente(ClienteInputDTO dto) {
-        if (dto.getMail() == null || dto.getMail().isBlank()) {
-            throw new IllegalArgumentException("El mail de cliente es obligatorio");
-        }
-        Cliente cliente = new Cliente(dto.getMail());
-        clienteRepository.save(cliente);
-    }
-
-    @Override
     public void asignarGruposACliente(Long clienteId, List<Long> ids) {
-        Cliente cliente = clienteRepository.findById(clienteId)
+        User cliente = clienteRepository.findById(clienteId)
                 .orElseThrow(() -> new DatabaseException(
                         "Cliente no encontrado con id " + clienteId));
 

@@ -1,12 +1,9 @@
 package nicolas.framework.encuestas.encuesta.services;
 
 import nicolas.framework.encuestas.encuesta.dtos.RespuestaInputDTO;
-import nicolas.framework.encuestas.encuesta.models.entities.Cliente;
 import nicolas.framework.encuestas.encuesta.models.entities.Respuesta;
-import nicolas.framework.encuestas.encuesta.models.repositories.ClienteRepository;
-import nicolas.framework.encuestas.encuesta.models.repositories.GrupoRepository;
-import nicolas.framework.encuestas.encuesta.models.repositories.PreguntaRepository;
-import nicolas.framework.encuestas.encuesta.models.repositories.RespuestaRepository;
+import nicolas.framework.encuestas.encuesta.models.entities.User;
+import nicolas.framework.encuestas.encuesta.models.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDate;
@@ -17,7 +14,7 @@ public class RespuestaService implements IRespuestaService{
     private RespuestaRepository respuestaRepository;
 
     @Autowired
-    private ClienteRepository clienteRepository;
+    private UserRepository clienteRepository;
 
     @Autowired
     private GrupoRepository grupoRepository;
@@ -28,7 +25,7 @@ public class RespuestaService implements IRespuestaService{
     @Override
     public void guardarRespuestas(Long clienteId, Long encuestaId, List<RespuestaInputDTO> dtos) {
 
-        Cliente cliente = clienteRepository.getReferenceById(clienteId);
+        User cliente = clienteRepository.getReferenceById(clienteId);
 
         for (RespuestaInputDTO dto : dtos) {
             Respuesta r = new Respuesta();

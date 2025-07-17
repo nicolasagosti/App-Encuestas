@@ -18,7 +18,7 @@ public class Respuesta {
     private Long id;
 
     @ManyToOne
-    private Cliente cliente;
+    private User cliente;
 
     @ManyToOne
     private Grupo grupo;
@@ -35,7 +35,7 @@ public class Respuesta {
     @Column
     private LocalDate fechaRespuesta;
 
-    public void setCliente(Cliente cliente) {
+    public void setCliente(User cliente) {
         this.cliente = cliente;
     }
 

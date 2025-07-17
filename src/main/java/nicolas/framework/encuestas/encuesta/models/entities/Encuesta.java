@@ -28,7 +28,12 @@ public class Encuesta {
     )
     private List<Pregunta> preguntas = new ArrayList<>();
 
-    @ManyToMany(mappedBy = "encuestas")
+    @ManyToMany(cascade = CascadeType.MERGE)
+    @JoinTable(
+            name = "grupo_x_encuesta",
+            joinColumns = @JoinColumn(name = "encuesta_id"),
+            inverseJoinColumns = @JoinColumn(name = "grupo_id")
+    )
     private List<Grupo> grupos = new ArrayList<>();
 
     public Encuesta(String periodo, List<Grupo> grupos, List<Pregunta> preguntas) {

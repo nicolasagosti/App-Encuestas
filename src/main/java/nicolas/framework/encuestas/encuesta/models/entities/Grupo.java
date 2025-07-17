@@ -1,8 +1,10 @@
 package nicolas.framework.encuestas.encuesta.models.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -19,13 +21,9 @@ public class Grupo {
     @Column
     private int cantidadDeColaboradores;
 
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(
-            name = "grupo_x_encuesta",
-            joinColumns = @JoinColumn(name = "grupo_id"),
-            inverseJoinColumns = @JoinColumn(name = "encuesta_id")
-    )
-    private List<Encuesta> encuestas;
+    @ManyToMany(mappedBy = "grupos")
+    @JsonIgnore
+    private List<Encuesta> encuestas = new ArrayList<>();
 
     @ManyToMany(mappedBy = "grupos")
     private List<User> clientes;

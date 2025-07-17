@@ -33,9 +33,8 @@ public class PreguntaService implements IPreguntaService {
         return preguntaRepository.findAll();
     }
 
-    @Override
     public List<Pregunta> buscarPreguntasPorId(List<Long> id) {
-        return List.of();
+        return preguntaRepository.findAllById(id);
     }
 
     @Override

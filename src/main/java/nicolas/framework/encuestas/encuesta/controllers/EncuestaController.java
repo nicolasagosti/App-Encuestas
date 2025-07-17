@@ -1,6 +1,7 @@
 // src/main/java/nicolas/framework/encuestas/encuesta/controllers/EncuestaController.java
 package nicolas.framework.encuestas.encuesta.controllers;
 
+import jakarta.validation.Valid;
 import nicolas.framework.encuestas.encuesta.dtos.EncuestaInputDTO;
 import nicolas.framework.encuestas.encuesta.dtos.PreguntaInputDTO;
 import nicolas.framework.encuestas.encuesta.models.entities.Encuesta;
@@ -53,7 +54,7 @@ public class EncuestaController {
     }
 
     @PostMapping
-    public ResponseEntity<Encuesta> agregarEncuesta(@RequestBody EncuestaInputDTO encuesta) {
+    public ResponseEntity<Encuesta> agregarEncuesta(@Valid @RequestBody EncuestaInputDTO encuesta) {
         this.encuestaService.crearEncuesta(encuesta);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }

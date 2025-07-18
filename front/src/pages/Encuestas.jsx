@@ -16,13 +16,9 @@ export default function Encuestas() {
   return (
     <div className="encuestas-page">
       <header className="encuestas-header">
-          <h1>El email es {userEmail}</h1>
         <h1 className="encuestas-title">
           {vistaActiva === 'admin' ? 'Panel de Administración' : 'Responder Encuestas'}
         </h1>
-        <p className="encuestas-user">
-          Conectado como: <strong>{userEmail}</strong>
-        </p>
       </header>
 
       <main className="encuestas-main">

@@ -68,7 +68,6 @@ export default function ResponderEncuestaForm() {
 
       {encuestas.map((encuesta) => (
         <div key={encuesta.id} className="mb-6 border-b pb-4">
-                      <h1>El email es {userEmail}</h1>
           <h3 className="text-lg font-semibold mb-2">Encuesta: {encuesta.periodo}</h3>
           {encuesta.preguntas.map((pregunta) => (
             <div key={pregunta.id} className="mb-3">

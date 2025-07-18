@@ -18,28 +18,35 @@ export default function LoginPage() {
     setError('');
 
     try {
+      // 1. Llamada al backend
       const { data } = await api.post('/auth/login', { username, password });
       const token = data.token;
+
+      // 2. Guardar el JWT
       localStorage.setItem('token', token);
-      login(username); // Pasar el username (email) al login
 
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      let isAdmin = false;
-      Object.values(payload).forEach((val) => {
-        if (typeof val === 'string' && val.toUpperCase().includes('ADMIN')) {
-          isAdmin = true;
-        }
-        if (Array.isArray(val) && val.some(item => typeof item === 'string' && item.toUpperCase().includes('ADMIN'))) {
-          isAdmin = true;
-        }
-      });
+      // 3. Parsear el payload del JWT
+      const payload = JSON.parse(atob(token.split('.')[1] || ''));
+      const rawRole = payload.role;
+      // 4. Determinar el rol: primero por claim explícito, luego buscando "ADMIN" en cualquier claim
+      const isAdminClaim = rawRole && rawRole.toUpperCase() === 'ADMIN';
+      const isAdminInValues = Object.values(payload).some(val =>
+        (typeof val === 'string' && val.toUpperCase().includes('ADMIN')) ||
+        (Array.isArray(val) && val.some(item => typeof item === 'string' && item.toUpperCase().includes('ADMIN')))
+      );
+      const role = (isAdminClaim || isAdminInValues) ? 'ADMIN' : 'USER';
 
-      if (isAdmin) {
+      // 5. Guardar email y rol en el contexto y en localStorage
+      login(username, role);
+
+      // 6. Redirigir según rol
+      if (role === 'ADMIN') {
         navigate('/encuestas');
       } else {
         navigate('/dashboard');
       }
     } catch (err) {
+      // Manejo de errores
       if (err.response) {
         const status = err.response.status;
         if (status === 401 || status === 403) {

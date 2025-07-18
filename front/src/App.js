@@ -13,13 +13,22 @@ import AsignarGruposAClienteForm from './components/AsignarGruposAClienteForm';
 import ResponderEncuestasForm from './components/ResponderEncuestasForm';
 import './Styles/App.css';
 
-function PrivateRoute({ children }) {
-  const { isLogged } = useAuth();
-  return isLogged ? children : <Navigate to="/login" replace />;
+function AdminRoute({ children }) {
+  const { isLogged, userRole } = useAuth();
+  if (!isLogged) return <Navigate to="/login" replace />;
+  if (userRole !== 'ADMIN') return <Navigate to="/dashboard" replace />;
+  return children;
+}
+
+function UserRoute({ children }) {
+  const { isLogged, userRole } = useAuth();
+  if (!isLogged) return <Navigate to="/login" replace />;
+  if (userRole !== 'USER') return <Navigate to="/encuestas" replace />;
+  return children;
 }
 
 function EncuestasPanel() {
-  const { userEmail } = useAuth(); // Obtener el email del contexto
+  const { userEmail } = useAuth();
   const [vistaActiva, setVistaActiva] = useState('admin');
 
   return (
@@ -46,21 +55,11 @@ function EncuestasPanel() {
 
       {vistaActiva === 'admin' ? (
         <div className="app-grid">
-          <div className="card">
-            <PreguntaForm />
-          </div>
-          <div className="card">
-            <EncuestaForm />
-          </div>
-          <div className="card">
-            <GrupoForm />
-          </div>
-          <div className="card">
-            <ClienteForm />
-          </div>
-          <div className="card">
-            <AsignarGruposAClienteForm />
-          </div>
+          <div className="card"><PreguntaForm /></div>
+          <div className="card"><EncuestaForm /></div>
+          <div className="card"><GrupoForm /></div>
+          <div className="card"><ClienteForm /></div>
+          <div className="card"><AsignarGruposAClienteForm /></div>
         </div>
       ) : (
         <div className="card responder-card">
@@ -76,25 +75,34 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
+          {/* Redirigir "/" a login */}
           <Route path="/" element={<Navigate to="/login" replace />} />
+
+          {/* Rutas públicas */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+
+          {/* Sólo USER puede acceder al Dashboard */}
           <Route
             path="/dashboard"
             element={
-              <PrivateRoute>
+              <UserRoute>
                 <Dashboard />
-              </PrivateRoute>
+              </UserRoute>
             }
           />
+
+          {/* Sólo ADMIN puede acceder al panel de encuestas */}
           <Route
             path="/encuestas"
             element={
-              <PrivateRoute>
+              <AdminRoute>
                 <EncuestasPanel />
-              </PrivateRoute>
+              </AdminRoute>
             }
           />
+
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

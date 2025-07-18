@@ -43,8 +43,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // Rutas de login/register
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/encuestas/**").permitAll()
-                        .requestMatchers("/**").permitAll()
+                        .requestMatchers("/encuestas/**").hasAuthority("ADMIN")
                         // El resto requiere autenticación
                         .anyRequest().authenticated()
                 )

@@ -34,7 +34,7 @@ public class ClienteController {
     }
 
     @GetMapping("/{clienteId}/encuestas")
-    public ResponseEntity<List<EncuestaOutputDTO>> obtenerEncuestas(@PathVariable Long clienteId) {
+    public ResponseEntity<List<EncuestaOutputDTO>> obtenerEncuestasDeCliente(@PathVariable Long clienteId) {
         List<EncuestaOutputDTO> encuestas = encuestaService.obtenerEncuestasDeCliente(clienteId);
         return ResponseEntity.ok(encuestas);
     }

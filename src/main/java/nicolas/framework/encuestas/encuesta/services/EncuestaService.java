@@ -47,37 +47,19 @@ public class EncuestaService implements IEncuestaService {
 
     @Override
     public List<EncuestaOutputDTO> obtenerEncuestasDeCliente(Long clienteId) {
-        List<Encuesta> encuestas = encuestaRepository
-                .findDistinctByGruposClientesId(clienteId);
+        List<Encuesta> encuestas = encuestaRepository.findDistinctByGruposClientesId(clienteId);
 
-        if (encuestas.isEmpty()) {
-            throw new ResourceNotFoundException(
-                    "No se encontraron encuestas para el cliente con id " + clienteId
-            );
-        }
+        return encuestas.stream().map(encuesta -> {
+            List<PreguntaOutputDTO> preguntas = encuesta.getPreguntas().stream()
+                    .map(p -> new PreguntaOutputDTO(p.getId(), p.getTexto()))
+                    .toList();
 
-        return encuestas.stream()
-                .map(encuesta -> {
-                    List<PreguntaOutputDTO> preguntas = encuesta.getPreguntas().stream()
-                            .map(p -> new PreguntaOutputDTO(p.getId(), p.getTexto()))
-                            .collect(Collectors.toList());
+            List<GrupoOutputDTO> grupos = encuesta.getGrupos().stream()
+                    .map(g -> new GrupoOutputDTO(g.getId(), g.getDescripcion(), g.getCantidadDeColaboradores()))
+                    .toList();
 
-                    List<GrupoOutputDTO> grupos = encuesta.getGrupos().stream()
-                            .map(g -> new GrupoOutputDTO(
-                                    g.getId(),
-                                    g.getDescripcion(),
-                                    g.getCantidadDeColaboradores()
-                            ))
-                            .collect(Collectors.toList());
-
-                    return new EncuestaOutputDTO(
-                            encuesta.getId(),
-                            encuesta.getPeriodo(),
-                            preguntas,
-                            grupos
-                    );
-                })
-                .collect(Collectors.toList());
+            return new EncuestaOutputDTO(encuesta.getId(), encuesta.getPeriodo(), preguntas, grupos);
+        }).toList();
     }
 
     @Override

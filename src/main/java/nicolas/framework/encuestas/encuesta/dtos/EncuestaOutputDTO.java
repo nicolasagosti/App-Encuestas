@@ -20,4 +20,39 @@ public class EncuestaOutputDTO {
         this.preguntas = preguntas;
         this.grupos = grupos;
     }
+
+    public EncuestaOutputDTO() {
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getPeriodo() {
+        return periodo;
+    }
+
+    public void setPeriodo(String periodo) {
+        this.periodo = periodo;
+    }
+
+    public List<PreguntaOutputDTO> getPreguntas() {
+        return preguntas;
+    }
+
+    public void setPreguntas(List<PreguntaOutputDTO> preguntas) {
+        this.preguntas = preguntas;
+    }
+
+    public List<GrupoOutputDTO> getGrupos() {
+        return grupos;
+    }
+
+    public void setGrupos(List<GrupoOutputDTO> grupos) {
+        this.grupos = grupos;
+    }
 }

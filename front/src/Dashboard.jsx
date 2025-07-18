@@ -1,60 +1,109 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import api from './services/api';
-import './Styles/Dashboard.css'
+import { useEffect, useState } from 'react';
+import {
+  obtenerEncuestasDeCliente,
+  responderEncuesta
+} from './services/api';
+import './components/ComponentsStyles/ResponderEncuestaForm.css';
 
-export default function Dashboard() {
-  const [error, setError] = useState('');
-  const [payload, setPayload] = useState([]);
+export default function ResponderEncuestaForm() {
+  const [encuestas, setEncuestas] = useState([]);
+  const [respuestas, setRespuestas] = useState({});
+  const [mensaje, setMensaje] = useState('');
+  const clienteId = 1; // 👈 Simulado, sin login
 
   useEffect(() => {
-    async function fetchMain() {
-      try {
-        const { data } = await api.get('/encuestas');
-        setPayload(data);
-      } catch (err) {
-        const status = err.response?.status;
-        const msg =
-          err.response?.data?.message ||
-          err.response?.statusText ||
-          err.toString();
-        setError(`Error ${status}: ${msg}`);
-      }
-    }
-    fetchMain();
+    obtenerEncuestasDeCliente(clienteId)
+      .then(res => setEncuestas(res.data))
+      .catch(() => setMensaje('❌ Error al cargar encuestas'));
   }, []);
 
-  if (error) {
-    return <div className="error-message">{error}</div>;
-  }
+  const handlePuntajeChange = (preguntaId, grupoId, puntaje) => {
+    setRespuestas(prev => ({
+      ...prev,
+      [preguntaId]: {
+        ...prev[preguntaId],
+        puntaje,
+        grupoId,
+      }
+    }));
+  };
+
+  const handleJustificacionChange = (preguntaId, justificacion) => {
+    setRespuestas(prev => ({
+      ...prev,
+      [preguntaId]: {
+        ...prev[preguntaId],
+        justificacion
+      }
+    }));
+  };
+
+  const handleSubmit = (encuestaId) => {
+    const payload = Object.entries(respuestas).map(([preguntaId, data]) => ({
+      preguntaId: parseInt(preguntaId),
+      grupoId: data.grupoId,
+      puntaje: data.puntaje,
+      justificacion: data.puntaje < 8 ? data.justificacion || '' : ''
+    }));
+
+    responderEncuesta(clienteId, encuestaId, payload)
+      .then(() => {
+        setMensaje('✅ Encuesta respondida correctamente');
+        setRespuestas({});
+      })
+      .catch(() => setMensaje('❌ Error al enviar respuestas'));
+  };
 
   return (
-    <div className="dashboard-container">
-      <header className="dashboard-header">
-        <h1 className="dashboard-title">Dashboard</h1>
-        <Link to="/encuestas" className="dashboard-button">
-          Ir a Encuestas
-        </Link>
-      </header>
+    <div className="mt-10 p-4 border rounded-lg shadow bg-white max-w-xl mx-auto">
+      <h2 className="text-xl font-bold mb-4">Responder Encuestas</h2>
+      {encuestas.length === 0 && <p>No hay encuestas disponibles.</p>}
 
-      {payload.length === 0 ? (
-        <p className="no-encuestas">No hay encuestas disponibles.</p>
-      ) : (
-        <div className="encuesta-list">
-          {payload.map(encuesta => (
-            <div key={encuesta.id} className="encuesta-card">
-              <h2 className="encuesta-periodo">{encuesta.periodo}</h2>
-              <ul className="preguntas-list">
-                {encuesta.preguntas.map(p => (
-                  <li key={p.id} className="pregunta-item">
-                    {p.texto}
-                  </li>
+      {encuestas.map((encuesta) => (
+        <div key={encuesta.id} className="mb-6 border-b pb-4">
+          <h3 className="text-lg font-semibold mb-2">Encuesta: {encuesta.periodo}</h3>
+          {encuesta.preguntas.map((pregunta) => (
+            <div key={pregunta.id} className="mb-3">
+              <label className="block font-medium">{pregunta.texto}</label>
+              <select
+                className="mt-1 p-1 border rounded"
+                onChange={(e) =>
+                  handlePuntajeChange(
+                    pregunta.id,
+                    encuesta.grupos?.[0]?.id || 1,
+                    parseInt(e.target.value)
+                  )
+                }
+              >
+                <option value="">Seleccionar puntaje</option>
+                {[...Array(10)].map((_, i) => (
+                  <option key={i + 1} value={i + 1}>{i + 1}</option>
                 ))}
-              </ul>
+              </select>
+
+              {respuestas[pregunta.id]?.puntaje < 8 && (
+                <input
+                  type="text"
+                  className="mt-2 block w-full border p-1 rounded"
+                  placeholder="Justificación (requerida)"
+                  onChange={(e) =>
+                    handleJustificacionChange(pregunta.id, e.target.value)
+                  }
+                />
+              )}
             </div>
           ))}
+
+          <button
+            className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            onClick={() => handleSubmit(encuesta.id)}
+          >
+            Enviar respuestas
+          </button>
         </div>
-      )}
+      ))}
+
+      {mensaje && <p className="mt-4 text-sm text-green-700">{mensaje}</p>}
     </div>
   );
 }

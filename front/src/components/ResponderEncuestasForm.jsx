@@ -4,11 +4,20 @@ import {
   obtenerEncuestasDeCliente,
   responderEncuesta
 } from '../services/api';
+import { useAuth } from '../AuthContext';
+
+
 
 export default function ResponderEncuestaForm() {
   const [encuestas, setEncuestas] = useState([]);
   const [respuestas, setRespuestas] = useState({});
   const [mensaje, setMensaje] = useState('');
+  const { user, isLogged } = useAuth();
+
+    // user.id es tu id
+    console.log('ID del usuario logueado:', user?.id);
+
+    // ...
   const clienteId = 1; // 👈 Simulado, sin login
 
   useEffect(() => {

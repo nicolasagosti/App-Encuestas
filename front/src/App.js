@@ -19,12 +19,14 @@ function PrivateRoute({ children }) {
 }
 
 function EncuestasPanel() {
+  const { userEmail } = useAuth(); // Obtener el email del contexto
   const [vistaActiva, setVistaActiva] = useState('admin');
 
   return (
     <div className="app-container">
       <header className="app-header">
         <h1 className="app-title">Encuestas de Satisfacción</h1>
+        <p className="user-email">Usuario: {userEmail}</p>
       </header>
 
       <div className="app-toggle">

@@ -12,12 +12,13 @@ export default function ResponderEncuestaForm() {
   const [encuestas, setEncuestas] = useState([]);
   const [respuestas, setRespuestas] = useState({});
   const [mensaje, setMensaje] = useState('');
-  const { user, isLogged } = useAuth();
+    const { userEmail } = useAuth();
 
-    // user.id es tu id
-    console.log('ID del usuario logueado:', user?.id);
+    // Logueamos el email al montar el componente
+    useEffect(() => {
+      console.log('Usuario conectado:', userEmail);
+    }, [userEmail]);
 
-    // ...
   const clienteId = 1; // 👈 Simulado, sin login
 
   useEffect(() => {
@@ -67,9 +68,9 @@ export default function ResponderEncuestaForm() {
     <div className="mt-10 p-4 border rounded-lg shadow bg-white max-w-xl mx-auto">
       <h2 className="text-xl font-bold mb-4">Responder Encuestas</h2>
       {encuestas.length === 0 && <p>No hay encuestas disponibles.</p>}
-
       {encuestas.map((encuesta) => (
         <div key={encuesta.id} className="mb-6 border-b pb-4">
+            <h1>El email es {userEmail}</h1>
           <h3 className="text-lg font-semibold mb-2">Encuesta: {encuesta.periodo}</h3>
           {encuesta.preguntas.map((pregunta) => (
             <div key={pregunta.id} className="mb-3">

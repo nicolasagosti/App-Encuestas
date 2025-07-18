@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useAuth } from './AuthContext';
 import {
   obtenerEncuestasDeCliente,
   responderEncuesta
@@ -9,6 +10,12 @@ export default function ResponderEncuestaForm() {
   const [encuestas, setEncuestas] = useState([]);
   const [respuestas, setRespuestas] = useState({});
   const [mensaje, setMensaje] = useState('');
+    const { userEmail } = useAuth();
+
+    useEffect(() => {
+      console.log('Usuario conectado:', userEmail);
+    }, [userEmail]);
+
   const clienteId = 1; // 👈 Simulado, sin login
 
   useEffect(() => {
@@ -61,6 +68,7 @@ export default function ResponderEncuestaForm() {
 
       {encuestas.map((encuesta) => (
         <div key={encuesta.id} className="mb-6 border-b pb-4">
+                      <h1>El email es {userEmail}</h1>
           <h3 className="text-lg font-semibold mb-2">Encuesta: {encuesta.periodo}</h3>
           {encuesta.preguntas.map((pregunta) => (
             <div key={pregunta.id} className="mb-3">

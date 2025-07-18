@@ -1,18 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../Styles/Encuestas.css';
 import PreguntaForm from '../components/PreguntaForm';
 import EncuestaForm from '../components/EncuestaForm';
 import ResponderEncuestaForm from '../components/ResponderEncuestasForm';
+import { useAuth } from '../AuthContext';
 
 export default function Encuestas() {
   const [vistaActiva, setVistaActiva] = useState('admin');
+  const { userEmail } = useAuth();
+
+  useEffect(() => {
+    console.log('Usuario conectado:', userEmail);
+  }, [userEmail]);
 
   return (
     <div className="encuestas-page">
       <header className="encuestas-header">
+          <h1>El email es {userEmail}</h1>
         <h1 className="encuestas-title">
           {vistaActiva === 'admin' ? 'Panel de Administración' : 'Responder Encuestas'}
         </h1>
+        <p className="encuestas-user">
+          Conectado como: <strong>{userEmail}</strong>
+        </p>
       </header>
 
       <main className="encuestas-main">

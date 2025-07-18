@@ -21,7 +21,7 @@ export default function LoginPage() {
       const { data } = await api.post('/auth/login', { username, password });
       const token = data.token;
       localStorage.setItem('token', token);
-      login();
+      login(username); // Pasar el username (email) al login
 
       const payload = JSON.parse(atob(token.split('.')[1]));
       let isAdmin = false;
@@ -39,7 +39,6 @@ export default function LoginPage() {
       } else {
         navigate('/dashboard');
       }
-
     } catch (err) {
       if (err.response) {
         const status = err.response.status;

@@ -5,10 +5,12 @@ import nicolas.framework.encuestas.encuesta.models.entities.Respuesta;
 import nicolas.framework.encuestas.encuesta.models.entities.User;
 import nicolas.framework.encuestas.encuesta.models.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
 
+@Service
 public class RespuestaService implements IRespuestaService{
     @Autowired
     private RespuestaRepository respuestaRepository;

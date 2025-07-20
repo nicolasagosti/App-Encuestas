@@ -52,11 +52,16 @@ export function agregarGrupo(data) {
 }
 
 // Clientes
-export function cargarCliente(data) {
-  return api.post('/clientes', data);
+export function cargarCliente() {
+  return api.get('/clientes');
 }
 export function asignarGruposACliente(clienteId, idGrupos) {
   return api.post(`/clientes/${clienteId}/grupos`, idGrupos);
+}
+
+
+export function asignarClientesAGrupo(grupoId, idClientes) {
+  return api.post(`/clientes/${grupoId}`, idClientes);
 }
 
 // Encuestas de cliente y respuestas
@@ -70,5 +75,4 @@ export function responderEncuesta(clienteId, encuestaId, respuestas) {
   );
 }
 
-// Export default para compatibilidad con import api
 export default api;

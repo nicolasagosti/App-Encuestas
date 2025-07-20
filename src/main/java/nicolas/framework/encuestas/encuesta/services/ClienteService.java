@@ -1,6 +1,7 @@
 package nicolas.framework.encuestas.encuesta.services;
 
 import nicolas.framework.encuestas.Exception.DatabaseException;
+import nicolas.framework.encuestas.encuesta.dtos.ClienteOutputDTO;
 import nicolas.framework.encuestas.encuesta.models.entities.Grupo;
 import nicolas.framework.encuestas.encuesta.models.entities.User;
 import nicolas.framework.encuestas.encuesta.models.repositories.GrupoRepository;
@@ -21,6 +22,44 @@ public class ClienteService implements IClienteService {
                           GrupoRepository grupoRepository) {
         this.clienteRepository = clienteRepository;
         this.grupoRepository = grupoRepository;
+    }
+
+    @Override
+    public void asignarClientesAGrupo(Long grupoId, List<Long> clienteIds) {
+        // 1. Buscamos el Grupo
+        Grupo grupo = grupoRepository.findById(grupoId)
+                .orElseThrow(() -> new DatabaseException(
+                        "Grupo no encontrado con id " + grupoId
+                ));
+
+        // 2. Buscamos todos los User cuyo ID esté en clienteIds
+        List<User> clientes = clienteRepository.findAllById(clienteIds);
+        if (clientes.isEmpty()) {
+            throw new DatabaseException(
+                    "No se encontraron clientes con los IDs proporcionados"
+            );
+        }
+
+        // 3. Verificamos si hay IDs que no existan en la BD
+        Set<Long> encontrados = clientes.stream()
+                .map(User::getId)
+                .collect(Collectors.toSet());
+        List<Long> faltantes = clienteIds.stream()
+                .filter(id -> !encontrados.contains(id))
+                .toList();
+        if (!faltantes.isEmpty()) {
+            throw new DatabaseException(
+                    "Clientes no encontrados con ids " + faltantes
+            );
+        }
+
+        // 4. Asignamos el grupo a cada cliente
+        for (User cliente : clientes) {
+            cliente.getGrupos().add(grupo);
+        }
+
+        // 5. Persistimos los cambios en todos los clientes de una vez
+        clienteRepository.saveAll(clientes);
     }
 
 
@@ -48,6 +87,17 @@ public class ClienteService implements IClienteService {
 
         cliente.getGrupos().addAll(grupos);
         clienteRepository.save(cliente);
+    }
+
+    @Override
+    public List<ClienteOutputDTO> obtenerClientes() {
+        List<User> users = clienteRepository.findAll();
+        return users.stream()
+                .map(u -> new ClienteOutputDTO(
+                        u.getUsername(),
+                        u.getId()
+                ))
+                .collect(Collectors.toList());
     }
 }
 

@@ -43,8 +43,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // Rutas de login/register
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/**").permitAll()
                         .requestMatchers("/encuestas/**").hasAuthority("ADMIN")
-                        // El resto requiere autenticación
+                        // acceso a /clientes solo para usuarios logueados (USER o ADMIN)
+                        .requestMatchers(HttpMethod.GET, "/clientes").hasAnyAuthority("USER","ADMIN")
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authProvider)

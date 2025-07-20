@@ -2,6 +2,7 @@
 package nicolas.framework.encuestas.encuesta.controllers;
 
 import nicolas.framework.encuestas.encuesta.dtos.ClienteInputDTO;
+import nicolas.framework.encuestas.encuesta.dtos.ClienteOutputDTO;
 import nicolas.framework.encuestas.encuesta.dtos.EncuestaOutputDTO;
 import nicolas.framework.encuestas.encuesta.services.IClienteService;
 import nicolas.framework.encuestas.encuesta.services.IEncuestaService;
@@ -33,9 +34,23 @@ public class ClienteController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
+    @PostMapping("/{grupoId}")
+    public ResponseEntity<HttpStatus> asignarClientesAGrupo(@PathVariable Long grupoId,
+                                                            @RequestBody List<Long> idClientes) {
+        clienteService.asignarClientesAGrupo(grupoId,idClientes);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
     @GetMapping("/{clienteId}/encuestas")
     public ResponseEntity<List<EncuestaOutputDTO>> obtenerEncuestasDeCliente(@PathVariable Long clienteId) {
         List<EncuestaOutputDTO> encuestas = encuestaService.obtenerEncuestasDeCliente(clienteId);
         return ResponseEntity.ok(encuestas);
+    }
+
+
+    @GetMapping
+    public ResponseEntity<List<ClienteOutputDTO>> obtenerClientes() {
+        List<ClienteOutputDTO> clientes = clienteService.obtenerClientes();
+        return ResponseEntity.ok(clientes);
     }
 }

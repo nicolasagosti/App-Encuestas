@@ -10,6 +10,7 @@ import EncuestaForm from './components/EncuestaForm';
 import GrupoForm from './components/GrupoForm';
 import ClienteForm from './components/ClienteForm';
 import AsignarGruposAClienteForm from './components/AsignarGruposAClienteForm';
+import AsignarClientesAGrupoForm from './components/AsignarClientesAGrupoForm';
 import ResponderEncuestasForm from './components/ResponderEncuestasForm';
 import './Styles/App.css';
 
@@ -60,6 +61,7 @@ function EncuestasPanel() {
           <div className="card"><GrupoForm /></div>
           <div className="card"><ClienteForm /></div>
           <div className="card"><AsignarGruposAClienteForm /></div>
+          <div className="card"><AsignarClientesAGrupoForm /></div>
         </div>
       ) : (
         <div className="card responder-card">

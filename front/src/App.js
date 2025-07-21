@@ -36,7 +36,6 @@ function EncuestasPanel() {
     <div className="app-container">
       <header className="app-header">
         <h1 className="app-title">Encuestas de Satisfacción</h1>
-        <p className="user-email">Usuario: {userEmail}</p>
       </header>
 
       <div className="app-toggle">

@@ -4,6 +4,7 @@ package nicolas.framework.encuestas.encuesta.controllers;
 import nicolas.framework.encuestas.encuesta.dtos.ClienteInputDTO;
 import nicolas.framework.encuestas.encuesta.dtos.ClienteOutputDTO;
 import nicolas.framework.encuestas.encuesta.dtos.EncuestaOutputDTO;
+import nicolas.framework.encuestas.encuesta.dtos.MailClienteDTO;
 import nicolas.framework.encuestas.encuesta.services.IClienteService;
 import nicolas.framework.encuestas.encuesta.services.IEncuestaService;
 import org.springframework.http.HttpStatus;
@@ -39,6 +40,12 @@ public class ClienteController {
                                                             @RequestBody List<Long> idClientes) {
         clienteService.asignarClientesAGrupo(grupoId,idClientes);
         return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @PostMapping("/id")
+    public ResponseEntity<Long> obtenerIdDeCliente(@RequestBody MailClienteDTO dto) {
+        Long id = clienteService.obtenerIdDeCLiente(dto.getMailCliente());
+        return ResponseEntity.ok(id);
     }
 
     @GetMapping("/{clienteId}/encuestas")

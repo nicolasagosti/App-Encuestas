@@ -9,6 +9,7 @@ import nicolas.framework.encuestas.encuesta.models.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -98,6 +99,15 @@ public class ClienteService implements IClienteService {
                         u.getId()
                 ))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Long obtenerIdDeCLiente(String mailCliente) {
+        User user = clienteRepository.findByUsername(mailCliente)
+                .orElseThrow(() -> new DatabaseException(
+                        "Cliente no encontrado con mail: " + mailCliente
+                ));
+        return user.getId();
     }
 }
 

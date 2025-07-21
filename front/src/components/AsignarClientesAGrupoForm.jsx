@@ -62,7 +62,8 @@ export default function AsignarClientesAGrupoForm() {
                 onChange={() => toggleCliente(c.id)}
                 className="mr-2"
               />
-              <span>{c.mail} (ID: {c.id})</span>
+              <span>{c.mail}</span>
+              <br></br>
             </label>
           ))}
         </div>

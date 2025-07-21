@@ -59,6 +59,12 @@ export function asignarGruposACliente(clienteId, idGrupos) {
   return api.post(`/clientes/${clienteId}/grupos`, idGrupos);
 }
 
+export function obtenerIdDeCliente(mailCliente) {
+  return api.post(
+    `/clientes/id`,
+    { mailCliente }
+  );
+}
 
 export function asignarClientesAGrupo(grupoId, idClientes) {
   return api.post(`/clientes/${grupoId}`, idClientes);

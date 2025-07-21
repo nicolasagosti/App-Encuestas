@@ -4,31 +4,25 @@ import { useNavigate } from 'react-router-dom';
 import api from './services/api';
 import { useAuth } from './AuthContext';
 import logo from './bbva-2019.svg';
-import './Styles/LoginPage.css';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const navigate = useNavigate();
-  const { login } = useAuth();
+  const [error, setError]     = useState('');
+  const navigate              = useNavigate();
+  const { login }             = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
     try {
-      // 1. Llamada al backend
       const { data } = await api.post('/auth/login', { username, password });
       const token = data.token;
-
-      // 2. Guardar el JWT
       localStorage.setItem('token', token);
 
-      // 3. Parsear el payload del JWT
-      const payload = JSON.parse(atob(token.split('.')[1] || ''));
-      const rawRole = payload.role;
-      // 4. Determinar el rol: primero por claim explícito, luego buscando "ADMIN" en cualquier claim
+      const payload   = JSON.parse(atob(token.split('.')[1] || ''));
+      const rawRole   = payload.role;
       const isAdminClaim = rawRole && rawRole.toUpperCase() === 'ADMIN';
       const isAdminInValues = Object.values(payload).some(val =>
         (typeof val === 'string' && val.toUpperCase().includes('ADMIN')) ||
@@ -36,24 +30,13 @@ export default function LoginPage() {
       );
       const role = (isAdminClaim || isAdminInValues) ? 'ADMIN' : 'USER';
 
-      // 5. Guardar email y rol en el contexto y en localStorage
       login(username, role);
-
-      // 6. Redirigir según rol
-      if (role === 'ADMIN') {
-        navigate('/encuestas');
-      } else {
-        navigate('/dashboard');
-      }
+      navigate(role === 'ADMIN' ? '/encuestas' : '/dashboard');
     } catch (err) {
-      // Manejo de errores
       if (err.response) {
         const status = err.response.status;
-        if (status === 401 || status === 403) {
-          setError('Usuario o contraseña incorrectos');
-        } else {
-          setError(`Error ${status}: ${err.response.statusText}`);
-        }
+        if (status === 401 || status === 403) setError('Usuario o contraseña incorrectos');
+        else setError(`Error ${status}: ${err.response.statusText}`);
       } else {
         setError('Error de conexión. Verifica CORS y el backend.');
       }
@@ -61,40 +44,63 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="login-container">
-      <img src={logo} alt="Banco Francés" className="login-logo" />
-      <h2 className="login-title">Iniciar sesión</h2>
-      {error && <p className="login-error">{error}</p>}
-
-      <form className="login-form" onSubmit={handleSubmit}>
-        <div className="login-field">
-          <label htmlFor="username">Usuario (email)</label>
-          <input
-            id="username"
-            type="email"
-            value={username}
-            onChange={e => setUsername(e.target.value)}
-            placeholder="me@example.com"
-            required
-          />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-100 p-4">
+      <div className="w-full max-w-md bg-white/80 backdrop-blur shadow-xl rounded-2xl p-8 border border-gray-100">
+        <div className="flex flex-col items-center mb-6">
+          <img src={logo} alt="Banco Francés" className="h-16 mb-2" />
+          <h2 className="text-2xl font-bold text-gray-800">Iniciar sesión</h2>
+          <p className="text-sm text-gray-500">Accedé a tu panel</p>
         </div>
 
-        <div className="login-field">
-          <label htmlFor="password">Contraseña</label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            placeholder="••••••••"
-            required
-          />
-        </div>
+        {error && (
+          <div className="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-2 text-sm text-red-700">
+            {error}
+          </div>
+        )}
 
-        <button type="submit" className="login-button">
-          Ingresar
-        </button>
-      </form>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+              Usuario (email)
+            </label>
+            <input
+              id="username"
+              type="email"
+              value={username}
+              onChange={e => setUsername(e.target.value)}
+              placeholder="me@example.com"
+              required
+              className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+            />
+          </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                Contraseña
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              />
+            </div>
+
+          <button
+            type="submit"
+            className="w-full rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 shadow focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition"
+          >
+            Ingresar
+          </button>
+        </form>
+
+        <p className="mt-6 text-center text-xs text-gray-400">
+          © {new Date().getFullYear()} Banco Francés. Todos los derechos reservados.
+        </p>
+      </div>
     </div>
   );
 }

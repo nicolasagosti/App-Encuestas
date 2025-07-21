@@ -8,12 +8,10 @@ import Dashboard from './Dashboard';
 import PreguntaForm from './components/PreguntaForm';
 import EncuestaForm from './components/EncuestaForm';
 import GrupoForm from './components/GrupoForm';
-import ClienteForm from './components/ClienteForm';
 import AsignarGruposAClienteForm from './components/AsignarGruposAClienteForm';
 import AsignarClientesAGrupoForm from './components/AsignarClientesAGrupoForm';
 import ResponderEncuestasForm from './components/ResponderEncuestasForm';
 import EstadisticasGrupo from './components/EstadisticasGrupo';
-import './Styles/App.css';
 
 function AdminRoute({ children }) {
   const { isLogged, userRole } = useAuth();
@@ -34,40 +32,53 @@ function EncuestasPanel() {
   const [vistaActiva, setVistaActiva] = useState('admin');
 
   return (
-    <div className="app-container">
-      <header className="app-header">
-        <h1 className="app-title">Encuestas de Satisfacción</h1>
-      </header>
+    <div className="min-h-screen bg-gray-100">
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-extrabold text-gray-800">
+              Encuestas de Satisfacción
+            </h1>
+            <p className="text-sm text-gray-500">Conectado como <span className="font-medium text-gray-700">{userEmail}</span></p>
+          </div>
+          <div className="flex space-x-3">
+            <button
+              onClick={() => setVistaActiva('admin')}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+                vistaActiva === 'admin'
+                  ? 'bg-blue-600 text-white shadow'
+                  : 'bg-white text-blue-600 border border-blue-500 hover:bg-blue-50'
+              }`}
+            >
+              🛠️ Panel Admin
+            </button>
+            <button
+              onClick={() => setVistaActiva('responder')}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+                vistaActiva === 'responder'
+                  ? 'bg-green-600 text-white shadow'
+                  : 'bg-white text-green-600 border border-green-500 hover:bg-green-50'
+              }`}
+            >
+              ✅ Responder Encuestas
+            </button>
+          </div>
+        </header>
 
-      <div className="app-toggle">
-        <button
-          onClick={() => setVistaActiva('admin')}
-          className={`toggle-btn ${vistaActiva === 'admin' ? 'active' : ''}`}
-        >
-          🛠️ Panel Admin
-        </button>
-        <button
-          onClick={() => setVistaActiva('responder')}
-          className={`toggle-btn ${vistaActiva === 'responder' ? 'active' : ''}`}
-        >
-          ✅ Responder Encuestas
-        </button>
+        {vistaActiva === 'admin' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="bg-white rounded-xl shadow p-6 border border-gray-100"><PreguntaForm /></div>
+            <div className="bg-white rounded-xl shadow p-6 border border-gray-100"><EncuestaForm /></div>
+            <div className="bg-white rounded-xl shadow p-6 border border-gray-100"><GrupoForm /></div>
+            <div className="bg-white rounded-xl shadow p-6 border border-gray-100"><AsignarGruposAClienteForm /></div>
+            <div className="bg-white rounded-xl shadow p-6 border border-gray-100"><AsignarClientesAGrupoForm /></div>
+          </div>
+        ) : (
+          <div className="bg-white rounded-xl shadow p-6 border border-gray-100">
+            <ResponderEncuestasForm />
+          </div>
+        )}
       </div>
-
-      {vistaActiva === 'admin' ? (
-        <div className="app-grid">
-          <div className="card"><PreguntaForm /></div>
-          <div className="card"><EncuestaForm /></div>
-          <div className="card"><GrupoForm /></div>
-          <div className="card"><ClienteForm /></div>
-          <div className="card"><AsignarGruposAClienteForm /></div>
-          <div className="card"><AsignarClientesAGrupoForm /></div>
-        </div>
-      ) : (
-        <div className="card responder-card">
-          <ResponderEncuestasForm />
-        </div>
-      )}
     </div>
   );
 }
@@ -84,7 +95,7 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
 
-          {/* Sólo USER puede acceder al Dashboard */}
+          {/* Sólo USER */}
           <Route
             path="/dashboard"
             element={
@@ -94,7 +105,7 @@ export default function App() {
             }
           />
 
-          {/* Sólo ADMIN puede acceder al panel de encuestas */}
+          {/* Sólo ADMIN */}
           <Route
             path="/encuestas"
             element={
@@ -104,8 +115,8 @@ export default function App() {
             }
           />
 
-          <Route path="*" element={<Navigate to="/" replace />} />
           <Route path="/estadisticas" element={<EstadisticasGrupo />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

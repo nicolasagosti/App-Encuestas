@@ -45,10 +45,7 @@ public class EncuestaService implements IEncuestaService {
                 .orElseThrow(() -> new ResourceNotFoundException("Encuesta no encontrada con id " + id));
     }
 
-    @Override
-    public List<EncuestaOutputDTO> obtenerEncuestasDeCliente(Long clienteId) {
-        List<Encuesta> encuestas = encuestaRepository.findDistinctByGruposClientesId(clienteId);
-
+    public List<EncuestaOutputDTO> getEncuestaOutputDTOS(List<Encuesta> encuestas) {
         return encuestas.stream().map(encuesta -> {
             List<PreguntaOutputDTO> preguntas = encuesta.getPreguntas().stream()
                     .map(p -> new PreguntaOutputDTO(p.getId(), p.getTexto()))
@@ -63,7 +60,18 @@ public class EncuestaService implements IEncuestaService {
     }
 
     @Override
-    public List<Encuesta> findAll() {
-        return encuestaRepository.findAll();
+    public List<EncuestaOutputDTO> obtenerEncuestasDeCliente(Long clienteId) {
+        List<Encuesta> encuestas = encuestaRepository.findDistinctByGruposClientesId(clienteId);
+
+        return getEncuestaOutputDTOS(encuestas);
     }
+
+    @Override
+    public List<EncuestaOutputDTO> findAll() {
+       List<Encuesta> encuestas = encuestaRepository.findAll();
+
+        return getEncuestaOutputDTOS(encuestas);
+    }
+
+
 }

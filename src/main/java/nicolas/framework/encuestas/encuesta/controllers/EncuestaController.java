@@ -1,8 +1,10 @@
 // src/main/java/nicolas/framework/encuestas/encuesta/controllers/EncuestaController.java
 package nicolas.framework.encuestas.encuesta.controllers;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import nicolas.framework.encuestas.encuesta.dtos.EncuestaInputDTO;
+import nicolas.framework.encuestas.encuesta.dtos.EncuestaOutputDTO;
 import nicolas.framework.encuestas.encuesta.dtos.PreguntaInputDTO;
 import nicolas.framework.encuestas.encuesta.models.entities.Encuesta;
 import nicolas.framework.encuestas.encuesta.models.entities.Pregunta;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "Encuestas")
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/encuestas")
@@ -54,14 +57,14 @@ public class EncuestaController {
     }
 
     @PostMapping
-    public ResponseEntity<Encuesta> agregarEncuesta(@Valid @RequestBody EncuestaInputDTO encuesta) {
+    public ResponseEntity<HttpStatus> agregarEncuesta(@Valid @RequestBody EncuestaInputDTO encuesta) {
         this.encuestaService.crearEncuesta(encuesta);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @GetMapping
-    public ResponseEntity<List<Encuesta>> getEncuestas() {
-        List<Encuesta> encuestas = encuestaService.findAll();
+    public ResponseEntity<List<EncuestaOutputDTO>> getEncuestas() {
+        List<EncuestaOutputDTO> encuestas = encuestaService.findAll();
         return ResponseEntity.ok(encuestas);
     }
 }

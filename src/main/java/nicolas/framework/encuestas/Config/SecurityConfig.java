@@ -39,16 +39,15 @@ public class SecurityConfig {
                         sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        // Cualquier preflight
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        // Rutas de login/register
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/**").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
+                        .requestMatchers("/error").permitAll()
+                        .requestMatchers("/clientes/**").hasAnyAuthority("USER", "ADMIN")
                         .requestMatchers("/encuestas/**").hasAuthority("ADMIN")
-                        // acceso a /clientes solo para usuarios logueados (USER o ADMIN)
-                        .requestMatchers(HttpMethod.GET, "/clientes").hasAnyAuthority("USER","ADMIN")
                         .anyRequest().authenticated()
                 )
+
                 .authenticationProvider(authProvider)
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 

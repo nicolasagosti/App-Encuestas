@@ -1,6 +1,7 @@
 // src/main/java/nicolas/framework/encuestas/encuesta/controllers/ClienteController.java
 package nicolas.framework.encuestas.encuesta.controllers;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import nicolas.framework.encuestas.encuesta.dtos.ClienteInputDTO;
 import nicolas.framework.encuestas.encuesta.dtos.ClienteOutputDTO;
 import nicolas.framework.encuestas.encuesta.dtos.EncuestaOutputDTO;
@@ -13,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+
+@Tag(name = "Clientes")
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/clientes")

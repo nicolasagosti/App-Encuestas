@@ -11,6 +11,7 @@ import java.util.Optional;
 public interface IEncuestaService {
     void crearEncuesta(EncuestaInputDTO encuesta);
     Encuesta getEncuestaById(Long id);
+    public List<EncuestaOutputDTO> getEncuestaOutputDTOS(List<Encuesta> encuestas);
     public List<EncuestaOutputDTO> obtenerEncuestasDeCliente(Long clienteId);
-    List<Encuesta> findAll();
+    List<EncuestaOutputDTO> findAll();
 }

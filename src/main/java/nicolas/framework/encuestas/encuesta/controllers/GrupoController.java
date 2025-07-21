@@ -1,5 +1,6 @@
 package nicolas.framework.encuestas.encuesta.controllers;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import nicolas.framework.encuestas.encuesta.dtos.GrupoInputDTO;
 import nicolas.framework.encuestas.encuesta.dtos.GrupoOutputDTO;
 import nicolas.framework.encuestas.encuesta.services.IGrupoService;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "Grupos")
 @RestController
 @RequestMapping("/grupos")
 public class GrupoController {

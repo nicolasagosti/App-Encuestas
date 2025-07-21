@@ -12,6 +12,7 @@ import ClienteForm from './components/ClienteForm';
 import AsignarGruposAClienteForm from './components/AsignarGruposAClienteForm';
 import AsignarClientesAGrupoForm from './components/AsignarClientesAGrupoForm';
 import ResponderEncuestasForm from './components/ResponderEncuestasForm';
+import EstadisticasGrupo from './components/EstadisticasGrupo';
 import './Styles/App.css';
 
 function AdminRoute({ children }) {
@@ -104,6 +105,7 @@ export default function App() {
           />
 
           <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="/estadisticas" element={<EstadisticasGrupo />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

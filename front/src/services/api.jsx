@@ -81,4 +81,10 @@ export function responderEncuesta(clienteId, encuestaId, respuestas) {
   );
 }
 
+//Estadisticas
+
+export const obtenerPromedioGrupo = async (grupoId) => {
+  return api.get(`/estadisticas/${grupoId}`);
+};
+
 export default api;

@@ -15,9 +15,6 @@ public class GrupoService implements IGrupoService{
     @Autowired
     private GrupoRepository grupoRepository;
 
-    @Autowired
-    private UserRepository clienteRepository;
-
     @Override
     public List<GrupoOutputDTO> todosLosGrupos() {
 

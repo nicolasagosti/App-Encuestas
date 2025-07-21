@@ -19,7 +19,11 @@ export default function Encuestas() {
         <h1 className="encuestas-title">
           {vistaActiva === 'admin' ? 'Panel de Administración' : 'Responder Encuestas'}
         </h1>
+        <Link to="/estadisticas" className="dashboard-button">
+                Ver estadísticas por grupo
+            </Link>
       </header>
+
 
       <main className="encuestas-main">
         {vistaActiva === 'admin' ? (
@@ -27,6 +31,7 @@ export default function Encuestas() {
             <section className="encuestas-card">
               <PreguntaForm />
             </section>
+            
             <section className="encuestas-card">
               <EncuestaForm />
             </section>

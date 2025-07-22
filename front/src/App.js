@@ -115,7 +115,12 @@ export default function App() {
             }
           />
 
-          <Route path="/estadisticas" element={<EstadisticasGrupo />} />
+          <Route path="/estadisticas" element={
+              <AdminRoute>
+            <EstadisticasGrupo />
+            </AdminRoute>
+            } />
+            
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

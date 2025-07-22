@@ -62,4 +62,32 @@ public class Respuesta {
     public void setJustificacion(String justificacion) {
         this.justificacion = justificacion;
     }
+
+    public Long getId() {
+        return id;
+    }
+
+    public User getCliente() {
+        return cliente;
+    }
+
+    public Grupo getGrupo() {
+        return grupo;
+    }
+
+    public Pregunta getPregunta() {
+        return pregunta;
+    }
+
+    public int getPuntaje() {
+        return puntaje;
+    }
+
+    public String getJustificacion() {
+        return justificacion;
+    }
+
+    public LocalDate getFechaRespuesta() {
+        return fechaRespuesta;
+    }
 }

@@ -31,11 +31,12 @@ public class GrupoService implements IGrupoService{
         return grupoRepository.findAllById(ids);
     }
 
+
     @Override
-    public void registrarGrupo(GrupoInputDTO dto) {
+    public Grupo registrarGrupo(GrupoInputDTO dto) {
 
         Grupo grupo = new Grupo(dto.getDescripcion(), dto.getCantidadDeColaboradores());
-        grupoRepository.save(grupo);
+        return grupoRepository.save(grupo);
     }
 
 }

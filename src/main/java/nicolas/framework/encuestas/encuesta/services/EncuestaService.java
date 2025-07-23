@@ -9,10 +9,13 @@ import nicolas.framework.encuestas.encuesta.models.entities.Encuesta;
 import nicolas.framework.encuestas.encuesta.models.entities.Grupo;
 import nicolas.framework.encuestas.encuesta.models.entities.Pregunta;
 import nicolas.framework.encuestas.encuesta.models.repositories.EncuestaRepository;
+import nicolas.framework.encuestas.encuesta.models.repositories.RespuestaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -29,6 +32,8 @@ public class EncuestaService implements IEncuestaService {
 
     @Autowired
     private IGrupoService grupoService;
+    @Autowired
+    private RespuestaRepository respuestaRepository;
 
     @Override
     public void crearEncuesta(EncuestaInputDTO encuestaDTO) {
@@ -60,11 +65,40 @@ public class EncuestaService implements IEncuestaService {
     }
 
     @Override
-    public List<EncuestaOutputDTO> obtenerEncuestasDeCliente(Long clienteId) {
-        List<Encuesta> encuestas = encuestaRepository.findDistinctByGruposClientesId(clienteId);
+    public List<EncuestaOutputDTO> obtenerEncuestasPendientes(Long clienteId) {
 
-        return getEncuestaOutputDTOS(encuestas);
+        List<Encuesta> todasLasEncuestas = encuestaRepository.findDistinctByGruposClientesId(clienteId);
+        List<Encuesta> encuestasPendientes = new ArrayList<>();
+
+        for (Encuesta encuesta : todasLasEncuestas) {
+            Grupo grupo = encuesta.getGrupos().stream()
+                    .filter(g -> g.getClientes().stream().anyMatch(c -> c.getId().equals(clienteId)))
+                    .findFirst()
+                    .orElse(null);
+
+            if (grupo == null) continue;
+
+            boolean respondioTodas = true;
+            for (Pregunta pregunta : encuesta.getPreguntas()) {
+                boolean existeRespuesta = respuestaRepository
+                        .existsByCliente_IdAndGrupo_IdAndPregunta_Id(clienteId, grupo.getId(), pregunta.getId());
+
+
+                if (!existeRespuesta) {
+                    respondioTodas = false;
+                    break;
+                }
+            }
+            if (!respondioTodas) {
+                encuestasPendientes.add(encuesta);
+            }
+
+        }
+
+        return getEncuestaOutputDTOS(encuestasPendientes);
     }
+
+
 
     @Override
     public List<EncuestaOutputDTO> findAll() {

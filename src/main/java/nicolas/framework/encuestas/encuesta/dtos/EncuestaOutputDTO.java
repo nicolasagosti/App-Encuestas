@@ -1,23 +1,28 @@
 package nicolas.framework.encuestas.encuesta.dtos;
 
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
 public class EncuestaOutputDTO {
 
     private Long id;
-    private String periodo;
+    private LocalDateTime fechaInicio;
+    private LocalDateTime fechaFin;
     private List<PreguntaOutputDTO> preguntas;
     private List<GrupoOutputDTO> grupos;
 
-    public EncuestaOutputDTO(Long id, String periodo, List<PreguntaOutputDTO> preguntas, List<GrupoOutputDTO> grupos) {
-        this.id = id;
-        this.periodo = periodo;
+
+    public EncuestaOutputDTO(LocalDateTime fechaInicio, LocalDateTime fechaFin, List<PreguntaOutputDTO> preguntas, Long id, List<GrupoOutputDTO> grupos) {
+        this.fechaInicio = fechaInicio;
+        this.fechaFin = fechaFin;
         this.preguntas = preguntas;
+        this.id = id;
         this.grupos = grupos;
     }
 
@@ -32,13 +37,7 @@ public class EncuestaOutputDTO {
         this.id = id;
     }
 
-    public String getPeriodo() {
-        return periodo;
-    }
 
-    public void setPeriodo(String periodo) {
-        this.periodo = periodo;
-    }
 
     public List<PreguntaOutputDTO> getPreguntas() {
         return preguntas;

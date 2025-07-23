@@ -3,11 +3,12 @@ import { useState, useEffect } from 'react';
 import { obtenerPreguntas, crearEncuesta, obtenerGrupos } from '../services/api';
 
 export default function EncuestaForm() {
-  const [periodo, setPeriodo] = useState('');
   const [preguntasDisponibles, setPreguntasDisponibles] = useState([]);
   const [gruposDisponibles, setGruposDisponibles] = useState([]);
   const [preguntaIdsSeleccionadas, setPreguntaIdsSeleccionadas] = useState([]);
   const [grupoIdsSeleccionados, setGrupoIdsSeleccionados] = useState([]);
+  const [fechaInicio, setFechaInicio] = useState('');
+  const [fechaFin, setFechaFin] = useState('');
   const [mensaje, setMensaje] = useState('');
 
   useEffect(() => {
@@ -22,11 +23,17 @@ export default function EncuestaForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await crearEncuesta({ periodo, preguntas: preguntaIdsSeleccionadas, grupos: grupoIdsSeleccionados });
+      await crearEncuesta({
+        grupos: grupoIdsSeleccionados,
+        preguntas: preguntaIdsSeleccionadas,
+        fechaInicio,
+        fechaFin
+      });
       setMensaje('✅ Encuesta creada correctamente');
-      setPeriodo('');
       setPreguntaIdsSeleccionadas([]);
       setGrupoIdsSeleccionados([]);
+      setFechaInicio('');
+      setFechaFin('');
     } catch {
       setMensaje('❌ Error al crear encuesta');
     }
@@ -34,19 +41,27 @@ export default function EncuestaForm() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-center text-2xl font-bold text-gray-800">
-        Crear Encuesta
-      </h2>
+      <h2 className="text-center text-2xl font-bold text-gray-800">Crear Encuesta</h2>
 
       <form onSubmit={handleSubmit} className="space-y-8">
-        {/* Periodo */}
-        <div className="flex flex-col md:flex-row gap-4 md:items-end">
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Periodo</label>
+        {/* Fechas */}
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de inicio</label>
             <input
-              value={periodo}
-              onChange={e => setPeriodo(e.target.value)}
-              placeholder="Ej: Q3-2025"
+              type="datetime-local"
+              value={fechaInicio}
+              onChange={e => setFechaInicio(e.target.value)}
+              required
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de fin</label>
+            <input
+              type="datetime-local"
+              value={fechaFin}
+              onChange={e => setFechaFin(e.target.value)}
               required
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />

@@ -57,7 +57,7 @@ public class EncuestaController {
     }
 
     @PostMapping
-    public ResponseEntity<HttpStatus> agregarEncuesta(@Valid @RequestBody EncuestaInputDTO encuesta) {
+    public ResponseEntity<HttpStatus> agregarEncuesta(@RequestBody EncuestaInputDTO encuesta) {
         this.encuestaService.crearEncuesta(encuesta);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }

@@ -39,6 +39,7 @@ export function eliminarPregunta(id) {
 export function crearEncuesta(data) {
   return api.post('/encuestas', data);
 }
+
 export function obtenerEncuestas() {
   return api.get('/encuestas');
 }

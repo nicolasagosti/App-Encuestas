@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -12,13 +13,13 @@ import java.util.List;
 public class EncuestaOutputDTO {
 
     private Long id;
-    private LocalDateTime fechaInicio;
-    private LocalDateTime fechaFin;
+    private LocalDate fechaInicio;
+    private LocalDate fechaFin;
     private List<PreguntaOutputDTO> preguntas;
     private List<GrupoOutputDTO> grupos;
 
 
-    public EncuestaOutputDTO(LocalDateTime fechaInicio, LocalDateTime fechaFin, List<PreguntaOutputDTO> preguntas, Long id, List<GrupoOutputDTO> grupos) {
+    public EncuestaOutputDTO(LocalDate fechaInicio, LocalDate fechaFin, List<PreguntaOutputDTO> preguntas, Long id, List<GrupoOutputDTO> grupos) {
         this.fechaInicio = fechaInicio;
         this.fechaFin = fechaFin;
         this.preguntas = preguntas;

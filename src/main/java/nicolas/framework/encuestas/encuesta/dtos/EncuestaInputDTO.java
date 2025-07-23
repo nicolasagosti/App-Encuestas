@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -20,12 +21,12 @@ public class EncuestaInputDTO {
 
     @NotNull(message = "El campo 'fecha de inicio' es obligatorio")
     @FutureOrPresent(message = "La fecha de inicio debe ser hoy o en el futuro")
-    private LocalDateTime fechaInicio;
+    private LocalDate fechaInicio;
 
 
     @NotNull(message = "El campo 'fecha de fin' es obligatorio")
     @FutureOrPresent(message = "La fecha de fin debe ser en el futuro")
-    private LocalDateTime fechaFin;
+    private LocalDate fechaFin;
 
 
     public List<Long> getGrupos() {
@@ -36,11 +37,11 @@ public class EncuestaInputDTO {
         return preguntas;
     }
 
-    public @NotBlank(message = "El campo 'fecha de inicio' es obligatorio") LocalDateTime getFechaInicio() {
+    public @NotBlank(message = "El campo 'fecha de inicio' es obligatorio") LocalDate getFechaInicio() {
         return fechaInicio;
     }
 
-    public @NotBlank(message = "El campo 'fecha de fin' es obligatorio") LocalDateTime getFechaFin() {
+    public @NotBlank(message = "El campo 'fecha de fin' es obligatorio") LocalDate getFechaFin() {
         return fechaFin;
     }
 }

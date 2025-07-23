@@ -11,6 +11,7 @@ import java.util.List;
 
 @Entity
 @Data
+@NoArgsConstructor
 public class Encuesta {
 
     @Id
@@ -59,6 +60,5 @@ public class Encuesta {
         return grupos;
     }
 
-    public Encuesta() {
-    }
+
 }

@@ -3,6 +3,7 @@ package nicolas.framework.encuestas.encuesta.controllers;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import nicolas.framework.encuestas.encuesta.dtos.GrupoInputDTO;
 import nicolas.framework.encuestas.encuesta.dtos.GrupoOutputDTO;
+import nicolas.framework.encuestas.encuesta.models.entities.Grupo;
 import nicolas.framework.encuestas.encuesta.services.IGrupoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,10 +21,16 @@ public class GrupoController {
     private IGrupoService grupoService;
 
     @PostMapping
-    public ResponseEntity<HttpStatus> agregarGrupo(@RequestBody GrupoInputDTO grupo){
+    public ResponseEntity<Grupo> crearGrupo(
+            @RequestBody GrupoInputDTO dto
+    ) {
+        Grupo creado = grupoService.registrarGrupo(dto);
 
-        grupoService.registrarGrupo(grupo);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        System.out.println(creado);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(creado);
     }
 
     @GetMapping

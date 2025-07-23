@@ -12,6 +12,7 @@ import AsignarGruposAClienteForm from './components/AsignarGruposAClienteForm';
 import AsignarClientesAGrupoForm from './components/AsignarClientesAGrupoForm';
 import ResponderEncuestasForm from './components/ResponderEncuestasForm';
 import EstadisticasGrupo from './components/EstadisticasGrupo';
+import CrearGrupoYAsignar from './components/CrearGrupoYAsignar'
 
 function AdminRoute({ children }) {
   const { isLogged, userRole } = useAuth();
@@ -72,6 +73,7 @@ function EncuestasPanel() {
             <div className="bg-white rounded-xl shadow p-6 border border-gray-100"><GrupoForm /></div>
             <div className="bg-white rounded-xl shadow p-6 border border-gray-100"><AsignarGruposAClienteForm /></div>
             <div className="bg-white rounded-xl shadow p-6 border border-gray-100"><AsignarClientesAGrupoForm /></div>
+            <div className="bg-white rounded-xl shadow p-6 border border-gray-100"><CrearGrupoYAsignar /></div>
           </div>
         ) : (
           <div className="bg-white rounded-xl shadow p-6 border border-gray-100">

@@ -13,5 +13,5 @@ public interface IGrupoService {
 
     public List<GrupoOutputDTO> todosLosGrupos();
     public List<Grupo> buscarGrupos(List<Long> ids);
-    public void registrarGrupo(GrupoInputDTO grupo);
+    public Grupo registrarGrupo(GrupoInputDTO grupo);
 }

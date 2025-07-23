@@ -46,7 +46,7 @@ export default function PreguntaForm() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold text-gray-800">
+      <h2 className="text-center text-xl font-bold text-gray-800">
         {editId ? 'Editar Pregunta' : 'Agregar Pregunta'}
       </h2>
 

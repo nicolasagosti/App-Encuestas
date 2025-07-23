@@ -5,13 +5,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 
 @Entity
 @Data
-@NoArgsConstructor
 public class Encuesta {
 
     @Id
@@ -19,7 +19,10 @@ public class Encuesta {
     private Long id;
 
     @Column
-    private String periodo;
+    private LocalDateTime fechaInicio;
+
+    @Column
+    private LocalDateTime fechaFin;
 
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(
@@ -37,20 +40,17 @@ public class Encuesta {
     )
     private List<Grupo> grupos = new ArrayList<>();
 
-    public Encuesta(String periodo, List<Grupo> grupos, List<Pregunta> preguntas) {
-
-        this.periodo = periodo;
+    public Encuesta(LocalDateTime fechaInicio, LocalDateTime fechaFin, List<Pregunta> preguntas, List<Grupo> grupos) {
+        this.fechaInicio = fechaInicio;
+        this.fechaFin = fechaFin;
+        this.preguntas = preguntas;
         this.grupos = grupos;
-        this.preguntas.addAll(preguntas);
     }
 
     public Long getId() {
         return id;
     }
 
-    public String getPeriodo() {
-        return periodo;
-    }
 
     public List<Pregunta> getPreguntas() {
         return preguntas;
@@ -60,5 +60,22 @@ public class Encuesta {
         return grupos;
     }
 
+    public Encuesta() {
+    }
 
+    public LocalDateTime getFechaInicio() {
+        return fechaInicio;
+    }
+
+    public void setFechaInicio(LocalDateTime fechaInicio) {
+        this.fechaInicio = fechaInicio;
+    }
+
+    public LocalDateTime getFechaFin() {
+        return fechaFin;
+    }
+
+    public void setFechaFin(LocalDateTime fechaFin) {
+        this.fechaFin = fechaFin;
+    }
 }

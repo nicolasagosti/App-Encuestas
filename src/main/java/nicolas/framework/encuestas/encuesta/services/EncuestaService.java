@@ -40,7 +40,7 @@ public class EncuestaService implements IEncuestaService {
 
         List<Pregunta> preguntas = preguntaService.buscarPreguntasPorId(encuestaDTO.getPreguntas());
         List<Grupo> grupos = grupoService.buscarGrupos(encuestaDTO.getGrupos());
-        Encuesta encuesta = new Encuesta(encuestaDTO.getPeriodo(), grupos, preguntas);
+        Encuesta encuesta = new Encuesta(encuestaDTO.getFechaInicio(),encuestaDTO.getFechaFin(), preguntas,grupos);
         encuestaRepository.save(encuesta);
     }
 
@@ -60,7 +60,7 @@ public class EncuestaService implements IEncuestaService {
                     .map(g -> new GrupoOutputDTO(g.getId(), g.getDescripcion(), g.getCantidadDeColaboradores()))
                     .toList();
 
-            return new EncuestaOutputDTO(encuesta.getId(), encuesta.getPeriodo(), preguntas, grupos);
+            return new EncuestaOutputDTO(encuesta.getFechaInicio(),encuesta.getFechaFin(), preguntas, encuesta.getId(), grupos);
         }).toList();
     }
 

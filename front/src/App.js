@@ -68,7 +68,6 @@ function EncuestasPanel() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div className="bg-white rounded-xl shadow p-6 border border-gray-100"><PreguntaForm /></div>
             <div className="bg-white rounded-xl shadow p-6 border border-gray-100"><EncuestaForm /></div>
-            <div className="bg-white rounded-xl shadow p-6 border border-gray-100"><GrupoForm /></div>
             <div className="bg-white rounded-xl shadow p-6 border border-gray-100"><CrearGrupoYAsignar /></div>
           </div>
         ) : (

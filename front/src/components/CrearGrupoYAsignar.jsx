@@ -47,7 +47,7 @@ export default function CrearGrupoYAsignarForm() {
         await asignarClientesAGrupo(nuevoGrupoId, clienteIdsSeleccionados);
       }
 
-      setMensaje('✅ Grupo creado y clientes asignados correctamente');
+      setMensaje('✅ Grupo creado correctamente');
       // Limpia formulario
       setDescripcion('');
       setColaboradores(1);
@@ -60,7 +60,7 @@ export default function CrearGrupoYAsignarForm() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-bold text-gray-800">Crear Grupo y Asignar Clientes</h2>
+      <h2 className="text-xl font-bold text-gray-800 text-center">Crear Grupo</h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Parte de Grupo */}

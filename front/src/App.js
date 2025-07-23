@@ -8,8 +8,6 @@ import Dashboard from './Dashboard';
 import PreguntaForm from './components/PreguntaForm';
 import EncuestaForm from './components/EncuestaForm';
 import GrupoForm from './components/GrupoForm';
-import AsignarGruposAClienteForm from './components/AsignarGruposAClienteForm';
-import AsignarClientesAGrupoForm from './components/AsignarClientesAGrupoForm';
 import ResponderEncuestasForm from './components/ResponderEncuestasForm';
 import EstadisticasGrupo from './components/EstadisticasGrupo';
 import CrearGrupoYAsignar from './components/CrearGrupoYAsignar'
@@ -70,9 +68,6 @@ function EncuestasPanel() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div className="bg-white rounded-xl shadow p-6 border border-gray-100"><PreguntaForm /></div>
             <div className="bg-white rounded-xl shadow p-6 border border-gray-100"><EncuestaForm /></div>
-            <div className="bg-white rounded-xl shadow p-6 border border-gray-100"><GrupoForm /></div>
-            <div className="bg-white rounded-xl shadow p-6 border border-gray-100"><AsignarGruposAClienteForm /></div>
-            <div className="bg-white rounded-xl shadow p-6 border border-gray-100"><AsignarClientesAGrupoForm /></div>
             <div className="bg-white rounded-xl shadow p-6 border border-gray-100"><CrearGrupoYAsignar /></div>
           </div>
         ) : (

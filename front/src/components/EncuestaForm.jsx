@@ -22,11 +22,7 @@ export default function EncuestaForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await crearEncuesta({
-        periodo,
-        preguntas: preguntaIdsSeleccionadas,
-        grupos: grupoIdsSeleccionados
-      });
+      await crearEncuesta({ periodo, preguntas: preguntaIdsSeleccionadas, grupos: grupoIdsSeleccionados });
       setMensaje('✅ Encuesta creada correctamente');
       setPeriodo('');
       setPreguntaIdsSeleccionadas([]);
@@ -38,8 +34,7 @@ export default function EncuestaForm() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-        <span className="inline-block w-2 h-2 bg-indigo-600 rounded-full" />
+      <h2 className="text-center text-2xl font-bold text-gray-800">
         Crear Encuesta
       </h2>
 
@@ -47,9 +42,7 @@ export default function EncuestaForm() {
         {/* Periodo */}
         <div className="flex flex-col md:flex-row gap-4 md:items-end">
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Periodo
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Periodo</label>
             <input
               value={periodo}
               onChange={e => setPeriodo(e.target.value)}
@@ -58,12 +51,6 @@ export default function EncuestaForm() {
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
-          <button
-            type="submit"
-            className="rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-2 transition"
-          >
-            Crear encuesta
-          </button>
         </div>
 
         {/* Preguntas y grupos */}
@@ -76,9 +63,7 @@ export default function EncuestaForm() {
                   <input
                     type="checkbox"
                     checked={preguntaIdsSeleccionadas.includes(p.id)}
-                    onChange={() =>
-                      handleCheckbox(p.id, preguntaIdsSeleccionadas, setPreguntaIdsSeleccionadas)
-                    }
+                    onChange={() => handleCheckbox(p.id, preguntaIdsSeleccionadas, setPreguntaIdsSeleccionadas)}
                     className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                   />
                   <span>{p.texto}</span>
@@ -98,16 +83,12 @@ export default function EncuestaForm() {
                   <input
                     type="checkbox"
                     checked={grupoIdsSeleccionados.includes(g.id)}
-                    onChange={() =>
-                      handleCheckbox(g.id, grupoIdsSeleccionados, setGrupoIdsSeleccionados)
-                    }
+                    onChange={() => handleCheckbox(g.id, grupoIdsSeleccionados, setGrupoIdsSeleccionados)}
                     className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
                   />
                   <span>
                     {g.descripcion}{' '}
-                    <span className="text-xs text-gray-500">
-                      ({g.cantidadDeColaboradores})
-                    </span>
+                    <span className="text-xs text-gray-500">({g.cantidadDeColaboradores})</span>
                   </span>
                 </label>
               ))}
@@ -117,14 +98,20 @@ export default function EncuestaForm() {
             </div>
           </div>
         </div>
+
+        {/* Botón igual al de CrearGrupoYAsignarForm */}
+        <div>
+          <button
+            type="submit"
+            className="w-full rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 py-2 transition"
+          >
+            Crear encuesta
+          </button>
+        </div>
       </form>
 
       {mensaje && (
-        <p
-          className={`text-sm ${
-            mensaje.startsWith('✅') ? 'text-green-600' : 'text-red-600'
-          }`}
-        >
+        <p className={`text-sm ${mensaje.startsWith('✅') ? 'text-green-600' : 'text-red-600'}`}>
           {mensaje}
         </p>
       )}

@@ -49,7 +49,7 @@ export default function EncuestaForm() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de inicio</label>
             <input
-              type="datetime-local"
+              type="date"
               value={fechaInicio}
               onChange={e => setFechaInicio(e.target.value)}
               required
@@ -59,7 +59,7 @@ export default function EncuestaForm() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de fin</label>
             <input
-              type="datetime-local"
+              type="date"
               value={fechaFin}
               onChange={e => setFechaFin(e.target.value)}
               required

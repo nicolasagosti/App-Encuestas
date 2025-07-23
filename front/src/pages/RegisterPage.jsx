@@ -1,8 +1,8 @@
 // src/RegisterPage.jsx
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import api from './services/api';
-import { useAuth } from './AuthContext';
+import api from '../services/api';
+import { useAuth } from '../AuthContext';
 import logo from './bbva-2019.svg';
 
 export default function RegisterPage() {

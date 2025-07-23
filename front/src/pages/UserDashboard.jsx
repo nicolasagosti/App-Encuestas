@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useAuth } from './AuthContext';
+import { useAuth } from '../AuthContext';
 import {
   obtenerEncuestasDeCliente,
   responderEncuesta,
   obtenerIdDeCliente
-} from './services/api';
+} from '../services/api';
 
 export default function ResponderEncuestaForm() {
   const [clienteId, setClienteId]     = useState(null);

@@ -1,9 +1,10 @@
 // src/LoginPage.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from './services/api';
-import { useAuth } from './AuthContext';
+import api from '../services/api';
+import { useAuth } from '../AuthContext';
 import logo from './bbva-2019.svg';
+import { Link } from 'react-router-dom';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -30,8 +31,12 @@ export default function LoginPage() {
       );
       const role = (isAdminClaim || isAdminInValues) ? 'ADMIN' : 'USER';
 
-      login(username, role);
-      navigate(role === 'ADMIN' ? '/encuestas' : '/dashboard');
+      login(username, role, () => {
+  console.log('Role al momento del login:', role);
+  console.log('Role guardado en localStorage:', localStorage.getItem('userRole'));
+  navigate(role === 'ADMIN' ? '/admin' : '/dashboard');
+});
+
     } catch (err) {
       if (err.response) {
         const status = err.response.status;
@@ -96,6 +101,12 @@ export default function LoginPage() {
             Ingresar
           </button>
         </form>
+        <p className="text-center text-sm text-gray-600 mt-4">
+         ¿No tienes cuenta?{' '}
+          <Link to="/register" className="font-semibold text-blue-600 hover:underline">
+          Regístrate
+        </Link>
+          </p>
 
         <p className="mt-6 text-center text-xs text-gray-400">
           © {new Date().getFullYear()} Banco Francés. Todos los derechos reservados.

@@ -19,5 +19,15 @@ public class GrupoOutputDTO {
     public GrupoOutputDTO() {
     }
 
+    public String getDescripcion() {
+        return descripcion;
+    }
 
+    public Long getId() {
+        return id;
+    }
+
+    public int getCantidadDeColaboradores() {
+        return cantidadDeColaboradores;
+    }
 }

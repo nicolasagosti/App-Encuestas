@@ -18,6 +18,8 @@ public class Pregunta {
     @Column(nullable = false)
     private String texto;
 
+    @Column
+    private boolean visible = true;
 
     public Long getId() {
         return id;
@@ -36,5 +38,13 @@ public class Pregunta {
 
     public void setTexto(String texto) {
         this.texto = texto;
+    }
+
+    public boolean isVisible() {
+        return visible;
+    }
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
     }
 }

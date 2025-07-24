@@ -45,7 +45,6 @@ export default function CrearGrupoYAsignarForm({ onSave }) {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-bold text-gray-800 text-center">Crear Grupo</h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>

@@ -42,9 +42,7 @@ export default function PreguntaForm({ preguntas, onSave }) {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-center text-xl font-bold text-gray-800">
-        {editId ? 'Editar Pregunta' : 'Agregar Pregunta'}
-      </h2>
+
 
       <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 items-start sm:items-end">
         <div className="flex-1 w-full">

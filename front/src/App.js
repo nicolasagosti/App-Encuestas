@@ -32,23 +32,31 @@ function EncuestasPanel() {
   const [preguntas, setPreguntas] = useState([]);
   const [grupos, setGrupos] = useState([]);
 
-  const fetchPreguntas = async () => {
+  // Nuevo estado para el carrusel
+  const [currentStep, setCurrentStep] = useState(0);
+  const steps = [
+    { title: 'Crear Pregunta', content: <PreguntaForm preguntas={preguntas} onSave={fetchPreguntas} /> },
+    { title: 'Crear Grupo',   content: <CrearGrupoYAsignarForm onSave={fetchGrupos} /> },
+    { title: 'Crear Encuesta',content: <EncuestaForm preguntas={preguntas} grupos={grupos} /> },
+  ];
+
+  async function fetchPreguntas() {
     try {
       const res = await obtenerPreguntas();
       setPreguntas(res.data);
     } catch (err) {
       console.error('Error cargando preguntas', err);
     }
-  };
+  }
 
-  const fetchGrupos = async () => {
+  async function fetchGrupos() {
     try {
       const res = await obtenerGrupos();
       setGrupos(res.data);
     } catch (err) {
       console.error('Error cargando grupos', err);
     }
-  };
+  }
 
   useEffect(() => {
     fetchPreguntas();
@@ -58,6 +66,7 @@ function EncuestasPanel() {
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Header */}
         <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-extrabold text-gray-800">Encuestas de Satisfacción</h1>
@@ -89,16 +98,32 @@ function EncuestasPanel() {
           </div>
         </header>
 
+        {/* Contenido */}
         {vistaActiva === 'admin' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="bg-white rounded-xl shadow p-6 border border-gray-100">
-              <PreguntaForm preguntas={preguntas} onSave={fetchPreguntas} />
-            </div>
-            <div className="bg-white rounded-xl shadow p-6 border border-gray-100">
-              <EncuestaForm preguntas={preguntas} grupos={grupos} />
-            </div>
-            <div className="bg-white rounded-xl shadow p-6 border border-gray-100">
-              <CrearGrupoYAsignarForm onSave={fetchGrupos} />
+          <div className="relative bg-white rounded-xl shadow p-6 border border-gray-100">
+            {/* Título dinámico */}
+            <h2 className="text-xl font-semibold mb-4">
+              {steps[currentStep].title}
+            </h2>
+            {/* Componente activo */}
+            {steps[currentStep].content}
+
+            {/* Botones de navegación */}
+            <div className="flex justify-end space-x-2 mt-6">
+              <button
+                onClick={() => setCurrentStep(prev => prev - 1)}
+                disabled={currentStep === 0}
+                className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+              >
+                Atrás
+              </button>
+              <button
+                onClick={() => setCurrentStep(prev => prev + 1)}
+                disabled={currentStep === steps.length - 1}
+                className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
+              >
+                Siguiente
+              </button>
             </div>
           </div>
         ) : (

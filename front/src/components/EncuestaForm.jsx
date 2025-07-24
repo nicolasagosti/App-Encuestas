@@ -29,10 +29,12 @@ export default function EncuestaForm({ preguntas, grupos }) {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-center text-2xl font-bold text-gray-800">Crear Encuesta</h2>
 
       <form onSubmit={handleSubmit} className="space-y-8">
-        <div className="space-y-4">
+
+        {/* Aquí va el grid de dos columnas */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Fecha de inicio */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de inicio</label>
             <input
@@ -43,6 +45,8 @@ export default function EncuestaForm({ preguntas, grupos }) {
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
+
+          {/* Fecha de fin */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de fin</label>
             <input
@@ -55,7 +59,9 @@ export default function EncuestaForm({ preguntas, grupos }) {
           </div>
         </div>
 
+        {/* Resto del formulario */}
         <div className="space-y-8">
+          {/* Selección de preguntas */}
           <div>
             <h4 className="font-semibold text-gray-700 mb-3">Seleccioná preguntas:</h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">
@@ -70,10 +76,13 @@ export default function EncuestaForm({ preguntas, grupos }) {
                   <span>{p.texto}</span>
                 </label>
               ))}
-              {preguntas.length === 0 && (<p className="text-xs text-gray-500 col-span-full">No hay preguntas cargadas.</p>)}
+              {preguntas.length === 0 && (
+                <p className="text-xs text-gray-500 col-span-full">No hay preguntas cargadas.</p>
+              )}
             </div>
           </div>
 
+          {/* Selección de grupos */}
           <div>
             <h4 className="font-semibold text-gray-700 mb-3">Seleccioná grupos:</h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">
@@ -88,11 +97,14 @@ export default function EncuestaForm({ preguntas, grupos }) {
                   <span>{g.descripcion} <span className="text-xs text-gray-500">({g.cantidadDeColaboradores})</span></span>
                 </label>
               ))}
-              {grupos.length === 0 && (<p className="text-xs text-gray-500 col-span-full">No hay grupos cargados.</p>)}
+              {grupos.length === 0 && (
+                <p className="text-xs text-gray-500 col-span-full">No hay grupos cargados.</p>
+              )}
             </div>
           </div>
         </div>
 
+        {/* Botón de submit */}
         <div>
           <button
             type="submit"
@@ -103,7 +115,11 @@ export default function EncuestaForm({ preguntas, grupos }) {
         </div>
       </form>
 
-      {mensaje && (<p className={`text-sm ${mensaje.startsWith('✅') ? 'text-green-600' : 'text-red-600'}`}>{mensaje}</p>)}
+      {mensaje && (
+        <p className={`text-sm ${mensaje.startsWith('✅') ? 'text-green-600' : 'text-red-600'}`}>
+          {mensaje}
+        </p>
+      )}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 // front/src/components/EncuestaForm.jsx
 import { useState, useEffect } from 'react';
-import { obtenerPreguntas, crearEncuesta, obtenerGrupos } from '../services/api';
+import { obtenerPreguntas, crearEncuesta, obtenerGrupos, crearPregunta } from '../services/api';
 
 export default function EncuestaForm() {
   const [preguntasDisponibles, setPreguntasDisponibles] = useState([]);
@@ -10,14 +10,51 @@ export default function EncuestaForm() {
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
   const [mensaje, setMensaje] = useState('');
+  const [busqueda, setBusqueda] = useState('');
+  const [coincidencias, setCoincidencias] = useState([]);
 
   useEffect(() => {
     obtenerPreguntas().then(res => setPreguntasDisponibles(res.data));
     obtenerGrupos().then(res => setGruposDisponibles(res.data));
   }, []);
 
+  useEffect(() => {
+    const lower = busqueda.trim().toLowerCase();
+    if (lower === '') {
+      setCoincidencias([]);
+      return;
+    }
+    setCoincidencias(
+      preguntasDisponibles.filter(p => p.texto.toLowerCase().includes(lower))
+    );
+  }, [busqueda, preguntasDisponibles]);
+
   const handleCheckbox = (id, list, setter) => {
     setter(prev => (prev.includes(id) ? prev.filter(v => v !== id) : [...prev, id]));
+  };
+
+  const agregarDesdeInput = async () => {
+    const texto = busqueda.trim();
+    if (!texto) return;
+
+    const existente = preguntasDisponibles.find(
+      p => p.texto.toLowerCase() === texto.toLowerCase()
+    );
+
+    if (existente) {
+      if (!preguntaIdsSeleccionadas.includes(existente.id)) {
+        setPreguntaIdsSeleccionadas(prev => [...prev, existente.id]);
+      }
+    } else {
+      try {
+        const nueva = await crearPregunta( texto );
+        setPreguntasDisponibles(prev => [...prev, nueva.data]);
+        setPreguntaIdsSeleccionadas(prev => [...prev, nueva.data.id]);
+      } catch {
+        setMensaje('❌ Error al crear nueva pregunta');
+      }
+    }
+    setBusqueda('');
   };
 
   const handleSubmit = async (e) => {
@@ -44,7 +81,6 @@ export default function EncuestaForm() {
       <h2 className="text-center text-2xl font-bold text-gray-800">Crear Encuesta</h2>
 
       <form onSubmit={handleSubmit} className="space-y-8">
-        {/* Fechas */}
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de inicio</label>
@@ -68,26 +104,37 @@ export default function EncuestaForm() {
           </div>
         </div>
 
-        {/* Preguntas y grupos */}
-        <div className="space-y-8">
+        <div className="space-y-6">
           <div>
-            <h4 className="font-semibold text-gray-700 mb-3">Seleccioná preguntas:</h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">
-              {preguntasDisponibles.map(p => (
-                <label key={p.id} className="flex items-center gap-2 text-sm text-gray-700">
-                  <input
-                    type="checkbox"
-                    checked={preguntaIdsSeleccionadas.includes(p.id)}
-                    onChange={() => handleCheckbox(p.id, preguntaIdsSeleccionadas, setPreguntaIdsSeleccionadas)}
-                    className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                  />
-                  <span>{p.texto}</span>
-                </label>
-              ))}
-              {preguntasDisponibles.length === 0 && (
-                <p className="text-xs text-gray-500 col-span-full">No hay preguntas cargadas.</p>
-              )}
+            <label className="block font-semibold text-gray-700 mb-1">Buscá o escribí una pregunta</label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={busqueda}
+                onChange={e => setBusqueda(e.target.value)}
+                className="w-full border px-3 py-2 rounded"
+                placeholder="Ej: ¿Cómo fue tu experiencia?"
+              />
+              <button type="button" onClick={agregarDesdeInput} className="bg-blue-600 text-white px-4 py-2 rounded">Agregar</button>
             </div>
+            {coincidencias.length > 0 && (
+              <div className="mt-2 border p-2 bg-gray-50 rounded text-sm text-gray-700">
+                <p className="text-xs mb-1 text-gray-500">Coincidencias:</p>
+                <ul className="space-y-1">
+                  {coincidencias.map(p => (
+                    <li key={p.id} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        className="mr-2"
+                        checked={preguntaIdsSeleccionadas.includes(p.id)}
+                        onChange={() => handleCheckbox(p.id, preguntaIdsSeleccionadas, setPreguntaIdsSeleccionadas)}
+                      />
+                      {p.texto}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
 
           <div>
@@ -114,7 +161,6 @@ export default function EncuestaForm() {
           </div>
         </div>
 
-        {/* Botón igual al de CrearGrupoYAsignarForm */}
         <div>
           <button
             type="submit"

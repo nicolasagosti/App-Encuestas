@@ -44,25 +44,47 @@ export default function ResponderEncuestaForm() {
   };
 
   const handleSubmit = (encuestaId) => {
-    if (clienteId == null) {
-      setMensaje('❌ Cliente no identificado');
+  if (clienteId == null) {
+    setMensaje('❌ Cliente no identificado');
+    return;
+  }
+
+  const respuestasDeEncuesta = encuestas
+    .find(encuesta => encuesta.id === encuestaId)
+    ?.preguntas || [];
+
+  for (const pregunta of respuestasDeEncuesta) {
+    const resp = respuestas[pregunta.id];
+
+    if (!resp?.puntaje) {
+      setMensaje(`⚠️ Falta puntaje en la pregunta "${pregunta.texto}"`);
       return;
     }
 
-    const payload = Object.entries(respuestas).map(([preguntaId, data]) => ({
-      preguntaId:   Number(preguntaId),
-      grupoId:      data.grupoId,
-      puntaje:      data.puntaje,
-      justificacion: data.puntaje < 8 ? data.justificacion || '' : ''
-    }));
+    if (resp.puntaje < 8) {
+      const justificacion = resp.justificacion?.trim() || '';
+      if (justificacion.length < 30) {
+        setMensaje(`⚠️ La justificación en la pregunta "${pregunta.texto}" debe tener al menos 30 caracteres.`);
+        return;
+      }
+    }
+  }
 
-    responderEncuesta(clienteId, encuestaId, payload)
-      .then(() => {
-        setMensaje('✅ Encuesta respondida correctamente');
-        setRespuestas({});
-      })
-      .catch(() => setMensaje('❌ Error al enviar respuestas'));
-  };
+  const payload = Object.entries(respuestas).map(([preguntaId, data]) => ({
+    preguntaId: Number(preguntaId),
+    grupoId: data.grupoId,
+    puntaje: data.puntaje,
+    justificacion: data.puntaje < 8 ? data.justificacion.trim() : ''
+  }));
+
+  responderEncuesta(clienteId, encuestaId, payload)
+    .then(() => {
+      setMensaje('✅ Encuesta respondida correctamente');
+      setRespuestas({});
+    })
+    .catch(() => setMensaje('❌ Error al enviar respuestas'));
+};
+
 
   return (
     <div className="max-w-3xl mx-auto mt-10">
@@ -93,11 +115,18 @@ export default function ResponderEncuestaForm() {
                 key={encuesta.id}
                 className="rounded-lg border border-gray-200 p-5 bg-gray-50"
               >
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-gray-700">
-                    Encuesta: <span className="text-gray-900">{encuesta.periodo}</span>
-                  </h3>
-                </div>
+                <div className="mb-4">
+                <h3 className="text-lg font-semibold text-gray-800">📝 Encuesta #{encuesta.id}</h3>
+                 <p className="text-sm text-gray-600">
+                    <span className="font-medium">Periodo:</span>{" "}
+                      {new Date(encuesta.fechaInicio).toLocaleDateString()} - {new Date(encuesta.fechaFin).toLocaleDateString()}
+                        </p>
+                 <p className="text-sm text-gray-600 mt-1">
+                  <span className="font-medium">Grupo:</span>{" "}
+                     {encuesta.grupos?.[0]?.descripcion || `Grupo ${encuesta.grupos?.[0]?.id}`}
+                    </p>
+                    </div>
+
 
                 <div className="space-y-5">
                   {encuesta.preguntas.map(pregunta => {

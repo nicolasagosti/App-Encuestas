@@ -13,4 +13,5 @@ public interface RespuestaRepository extends JpaRepository<Respuesta, Long> {
 
     List<Respuesta> findAllByGrupo_Id(Long grupoId);
     boolean existsByCliente_IdAndGrupo_IdAndPregunta_Id(Long clienteId, Long grupoId, Long preguntaId);
+    List<Respuesta> findByGrupoId(Long grupoId);
 }

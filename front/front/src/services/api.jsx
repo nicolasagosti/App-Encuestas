@@ -88,4 +88,9 @@ export const obtenerPromedioGrupo = async (grupoId) => {
   return api.get(`/estadisticas/${grupoId}`);
 };
 
+export function obtenerEstadisticasTodosLosGrupos() {
+  return api.get('/estadisticas');
+}
+
+
 export default api;

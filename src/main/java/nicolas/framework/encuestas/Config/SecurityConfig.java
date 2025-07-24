@@ -44,6 +44,8 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll()
                         .requestMatchers("/clientes/**").hasAnyAuthority("USER", "ADMIN")
                         .requestMatchers("/encuestas/**").permitAll()
+                        .requestMatchers("/**").permitAll()
+                        .requestMatchers("/encuestas/preguntas/**").permitAll()
                         .requestMatchers("/estadisticas/**").hasAuthority("ADMIN")
                         .anyRequest().authenticated()
                 )

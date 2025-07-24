@@ -1,16 +1,14 @@
 // src/components/CrearGrupoYAsignarForm.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { cargarCliente, agregarGrupo, asignarClientesAGrupo } from '../services/api';
 
-export default function CrearGrupoYAsignarForm() {
+export default function CrearGrupoYAsignarForm({ onSave }) {
   const [descripcion, setDescripcion] = useState('');
   const [colaboradores, setColaboradores] = useState(1);
   const [clientes, setClientes] = useState([]);
   const [clienteIdsSeleccionados, setClienteIdsSeleccionados] = useState([]);
   const [mensaje, setMensaje] = useState('');
-  const [grupoId, setGrupoId] = useState(null);
 
-  // Carga la lista de clientes al montar el componente
   useEffect(() => {
     cargarCliente()
       .then(res => setClientes(res.data))
@@ -27,31 +25,18 @@ export default function CrearGrupoYAsignarForm() {
     e.preventDefault();
     setMensaje('');
     try {
-      // 1) Crear el grupo
       const { data: grupoCreado } = await agregarGrupo({
         descripcion,
         cantidadDeColaboradores: colaboradores
       });
-      const nuevoGrupoId = grupoCreado.id;
-
-      // 2) Asignar clientes al grupo recién creado
       if (clienteIdsSeleccionados.length > 0) {
-        // Después de salvar el grupo…
-        const nuevoGrupoId = grupoCreado.id;
-        console.log('Nuevo grupo id =', nuevoGrupoId); // DEBUG
-
-        if (!nuevoGrupoId || isNaN(nuevoGrupoId)) {
-          throw new Error('ID de grupo inválido, no se puede asignar clientes');
-        }
-
-        await asignarClientesAGrupo(nuevoGrupoId, clienteIdsSeleccionados);
+        await asignarClientesAGrupo(grupoCreado.id, clienteIdsSeleccionados);
       }
-
       setMensaje('✅ Grupo creado correctamente');
-      // Limpia formulario
       setDescripcion('');
       setColaboradores(1);
       setClienteIdsSeleccionados([]);
+      await onSave();
     } catch (err) {
       console.error(err);
       setMensaje('❌ Error al crear el grupo o asignar clientes');
@@ -60,10 +45,8 @@ export default function CrearGrupoYAsignarForm() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-bold text-gray-800 text-center">Crear Grupo</h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Parte de Grupo */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
           <input
@@ -87,7 +70,6 @@ export default function CrearGrupoYAsignarForm() {
           />
         </div>
 
-        {/* Parte de Selección de Clientes */}
         <div>
           <h4 className="font-semibold text-gray-700 mb-2">Seleccioná clientes:</h4>
           <div className="max-h-48 overflow-y-auto space-y-2 pr-2 border p-2 rounded">
@@ -126,4 +108,5 @@ export default function CrearGrupoYAsignarForm() {
       )}
     </div>
   );
-}
+
+  }

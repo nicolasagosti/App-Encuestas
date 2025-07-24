@@ -1,4 +1,3 @@
-// src/pages/AdminDashboard.jsx
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@radix-ui/react-tabs";
 import PreguntaForm from "../components/PreguntaForm";
 import EncuestaForm from "../components/EncuestaForm";

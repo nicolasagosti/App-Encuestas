@@ -1,4 +1,5 @@
 package nicolas.framework.encuestas.encuesta.services;
+import jakarta.validation.constraints.Null;
 import nicolas.framework.encuestas.encuesta.dtos.GrupoInputDTO;
 import nicolas.framework.encuestas.encuesta.dtos.GrupoOutputDTO;
 import nicolas.framework.encuestas.encuesta.models.entities.Grupo;
@@ -33,10 +34,22 @@ public class GrupoService implements IGrupoService{
 
 
     @Override
-    public Grupo registrarGrupo(GrupoInputDTO dto) {
+    public GrupoOutputDTO registrarGrupo(GrupoInputDTO dto) {
+        List<Grupo> grupos = grupoRepository.findAllByDescripcionIgnoreCase(dto.getDescripcion().trim());
 
-        Grupo grupo = new Grupo(dto.getDescripcion(), dto.getCantidadDeColaboradores());
-        return grupoRepository.save(grupo);
+        if (grupos.isEmpty()) {
+            Grupo grupo = new Grupo(dto.getDescripcion(), dto.getCantidadDeColaboradores());
+            Grupo grupoGuardado = grupoRepository.save(grupo);
+            return new GrupoOutputDTO(
+                    grupoGuardado.getId(),
+                    grupoGuardado.getDescripcion(),
+                    grupoGuardado.getCantidadDeColaboradores()
+            );
+        } else {
+            throw new IllegalArgumentException("Grupo ya existente");
+        }
     }
+
+
 
 }

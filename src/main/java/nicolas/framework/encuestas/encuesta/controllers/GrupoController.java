@@ -21,16 +21,13 @@ public class GrupoController {
     private IGrupoService grupoService;
 
     @PostMapping
-    public ResponseEntity<Grupo> crearGrupo(
-            @RequestBody GrupoInputDTO dto
-    ) {
-        Grupo creado = grupoService.registrarGrupo(dto);
-
-        System.out.println(creado);
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(creado);
+    public ResponseEntity<?> crearGrupo(@RequestBody GrupoInputDTO dto) {
+        try {
+            GrupoOutputDTO grupoDTO = grupoService.registrarGrupo(dto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(grupoDTO);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        }
     }
 
     @GetMapping

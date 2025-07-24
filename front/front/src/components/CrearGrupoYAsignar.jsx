@@ -25,22 +25,31 @@ export default function CrearGrupoYAsignarForm({ onSave }) {
     e.preventDefault();
     setMensaje('');
     try {
-      const { data: grupoCreado } = await agregarGrupo({
-        descripcion,
-        cantidadDeColaboradores: colaboradores
-      });
-      if (clienteIdsSeleccionados.length > 0) {
-        await asignarClientesAGrupo(grupoCreado.id, clienteIdsSeleccionados);
-      }
-      setMensaje('✅ Grupo creado correctamente');
-      setDescripcion('');
-      setColaboradores(1);
-      setClienteIdsSeleccionados([]);
-      await onSave();
-    } catch (err) {
-      console.error(err);
-      setMensaje('❌ Error al crear el grupo o asignar clientes');
-    }
+  const { data: grupoCreado } = await agregarGrupo({
+    descripcion,
+    cantidadDeColaboradores: colaboradores
+  });
+console.log('✅ Grupo creado:', grupoCreado);
+
+
+  if (!grupoCreado || !grupoCreado.id) {
+    throw new Error('Grupo no devuelto correctamente');
+  }
+
+  if (clienteIdsSeleccionados.length > 0) {
+    await asignarClientesAGrupo(grupoCreado.id, clienteIdsSeleccionados);
+  }
+
+  setMensaje('✅ Grupo creado correctamente');
+  setDescripcion('');
+  setColaboradores(1);
+  setClienteIdsSeleccionados([]);
+  await onSave();
+} catch (err) {
+  console.error(err);
+  //setMensaje('❌ Error al crear el grupo, intentá con otro nombre');
+}
+
   };
 
   return (

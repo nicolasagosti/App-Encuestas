@@ -50,7 +50,12 @@ export default function EstadisticasGrupo() {
 
       {promedio !== null && (
         <p className="mt-4 text-green-700 font-semibold">
-          ✅ Promedio: {promedio.toFixed(2)}
+          {typeof promedio === 'number' ? (
+  <p className="text-lg font-bold text-indigo-700">Promedio: {promedio.toFixed(2)}</p>
+) : (
+  <p className="text-sm text-gray-500 italic">Este grupo no tiene encuestas respondidas.</p>
+)}
+
         </p>
       )}
 

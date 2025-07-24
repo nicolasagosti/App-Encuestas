@@ -1,12 +1,13 @@
-// src/pages/AdminDashboard.jsx
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@radix-ui/react-tabs";
 import PreguntaForm from "../components/PreguntaForm";
 import EncuestaForm from "../components/EncuestaForm";
 import CrearGrupoYAsignar from "../components/CrearGrupoYAsignar";
 import { useAuth } from "../AuthContext";
+import { useNavigate } from "react-router-dom"; // 👈
 
 export default function AdminDashboard() {
   const { userEmail } = useAuth();
+  const navigate = useNavigate(); // 👈 ¡Esto va adentro del componente!
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -14,6 +15,12 @@ export default function AdminDashboard() {
         <header className="mb-8">
           <h1 className="text-3xl font-extrabold text-gray-800">Panel de Administración</h1>
           <p className="text-gray-500">Conectado como <span className="font-medium">{userEmail}</span></p>
+          <button
+            onClick={() => navigate('/estadisticas')}
+            className="mt-4 inline-flex items-center gap-2 text-sm bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+          >
+            📊 Ver estadísticas
+          </button>
         </header>
 
         <Tabs defaultValue="preguntas" className="space-y-6">

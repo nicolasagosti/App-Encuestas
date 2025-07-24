@@ -1,4 +1,3 @@
-// front/src/components/EncuestaForm.jsx
 import { useState, useEffect } from 'react';
 import { obtenerPreguntas, crearEncuesta, obtenerGrupos, crearPregunta } from '../services/api';
 
@@ -47,7 +46,7 @@ export default function EncuestaForm() {
       }
     } else {
       try {
-        const nueva = await crearPregunta( texto );
+        const nueva = await crearPregunta(texto);
         setPreguntasDisponibles(prev => [...prev, nueva.data]);
         setPreguntaIdsSeleccionadas(prev => [...prev, nueva.data.id]);
       } catch {
@@ -81,6 +80,7 @@ export default function EncuestaForm() {
       <h2 className="text-center text-2xl font-bold text-gray-800">Crear Encuesta</h2>
 
       <form onSubmit={handleSubmit} className="space-y-8">
+        {/* Fechas */}
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de inicio</label>
@@ -104,6 +104,31 @@ export default function EncuestaForm() {
           </div>
         </div>
 
+        {/* Grupos */}
+        <div>
+          <h4 className="font-semibold text-gray-700 mb-3">Seleccioná grupos:</h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">
+            {gruposDisponibles.map(g => (
+              <label key={g.id} className="flex items-center gap-2 text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={grupoIdsSeleccionados.includes(g.id)}
+                  onChange={() => handleCheckbox(g.id, grupoIdsSeleccionados, setGrupoIdsSeleccionados)}
+                  className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                />
+                <span>
+                  {g.descripcion}{' '}
+                  <span className="text-xs text-gray-500">({g.cantidadDeColaboradores})</span>
+                </span>
+              </label>
+            ))}
+            {gruposDisponibles.length === 0 && (
+              <p className="text-xs text-gray-500 col-span-full">No hay grupos cargados.</p>
+            )}
+          </div>
+        </div>
+
+        {/* Preguntas */}
         <div className="space-y-6">
           <div>
             <label className="block font-semibold text-gray-700 mb-1">Buscá o escribí una pregunta</label>
@@ -115,50 +140,49 @@ export default function EncuestaForm() {
                 className="w-full border px-3 py-2 rounded"
                 placeholder="Ej: ¿Cómo fue tu experiencia?"
               />
-              <button type="button" onClick={agregarDesdeInput} className="bg-blue-600 text-white px-4 py-2 rounded">Agregar</button>
+              <button
+                type="button"
+                onClick={agregarDesdeInput}
+                className="bg-blue-600 text-white px-4 py-2 rounded"
+              >
+                Agregar
+              </button>
             </div>
-            {coincidencias.length > 0 && (
-              <div className="mt-2 border p-2 bg-gray-50 rounded text-sm text-gray-700">
-                <p className="text-xs mb-1 text-gray-500">Coincidencias:</p>
-                <ul className="space-y-1">
-                  {coincidencias.map(p => (
-                    <li key={p.id} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        className="mr-2"
-                        checked={preguntaIdsSeleccionadas.includes(p.id)}
-                        onChange={() => handleCheckbox(p.id, preguntaIdsSeleccionadas, setPreguntaIdsSeleccionadas)}
-                      />
-                      {p.texto}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
           </div>
 
-          <div>
-            <h4 className="font-semibold text-gray-700 mb-3">Seleccioná grupos:</h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">
-              {gruposDisponibles.map(g => (
-                <label key={g.id} className="flex items-center gap-2 text-sm text-gray-700">
-                  <input
-                    type="checkbox"
-                    checked={grupoIdsSeleccionados.includes(g.id)}
-                    onChange={() => handleCheckbox(g.id, grupoIdsSeleccionados, setGrupoIdsSeleccionados)}
-                    className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
-                  />
-                  <span>
-                    {g.descripcion}{' '}
-                    <span className="text-xs text-gray-500">({g.cantidadDeColaboradores})</span>
-                  </span>
-                </label>
-              ))}
-              {gruposDisponibles.length === 0 && (
-                <p className="text-xs text-gray-500 col-span-full">No hay grupos cargados.</p>
-              )}
+          {/* Coincidencias */}
+          {coincidencias.length > 0 && (
+            <div className="mt-2 border p-2 bg-gray-50 rounded text-sm text-gray-700">
+              <p className="text-xs mb-1 text-gray-500">Coincidencias:</p>
+              <ul className="space-y-1">
+                {coincidencias.map(p => (
+                  <li key={p.id} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      className="mr-2"
+                      checked={preguntaIdsSeleccionadas.includes(p.id)}
+                      onChange={() => handleCheckbox(p.id, preguntaIdsSeleccionadas, setPreguntaIdsSeleccionadas)}
+                    />
+                    {p.texto}
+                  </li>
+                ))}
+              </ul>
             </div>
-          </div>
+          )}
+
+          {/* Preguntas seleccionadas */}
+          {preguntaIdsSeleccionadas.length > 0 && (
+            <div className="mt-4 border border-indigo-200 bg-indigo-50 p-3 rounded">
+              <h4 className="text-sm font-medium text-indigo-800 mb-2">Preguntas seleccionadas:</h4>
+              <ul className="list-disc list-inside text-indigo-700 text-sm space-y-1">
+                {preguntasDisponibles
+                  .filter(p => preguntaIdsSeleccionadas.includes(p.id))
+                  .map(p => (
+                    <li key={p.id}>{p.texto}</li>
+                  ))}
+              </ul>
+            </div>
+          )}
         </div>
 
         <div>

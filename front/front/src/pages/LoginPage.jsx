@@ -1,17 +1,15 @@
-// src/LoginPage.jsx
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../AuthContext';
 import logo from './bbva-2019.svg';
-import { Link } from 'react-router-dom';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError]     = useState('');
-  const navigate              = useNavigate();
-  const { login }             = useAuth();
+  const [error, setError]       = useState('');
+  const navigate                = useNavigate();
+  const { login }               = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,23 +18,20 @@ export default function LoginPage() {
     try {
       const { data } = await api.post('/auth/login', { username, password });
       const token = data.token;
-      localStorage.setItem('token', token);
+      // Llamamos a login con el JWT
+      login(token);
 
-      const payload   = JSON.parse(atob(token.split('.')[1] || ''));
-      const rawRole   = payload.role;
+      // Decidir ruta según rol recién seteado
+      const payload = JSON.parse(atob(token.split('.')[1] || ''));
+      const rawRole = payload.role;
       const isAdminClaim = rawRole && rawRole.toUpperCase() === 'ADMIN';
-      const isAdminInValues = Object.values(payload).some(val =>
+      const isAdminInArray = Object.values(payload).some(val =>
         (typeof val === 'string' && val.toUpperCase().includes('ADMIN')) ||
         (Array.isArray(val) && val.some(item => typeof item === 'string' && item.toUpperCase().includes('ADMIN')))
       );
-      const role = (isAdminClaim || isAdminInValues) ? 'ADMIN' : 'USER';
+      const role = (isAdminClaim || isAdminInArray) ? 'ADMIN' : 'USER';
 
-      login(username, role, () => {
-  console.log('Role al momento del login:', role);
-  console.log('Role guardado en localStorage:', localStorage.getItem('userRole'));
-  navigate(role === 'ADMIN' ? '/admin' : '/dashboard');
-});
-
+      navigate(role === 'ADMIN' ? '/admin' : '/dashboard');
     } catch (err) {
       if (err.response) {
         const status = err.response.status;
@@ -75,24 +70,24 @@ export default function LoginPage() {
               onChange={e => setUsername(e.target.value)}
               placeholder="me@example.com"
               required
-              className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
             />
           </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Contraseña
-              </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-              />
-            </div>
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              Contraseña
+            </label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              placeholder="••••••••"
+              required
+              className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            />
+          </div>
 
           <button
             type="submit"
@@ -101,12 +96,13 @@ export default function LoginPage() {
             Ingresar
           </button>
         </form>
+
         <p className="text-center text-sm text-gray-600 mt-4">
-         ¿No tienes cuenta?{' '}
+          ¿No tienes cuenta?{' '}
           <Link to="/register" className="font-semibold text-blue-600 hover:underline">
-          Regístrate
-        </Link>
-          </p>
+            Regístrate
+          </Link>
+        </p>
 
         <p className="mt-6 text-center text-xs text-gray-400">
           © {new Date().getFullYear()} Banco Francés. Todos los derechos reservados.

@@ -1,140 +1,89 @@
+// src/App.js
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './AuthContext';
-import LandingPage from './pages/LandingPage';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './AuthContext';
+import NavBar from './components/NavBar';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import AdminDashboard from './pages/AdminDashboard';
 import UserDashboard from './pages/UserDashboard';
 import EstadisticasGrupo from './components/EstadisticasGrupo';
 
-function NavBar() {
-  const { logout , email } = useAuth();
-  const navigate = useNavigate();
+function PrivateRoute({ children, requiredRole }) {
+  const { isLoading, isLogged, userRole } = useAuth();
 
-  const { userEmail } = useAuth();
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
-  const navStyle = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '8px 16px',
-    backgroundColor: '#222',
-    color: '#fff',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-  };
-
-  const titleStyle = {
-    fontSize: '18px',
-    fontWeight: 'bold'
-  };
-
-  const buttonStyle = {
-    backgroundColor: '#ff4b5c',
-    border: 'none',
-    color: 'white',
-    padding: '6px 12px',
-    fontSize: '14px',
-    fontWeight: '600',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease-in-out'
-  };
-
-  const buttonHover = (e) => {
-    e.target.style.backgroundColor = '#ff6b7c';
-    e.target.style.transform = 'scale(1.08)';
-  };
-
-  const buttonLeave = (e) => {
-    e.target.style.backgroundColor = '#ff4b5c';
-    e.target.style.transform = 'scale(1)';
-  };
-
-  return (
-    <nav style={navStyle}>
-      <p className="text-gray-500">Conectado como <span className="font-medium">{userEmail}</span></p>
-      <button
-        onClick={handleLogout}
-        style={buttonStyle}
-        onMouseEnter={buttonHover}
-        onMouseLeave={buttonLeave}
-      >
-        🔒 Cerrar Sesión
-      </button>
-    </nav>
-  );
-}
-
-function AdminRoute({ children }) {
-  const { isLogged, userRole } = useAuth();
+  if (isLoading) return null;
   if (!isLogged) return <Navigate to="/login" replace />;
-  if (userRole !== 'ADMIN') return <Navigate to="/dashboard" replace />;
-  return (
-    <>
-      <NavBar />
-      {children}
-    </>
-  );
-}
-
-function UserRoute({ children }) {
-  const { isLogged, userRole } = useAuth();
-  if (!isLogged) return <Navigate to="/login" replace />;
-  if (userRole !== 'USER') return <Navigate to="/admin" replace />;
-  return (
-    <>
-      <NavBar />
-      {children}
-    </>
-  );
+  if (userRole !== requiredRole) {
+    // Si intento acceder con rol equivocado, mando al otro dashboard
+    return <Navigate to={requiredRole === 'ADMIN' ? '/dashboard' : '/admin'} replace />;
+  }
+  return children;
 }
 
 export default function App() {
+  const { isLoading, isLogged, userRole } = useAuth();
+  if (isLoading) return null;
+
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+    <BrowserRouter>
+      {isLogged && <NavBar />}
 
-          <Route
-            path="/dashboard"
-            element={
-              <UserRoute>
-                <UserDashboard />
-              </UserRoute>
-            }
-          />
+      <Routes>
+        <Route
+          path="/login"
+          element={
+            !isLogged
+              ? <LoginPage />
+              : <Navigate to={userRole === 'ADMIN' ? '/admin' : '/dashboard'} replace />
+          }
+        />
 
-          <Route
-            path="/admin"
-            element={
-              <AdminRoute>
-                <AdminDashboard />
-              </AdminRoute>
-            }
-          />
+        <Route
+          path="/register"
+          element={
+            !isLogged
+              ? <RegisterPage />
+              : <Navigate to={userRole === 'ADMIN' ? '/admin' : '/dashboard'} replace />
+          }
+        />
 
-          <Route
-            path="/estadisticas"
-            element={
-              <AdminRoute>
-                <EstadisticasGrupo />
-              </AdminRoute>
-            }
-          />
+        <Route
+          path="/dashboard"
+          element={
+            <PrivateRoute requiredRole="USER">
+              <UserDashboard />
+            </PrivateRoute>
+          }
+        />
 
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+        <Route
+          path="/admin"
+          element={
+            <PrivateRoute requiredRole="ADMIN">
+              <AdminDashboard />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/estadisticas"
+          element={
+            <PrivateRoute requiredRole="ADMIN">
+              <EstadisticasGrupo />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="*"
+          element={
+            isLogged
+              ? <Navigate to={userRole === 'ADMIN' ? '/admin' : '/dashboard'} replace />
+              : <Navigate to="/login" replace />
+          }
+        />
+      </Routes>
+    </BrowserRouter>
   );
 }

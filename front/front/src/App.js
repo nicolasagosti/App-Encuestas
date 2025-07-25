@@ -1,6 +1,5 @@
-// src/App.js
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import NavBar from './components/NavBar';
 import LoginPage from './pages/LoginPage';
@@ -15,38 +14,26 @@ function PrivateRoute({ children, requiredRole }) {
   if (isLoading) return null;
   if (!isLogged) return <Navigate to="/login" replace />;
   if (userRole !== requiredRole) {
-    // Si intento acceder con rol equivocado, mando al otro dashboard
     return <Navigate to={requiredRole === 'ADMIN' ? '/dashboard' : '/admin'} replace />;
   }
   return children;
 }
 
-export default function App() {
-  const { isLoading, isLogged, userRole } = useAuth();
+function AppContent() {
+  const { isLoading, isLogged } = useAuth();
+  const location = useLocation();
+
   if (isLoading) return null;
 
+  const hideNav = location.pathname === '/login' || location.pathname === '/register';
+
   return (
-    <BrowserRouter>
-      {isLogged && <NavBar />}
+    <>
+      {isLogged && !hideNav && <NavBar />}
 
       <Routes>
-        <Route
-          path="/login"
-          element={
-            !isLogged
-              ? <LoginPage />
-              : <Navigate to={userRole === 'ADMIN' ? '/admin' : '/dashboard'} replace />
-          }
-        />
-
-        <Route
-          path="/register"
-          element={
-            !isLogged
-              ? <RegisterPage />
-              : <Navigate to={userRole === 'ADMIN' ? '/admin' : '/dashboard'} replace />
-          }
-        />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
 
         <Route
           path="/dashboard"
@@ -75,15 +62,16 @@ export default function App() {
           }
         />
 
-        <Route
-          path="*"
-          element={
-            isLogged
-              ? <Navigate to={userRole === 'ADMIN' ? '/admin' : '/dashboard'} replace />
-              : <Navigate to="/login" replace />
-          }
-        />
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
     </BrowserRouter>
   );
 }

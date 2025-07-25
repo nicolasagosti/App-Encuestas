@@ -1,16 +1,15 @@
 function AdminRoute({ children }) {
-  const { isLogged, userRole, isLoading } = useAuth();
+  const { isLogged, isLoading } = useAuth();
 
   if (isLoading) {
-    // Opcional: aquí podrías devolver un spinner
+    // Opcional: acá podés devolver un spinner de carga
     return null;
   }
+
   if (!isLogged) {
     return <Navigate to="/login" replace />;
   }
-  if (userRole !== 'ADMIN') {
-    return <Navigate to="/dashboard" replace />;
-  }
+
   return (
     <>
       <NavBar />
@@ -20,17 +19,16 @@ function AdminRoute({ children }) {
 }
 
 function UserRoute({ children }) {
-  const { isLogged, userRole, isLoading } = useAuth();
+  const { isLogged, isLoading } = useAuth();
 
   if (isLoading) {
     return null;
   }
+
   if (!isLogged) {
     return <Navigate to="/login" replace />;
   }
-  if (userRole !== 'USER') {
-    return <Navigate to="/admin" replace />;
-  }
+
   return (
     <>
       <NavBar />

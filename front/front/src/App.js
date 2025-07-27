@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import NavBar from './components/NavBar';
@@ -8,6 +8,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import UserDashboard from './pages/UserDashboard';
 import EstadisticasGrupo from './components/EstadisticasGrupo';
 
+// Protege rutas según rol
 function PrivateRoute({ children, requiredRole }) {
   const { isLoading, isLogged, userRole } = useAuth();
 
@@ -19,9 +20,16 @@ function PrivateRoute({ children, requiredRole }) {
   return children;
 }
 
+// Manejo de rutas global
 function AppContent() {
   const { isLoading, isLogged } = useAuth();
   const location = useLocation();
+
+  // Cada vez que cambia la ruta logueamos el token
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    console.log("Ruta cambiada a:", location.pathname, "Token actual:", token);
+  }, [location]);
 
   if (isLoading) return null;
 
@@ -43,7 +51,6 @@ function AppContent() {
             </PrivateRoute>
           }
         />
-
         <Route
           path="/admin"
           element={
@@ -52,7 +59,6 @@ function AppContent() {
             </PrivateRoute>
           }
         />
-
         <Route
           path="/estadisticas"
           element={
@@ -61,7 +67,6 @@ function AppContent() {
             </PrivateRoute>
           }
         />
-
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </>

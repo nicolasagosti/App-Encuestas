@@ -3,16 +3,31 @@ import PreguntaForm from "../components/PreguntaForm";
 import EncuestaForm from "../components/EncuestaForm";
 import CrearGrupoYAsignar from "../components/CrearGrupoYAsignar";
 import { useAuth } from "../AuthContext";
-import { useNavigate } from "react-router-dom"; // 👈
+import { useNavigate } from "react-router-dom";
+import logoAccenture from './accenture.png';
+import logoGalicia from './galicia.png';
+import logoBBVA from './bbva.svg';
 
 export default function AdminDashboard() {
   const { userEmail } = useAuth();
-  const navigate = useNavigate(); // 👈 ¡Esto va adentro del componente!
+  const navigate = useNavigate();
+
+  const handleTabChange = (tabValue) => {
+    const token = localStorage.getItem('token');
+    console.log("Tab cambiada a:", tabValue, "Token actual:", token);
+  };
+
+  const logoToShow = userEmail.endsWith("@bbva.com")
+    ? logoBBVA
+    : userEmail.endsWith("@galicia.com")
+    ? logoGalicia
+    : null;
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-7xl mx-auto">
         <header className="mb-8">
+
           <h1 className="text-3xl font-extrabold text-gray-800">Panel de Administración</h1>
           <button
             onClick={() => navigate('/estadisticas')}
@@ -22,11 +37,17 @@ export default function AdminDashboard() {
           </button>
         </header>
 
-        <Tabs defaultValue="preguntas" className="space-y-6">
+        <Tabs defaultValue="preguntas" className="space-y-6" onValueChange={handleTabChange}>
           <TabsList className="flex gap-2 border-b pb-2">
-            <TabsTrigger value="preguntas" className="px-4 py-2 rounded-t-lg bg-white shadow-sm hover:bg-blue-50">➕ Crear Preguntas</TabsTrigger>
-            <TabsTrigger value="encuestas" className="px-4 py-2 rounded-t-lg bg-white shadow-sm hover:bg-blue-50">📝 Crear Encuestas</TabsTrigger>
-            <TabsTrigger value="grupos" className="px-4 py-2 rounded-t-lg bg-white shadow-sm hover:bg-blue-50">👥 Crear Grupos</TabsTrigger>
+            <TabsTrigger value="preguntas" className="px-4 py-2 rounded-t-lg bg-white shadow-sm hover:bg-blue-50">
+              ➕ Crear Preguntas
+            </TabsTrigger>
+            <TabsTrigger value="encuestas" className="px-4 py-2 rounded-t-lg bg-white shadow-sm hover:bg-blue-50">
+              📝 Crear Encuestas
+            </TabsTrigger>
+            <TabsTrigger value="grupos" className="px-4 py-2 rounded-t-lg bg-white shadow-sm hover:bg-blue-50">
+              👥 Crear Grupos
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="preguntas" className="bg-white p-6 rounded-xl shadow">

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../AuthContext';
-import logo from './bbva-2019.svg';
+import logo from './accenture.png';
 
 export default function RegisterPage() {
   const [username, setUsername]             = useState('');
@@ -45,7 +45,7 @@ export default function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-100 p-4">
       <div className="w-full max-w-md bg-white/80 backdrop-blur shadow-xl rounded-2xl p-8 border border-gray-100">
         <div className="flex flex-col items-center mb-6">
-          <img src={logo} alt="Banco Francés" className="h-16 mb-2" />
+          <img src={logo} alt="Accenture" className="h-16 mb-4" />
           <h2 className="text-2xl font-bold text-gray-800">Crear cuenta</h2>
           <p className="text-sm text-gray-500">Registrate para comenzar</p>
         </div>

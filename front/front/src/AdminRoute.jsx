@@ -2,7 +2,7 @@ function AdminRoute({ children }) {
   const { isLogged, isLoading } = useAuth();
 
   if (isLoading) {
-    // Opcional: acá podés devolver un spinner de carga
+      console.log("paso por is loading en admin route")
     return null;
   }
 

@@ -6,6 +6,8 @@ import {
   obtenerIdDeCliente
 } from '../services/api';
 import { CheckCircle, AlertCircle, Loader2, CopyIcon } from 'lucide-react';
+import logo from './logoaccenture.png';
+
 
 export default function ResponderEncuestaForm() {
   const [clienteId, setClienteId] = useState(null);
@@ -119,6 +121,7 @@ export default function ResponderEncuestaForm() {
   return (
     <div className="max-w-4xl mx-auto mt-12 px-4">
       <div className="bg-white rounded-2xl shadow border border-gray-100 p-8">
+                <img src={logo} alt="BBVA" className="mx-auto h-20 mb-6" />
         <h2 className="text-3xl font-bold text-gray-900 mb-6 flex items-center gap-3">
           <CheckCircle className="text-blue-600 w-6 h-6" />
           Responder Encuestas

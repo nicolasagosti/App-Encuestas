@@ -93,4 +93,19 @@ export function obtenerEstadisticasTodosLosGrupos() {
 }
 
 
+export function cargarBanco(formData) {
+  return api.post(
+    '/api/banco/agregar',
+    formData,
+    // Axios detecta automáticamente multipart/form-data,
+    // pero si quieres forzar el header:
+    { headers: { 'Content-Type': 'multipart/form-data' } }
+  );
+}
+
+export function obtenerBanco(extension) {
+  return api.get(`/api/banco/obtener/${extension}`);
+}
+
+
 export default api;

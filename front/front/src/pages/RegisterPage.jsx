@@ -6,12 +6,12 @@ import { useAuth } from '../AuthContext';
 import logo from './accenture.png';
 
 export default function RegisterPage() {
-  const [username, setUsername]             = useState('');
-  const [password, setPassword]             = useState('');
+  const [username, setUsername]               = useState('');
+  const [password, setPassword]               = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError]                   = useState('');
-  const navigate                            = useNavigate();
-  const { login }                           = useAuth();
+  const [error, setError]                     = useState('');
+  const navigate                              = useNavigate();
+  const { login }                             = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,11 +23,25 @@ export default function RegisterPage() {
     }
 
     try {
+      // 1. Register and grab the token
       const { data } = await api.post('/auth/register', { username, password });
-      localStorage.setItem('token', data.token);
-      // Podrías parsear el token y detectar rol si lo necesitas
-      login(username, 'USER');
-      navigate('/dashboard');
+      const token = data.token;
+
+      // 2. Store token in context
+      login(token);
+
+      // 3. Decode the payload to extract role
+      const payload = JSON.parse(atob(token.split('.')[1] || ''));
+      const rawRole = payload.role;
+      const isAdminClaim = rawRole && rawRole.toUpperCase() === 'ADMIN';
+      const isAdminInArray = Object.values(payload).some(val =>
+        (typeof val === 'string' && val.toUpperCase().includes('ADMIN')) ||
+        (Array.isArray(val) && val.some(item => typeof item === 'string' && item.toUpperCase().includes('ADMIN')))
+      );
+      const role = (isAdminClaim || isAdminInArray) ? 'ADMIN' : 'USER';
+
+      // 4. Navigate based on role
+      navigate(role === 'ADMIN' ? '/admin' : '/dashboard', { replace: true });
     } catch (err) {
       if (err.response) {
         setError(
@@ -47,7 +61,7 @@ export default function RegisterPage() {
         <div className="flex flex-col items-center mb-6">
           <img src={logo} alt="Accenture" className="h-16 mb-4" />
           <h2 className="text-2xl font-bold text-gray-800">Crear cuenta</h2>
-          <p className="text-sm text-gray-500">Registrate para comenzar</p>
+          <p className="text-sm text-gray-500">Regístrate para comenzar</p>
         </div>
 
         {error && (
@@ -68,7 +82,7 @@ export default function RegisterPage() {
               onChange={e => setUsername(e.target.value)}
               placeholder="me@example.com"
               required
-              className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
             />
           </div>
 
@@ -83,7 +97,7 @@ export default function RegisterPage() {
               onChange={e => setPassword(e.target.value)}
               placeholder="••••••••"
               required
-              className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
             />
           </div>
 
@@ -98,7 +112,7 @@ export default function RegisterPage() {
               onChange={e => setConfirmPassword(e.target.value)}
               placeholder="••••••••"
               required
-              className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
             />
           </div>
 

@@ -1,6 +1,7 @@
 package nicolas.framework.encuestas.Auth.Jwt;
 
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,17 +36,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     /**
-     * Evita que el filtro se aplique en:
+     * Skip filtering for:
+     *  - CORS preflight OPTIONS
      *  - /auth/**
      *  - /api/banco/**
      */
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = new UrlPathHelper().getPathWithinApplication(request);
-        if (path.startsWith("/auth/")) {
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             return true;
         }
-        if (path.startsWith("/api/banco/")) {
+        if (path.startsWith("/auth/") || path.startsWith("/api/banco/")) {
             return true;
         }
         return false;
@@ -58,39 +60,43 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-        String token = null;
-        String username = null;
 
         if (StringUtils.hasText(authHeader) && authHeader.startsWith("Bearer ")) {
-            token = authHeader.substring(7);
+            String token = authHeader.substring(7).trim();
+
             try {
-                username = jwtService.getUsernameFromToken(token);
+                // Quick sanity check: JWT must contain exactly two dots
+                long dotCount = token.chars().filter(ch -> ch == '.').count();
+                if (dotCount != 2) {
+                    throw new JwtException("Malformed JWT token");
+                }
+
+                String username = jwtService.getUsernameFromToken(token);
+                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    if (jwtService.isTokenValid(token, userDetails)) {
+                        UsernamePasswordAuthenticationToken authToken =
+                                new UsernamePasswordAuthenticationToken(
+                                        userDetails,
+                                        null,
+                                        userDetails.getAuthorities()
+                                );
+                        authToken.setDetails(
+                                new org.springframework.security.web.authentication.WebAuthenticationDetailsSource()
+                                        .buildDetails(request)
+                        );
+                        SecurityContextHolder.getContext().setAuthentication(authToken);
+                    }
+                }
             } catch (ExpiredJwtException ex) {
-                log.warn("JWT expirado para petición {}: {}", request.getRequestURI(), ex.getMessage());
+                log.warn("JWT expired for request {}: {}", request.getRequestURI(), ex.getMessage());
+                SecurityContextHolder.clearContext();
+            } catch (JwtException | IllegalArgumentException ex) {
+                log.warn("JWT parsing/validation failed for request {}: {}", request.getRequestURI(), ex.getMessage());
                 SecurityContextHolder.clearContext();
             }
         }
 
-        // Si extraemos un usuario válido y no hay auth previa en el contexto:
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            if (jwtService.isTokenValid(token, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities()
-                        );
-                authToken.setDetails(
-                        new org.springframework.security.web.authentication.
-                                WebAuthenticationDetailsSource()
-                                .buildDetails(request)
-                );
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-            }
-        }
-
-        // Continúa la cadena de filtros
         filterChain.doFilter(request, response);
     }
 }

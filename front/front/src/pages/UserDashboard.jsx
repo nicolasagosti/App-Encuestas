@@ -1,40 +1,45 @@
+// src/components/ResponderEncuestaForm.jsx
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../AuthContext';
 import {
   obtenerEncuestasDeCliente,
   responderEncuesta,
-  obtenerIdDeCliente
+  obtenerIdDeCliente,
+  obtenerBanco
 } from '../services/api';
 import logoAccenture from './accenture.png';
-import logoGalicia    from './galicia.png';
-import logoBBVA       from './bbva.svg';
 
 export default function ResponderEncuestaForm() {
   const [clienteId, setClienteId]   = useState(null);
   const [encuestas, setEncuestas]   = useState([]);
   const [respuestas, setRespuestas] = useState({});
   const [mensaje, setMensaje]       = useState('');
+  const [bankLogo, setBankLogo]     = useState(null);
   const { userEmail }               = useAuth();
 
+  // Obtener clienteId y logo del banco al montar
   useEffect(() => {
     if (!userEmail) return;
+
+    // 1. ID de cliente
     obtenerIdDeCliente(userEmail)
       .then(res => setClienteId(res.data))
       .catch(() => setMensaje('❌ No se pudo obtener el ID de cliente'));
+
+    // 2. Logo del banco desde la API
+    const extension = userEmail.split('@')[1]; // ej: "bbva.com"
+    obtenerBanco(extension)
+      .then(res => setBankLogo(res.data.logoBase64))
+      .catch(() => console.warn(`No se encontró logo para ${extension}`));
   }, [userEmail]);
 
+  // Cargar encuestas cuando tengamos clienteId
   useEffect(() => {
     if (clienteId == null) return;
     obtenerEncuestasDeCliente(clienteId)
       .then(res => setEncuestas(res.data))
       .catch(() => setMensaje('❌ Error al cargar encuestas'));
   }, [clienteId]);
-
-  const logoToShow = userEmail.endsWith('@bbva.com')
-    ? logoBBVA
-    : userEmail.endsWith('@galicia.com')
-    ? logoGalicia
-    : null;
 
   const handlePuntajeChange = (preguntaId, grupoId, puntaje) => {
     setRespuestas(prev => ({
@@ -60,14 +65,15 @@ export default function ResponderEncuestaForm() {
       .find(e => e.id === encuestaId)
       ?.preguntas || [];
 
+    // Validaciones
     for (const pregunta of preguntasDeEncuesta) {
-      const resp = respuestas[pregunta.id];
-      if (!resp?.puntaje) {
+      const resp = respuestas[pregunta.id] || {};
+      if (!resp.puntaje) {
         setMensaje(`⚠️ Falta puntaje en la pregunta "${pregunta.texto}"`);
         return;
       }
       if (resp.puntaje < 8) {
-        const just = resp.justificacion?.trim() || '';
+        const just = (resp.justificacion || '').trim();
         if (just.length < 30) {
           setMensaje(
             `⚠️ La justificación en la pregunta "${pregunta.texto}" debe tener al menos 30 caracteres.`
@@ -77,12 +83,12 @@ export default function ResponderEncuestaForm() {
       }
     }
 
+    // Construir payload
     const payload = Object.entries(respuestas).map(([pregId, data]) => ({
-      preguntaId: Number(pregId),
-      grupoId:    data.grupoId,
-      puntaje:    data.puntaje,
-      justificacion:
-        data.puntaje < 8 ? data.justificacion.trim() : ''
+      preguntaId:    Number(pregId),
+      grupoId:       data.grupoId,
+      puntaje:       data.puntaje,
+      justificacion: data.puntaje < 8 ? data.justificacion.trim() : ''
     }));
 
     responderEncuesta(clienteId, encuestaId, payload)
@@ -95,13 +101,16 @@ export default function ResponderEncuestaForm() {
 
   return (
     <div className="relative min-h-screen">
-      {logoToShow && (
+      {/* Logo dinámico desde BD */}
+      {bankLogo && (
         <img
-          src={logoToShow}
+          src={`data:image/png;base64,${bankLogo}`}
           alt="Logo banco"
           className="absolute top-4 left-4 h-16"
         />
       )}
+
+      {/* Logo fijo de Accenture */}
       <img
         src={logoAccenture}
         alt="Logo Accenture"
@@ -114,6 +123,7 @@ export default function ResponderEncuestaForm() {
             <span className="inline-block w-2 h-2 rounded-full bg-blue-500" />
             Responder Encuestas
           </h2>
+
           {mensaje && (
             <div
               className={`mb-4 rounded-md px-4 py-2 text-sm ${

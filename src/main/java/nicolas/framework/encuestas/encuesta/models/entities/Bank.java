@@ -1,5 +1,6 @@
 package nicolas.framework.encuestas.encuesta.models.entities;
 
+
 import jakarta.persistence.*;
 
 @Entity
@@ -11,7 +12,11 @@ public class Bank {
     private String extension;
 
     @Lob
-    @Column(name = "logo_base64", columnDefinition = "TEXT", nullable = false)
+    @Column(
+            name             = "logo_base64",
+            columnDefinition = "LONGTEXT",  // <-- aquí
+            nullable         = false
+    )
     private String logoBase64;
 
     public Bank() { }

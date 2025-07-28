@@ -1,7 +1,6 @@
 // src/components/CargarClienteForm.jsx
-
 import React, { useState } from 'react';
-import { cargarCliente } from '../services/api';
+import { cargarBanco } from '../services/api';
 
 export default function CargarClienteForm() {
   const [logoFile, setLogoFile] = useState(null);
@@ -11,11 +10,8 @@ export default function CargarClienteForm() {
   const handleFileChange = e => {
     setLogoFile(e.target.files[0]);
   };
-
   const handleExtensionChange = e => {
-    // eliminamos cualquier '@' por si se ingresa
-    const value = e.target.value.replace(/@/g, '');
-    setExtension(value);
+    setExtension(e.target.value.replace(/@/g, '').trim());
   };
 
   const handleSubmit = async e => {
@@ -36,11 +32,11 @@ export default function CargarClienteForm() {
     formData.append('extension', extension);
 
     try {
-      await cargarCliente(formData);
+      const res = await cargarBanco(formData);
       setMensaje('✅ Cliente creado correctamente');
+      // Limpiar form
       setLogoFile(null);
       setExtension('');
-      // reset file input
       e.target.reset();
     } catch (err) {
       console.error(err);

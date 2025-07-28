@@ -248,14 +248,34 @@ export default function ResponderEncuestaForm() {
   );
 }
 
- function colorDeFondoPorGrupo(nombreGrupo = '') {
-  const colores = {
-    G1: 'bg-blue-100 border-blue-300 text-blue-800',
-    G2: 'bg-green-100 border-green-300 text-green-800',
-    G3: 'bg-yellow-100 border-yellow-300 text-yellow-800',
-    G4: 'bg-purple-100 border-purple-300 text-purple-800',
-    G5: 'bg-pink-100 border-pink-300 text-pink-800',
-  };
+ // 🎨 Colores disponibles
+const COLORES_GRUPO = [
+  'bg-blue-100 border-blue-300 text-blue-800',
+  'bg-green-100 border-green-300 text-green-800',
+  'bg-yellow-100 border-yellow-300 text-yellow-800',
+  'bg-purple-100 border-purple-300 text-purple-800',
+  'bg-pink-100 border-pink-300 text-pink-800',
+  'bg-indigo-100 border-indigo-300 text-indigo-800',
+  'bg-orange-100 border-orange-300 text-orange-800',
+  'bg-rose-100 border-rose-300 text-rose-800',
+];
 
-  return colores[nombreGrupo] || 'bg-gray-100 border-gray-300 text-gray-800';
+// 🧠 Mapa que guarda qué grupo tiene qué color
+const grupoColorMap = new Map();
+let coloresUsados = new Set();
+
+// 🧩 Función que asigna un color único por grupo
+function colorDeFondoPorGrupo(nombreGrupo = '') {
+  if (grupoColorMap.has(nombreGrupo)) {
+    return grupoColorMap.get(nombreGrupo);
+  }
+
+  const coloresDisponibles = COLORES_GRUPO.filter(c => !coloresUsados.has(c));
+  const colorAsignado =
+    coloresDisponibles[Math.floor(Math.random() * coloresDisponibles.length)] ||
+    COLORES_GRUPO[Math.floor(Math.random() * COLORES_GRUPO.length)]; // fallback por si se agotan
+
+  grupoColorMap.set(nombreGrupo, colorAsignado);
+  coloresUsados.add(colorAsignado);
+  return colorAsignado;
 }

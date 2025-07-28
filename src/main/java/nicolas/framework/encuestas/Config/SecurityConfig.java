@@ -46,6 +46,8 @@ public class SecurityConfig {
                         .requestMatchers("/encuestas/**").hasAnyAuthority("USER", "ADMIN")
                         .requestMatchers("/encuestas/preguntas/**").hasAnyAuthority("USER", "ADMIN")
                         .requestMatchers("/estadisticas/**").hasAuthority("ADMIN")
+                        .requestMatchers("/api/banco/**").permitAll()
+                        .requestMatchers("/api/**").permitAll()
                         .anyRequest().authenticated()
                 )
 

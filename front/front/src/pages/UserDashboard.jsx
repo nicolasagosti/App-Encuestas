@@ -108,14 +108,12 @@ export default function ResponderEncuestaForm() {
         className="absolute top-4 right-4 h-16"
       />
 
-      {/* Contenido principal con padding top para no tapar los logos */}
       <div className="max-w-3xl mx-auto pt-24 px-4">
         <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6">
           <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
             <span className="inline-block w-2 h-2 rounded-full bg-blue-500" />
             Responder Encuestas
           </h2>
-
           {mensaje && (
             <div
               className={`mb-4 rounded-md px-4 py-2 text-sm ${

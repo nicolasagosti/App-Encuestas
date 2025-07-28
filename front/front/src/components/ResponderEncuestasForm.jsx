@@ -11,10 +11,6 @@ export default function ResponderEncuestaForm() {
   const [mensaje, setMensaje]       = useState('');
   const { userEmail }               = useAuth();
 
-  useEffect(() => {
-    console.log('Usuario conectado:', userEmail);
-  }, [userEmail]);
-
   const clienteId = 1; // Simulado
 
   useEffect(() => {
@@ -23,32 +19,63 @@ export default function ResponderEncuestaForm() {
       .catch(() => setMensaje('❌ Error al cargar encuestas'));
   }, []);
 
-  const handlePuntajeChange = (preguntaId, grupoId, puntaje) => {
+  const handlePuntajeChange = (encuestaId, preguntaId, grupoId, puntaje) => {
+    const key = `${encuestaId}-${preguntaId}`;
     setRespuestas(prev => ({
       ...prev,
-      [preguntaId]: { ...prev[preguntaId], grupoId, puntaje }
+      [key]: { ...prev[key], grupoId, puntaje }
     }));
   };
 
-  const handleJustificacionChange = (preguntaId, justificacion) => {
+  const handleJustificacionChange = (encuestaId, preguntaId, justificacion) => {
+    const key = `${encuestaId}-${preguntaId}`;
     setRespuestas(prev => ({
       ...prev,
-      [preguntaId]: { ...prev[preguntaId], justificacion }
+      [key]: { ...prev[key], justificacion }
     }));
+  };
+
+  const replicarPuntaje = (preguntaId, puntaje) => {
+    const nuevasRespuestas = { ...respuestas };
+
+    encuestas.forEach(encuesta => {
+      const pregunta = encuesta.preguntas.find(p => p.id === preguntaId);
+      if (pregunta) {
+        const key = `${encuesta.id}-${pregunta.id}`;
+        nuevasRespuestas[key] = {
+          ...nuevasRespuestas[key],
+          grupoId: encuesta.grupos?.[0]?.id || 1,
+          puntaje
+        };
+      }
+    });
+
+    setRespuestas(nuevasRespuestas);
   };
 
   const handleSubmit = (encuestaId) => {
-    const payload = Object.entries(respuestas).map(([preguntaId, data]) => ({
-      preguntaId: Number(preguntaId),
-      grupoId: data.grupoId,
-      puntaje: data.puntaje,
-      justificacion: data.puntaje < 8 ? data.justificacion || '' : ''
-    }));
+    const payload = Object.entries(respuestas)
+      .filter(([key]) => key.startsWith(`${encuestaId}-`))
+      .map(([key, data]) => {
+        const preguntaId = Number(key.split('-')[1]);
+        return {
+          preguntaId,
+          grupoId: data.grupoId,
+          puntaje: data.puntaje,
+          justificacion: data.puntaje < 8 ? data.justificacion || '' : ''
+        };
+      });
 
     responderEncuesta(clienteId, encuestaId, payload)
       .then(() => {
         setMensaje('✅ Encuesta respondida correctamente');
-        setRespuestas({});
+        setRespuestas(prev => {
+          const nuevas = { ...prev };
+          Object.keys(nuevas).forEach(k => {
+            if (k.startsWith(`${encuestaId}-`)) delete nuevas[k];
+          });
+          return nuevas;
+        });
       })
       .catch(() => setMensaje('❌ Error al enviar respuestas'));
   };
@@ -76,18 +103,30 @@ export default function ResponderEncuestaForm() {
 
             <div className="space-y-5">
               {encuesta.preguntas.map(pregunta => {
-                const puntaje = respuestas[pregunta.id]?.puntaje;
+                const key = `${encuesta.id}-${pregunta.id}`;
+                const respuesta = respuestas[key] || {};
+                const puntaje = respuesta.puntaje;
+
                 return (
-                  <div key={pregunta.id} className="bg-white border border-gray-200 rounded-md p-4">
+                  <div key={key} className="bg-white border border-gray-200 rounded-md p-4">
                     <label className="block font-medium text-gray-800 mb-2">
                       {pregunta.texto}
                     </label>
                     <div className="flex flex-col sm:flex-row gap-4">
+                      <button
+                        type="button"
+                        onClick={() => replicarPuntaje(pregunta.id, puntaje)}
+                        className="text-blue-500 text-sm underline hover:text-blue-700"
+                      >
+                        Aplicar a todas
+                      </button>
+
                       <select
                         className="w-40 rounded-md border border-gray-300 px-2 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                         value={puntaje || ''}
                         onChange={e =>
                           handlePuntajeChange(
+                            encuesta.id,
                             pregunta.id,
                             encuesta.grupos?.[0]?.id || 1,
                             Number(e.target.value)
@@ -106,8 +145,9 @@ export default function ResponderEncuestaForm() {
                           placeholder="Justificación (requerida)"
                           className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                           onChange={e =>
-                            handleJustificacionChange(pregunta.id, e.target.value)
+                            handleJustificacionChange(encuesta.id, pregunta.id, e.target.value)
                           }
+                          value={respuesta.justificacion || ''}
                         />
                       )}
                     </div>
@@ -129,9 +169,7 @@ export default function ResponderEncuestaForm() {
       {mensaje && (
         <p
           className={`mt-6 text-sm ${
-            mensaje.startsWith('✅')
-              ? 'text-green-600'
-              : 'text-red-600'
+            mensaje.startsWith('✅') ? 'text-green-600' : 'text-red-600'
           }`}
         >
           {mensaje}

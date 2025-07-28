@@ -95,6 +95,7 @@ export default function ResponderEncuestaForm() {
       }
     }
 
+
     const payload = respuestasDeEncuesta.map(pregunta => {
       const clave = `${encuestaId}_${pregunta.id}`;
       const data = respuestas[clave];
@@ -145,19 +146,30 @@ export default function ResponderEncuestaForm() {
         ) : (
           <div className="space-y-10">
             {encuestas.map(encuesta => (
-              <div key={encuesta.id} className="bg-gray-50 border border-gray-200 rounded-xl p-6">
-                <div className="mb-4">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-1">📝 Encuesta #{encuesta.id}</h3>
-                  <p className="text-sm text-gray-600">
-                    <span className="font-medium">Periodo:</span>{' '}
-                    {new Date(encuesta.fechaInicio).toLocaleDateString()} -{' '}
-                    {new Date(encuesta.fechaFin).toLocaleDateString()}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    <span className="font-medium">Grupo:</span>{' '}
-                    {encuesta.grupos?.[0]?.descripcion || `Grupo ${encuesta.grupos?.[0]?.id}`}
-                  </p>
-                </div>
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
+  {/* 🟦 ENCABEZADO de la encuesta */}
+  <div className="mb-4">
+  <div
+    className={`rounded-lg px-6 py-4 shadow-sm text-center border ${
+      colorDeFondoPorGrupo(encuesta.grupos?.[0]?.descripcion)
+    }`}
+  >
+    <h3 className="text-lg font-semibold">📝 Encuesta #{encuesta.id}</h3>
+    <p className="text-sm">
+      <span className="font-medium">Periodo:</span>{' '}
+      {new Date(encuesta.fechaInicio).toLocaleDateString()} -{' '}
+      {new Date(encuesta.fechaFin).toLocaleDateString()}
+    </p>
+    <p className="text-sm">
+      <span className="font-medium">Grupo:</span>{' '}
+      {encuesta.grupos?.[0]?.descripcion || `Grupo ${encuesta.grupos?.[0]?.id}`}
+    </p>
+  </div>
+</div>
+
+
+  {/* 📋 Aquí siguen las preguntas */}
+
 
                 <div className="space-y-6">
                   {encuesta.preguntas.map(pregunta => {
@@ -234,4 +246,16 @@ export default function ResponderEncuestaForm() {
       </div>
     </div>
   );
+}
+
+ function colorDeFondoPorGrupo(nombreGrupo = '') {
+  const colores = {
+    G1: 'bg-blue-100 border-blue-300 text-blue-800',
+    G2: 'bg-green-100 border-green-300 text-green-800',
+    G3: 'bg-yellow-100 border-yellow-300 text-yellow-800',
+    G4: 'bg-purple-100 border-purple-300 text-purple-800',
+    G5: 'bg-pink-100 border-pink-300 text-pink-800',
+  };
+
+  return colores[nombreGrupo] || 'bg-gray-100 border-gray-300 text-gray-800';
 }

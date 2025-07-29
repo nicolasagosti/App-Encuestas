@@ -92,5 +92,8 @@ export function obtenerEstadisticasTodosLosGrupos() {
   return api.get('/estadisticas');
 }
 
+export async function obtenerEstadisticasPorTrimestre() {
+  return fetch('/estadisticas/trimestrales').then(res => res.json());
+}
 
 export default api;

@@ -8,6 +8,34 @@ import {
 import { CheckCircle, AlertCircle, Loader2, CopyIcon } from 'lucide-react';
 import logo from './logoaccenture.png';
 
+const COLORES_GRUPO = [
+  'bg-blue-100 border-blue-300 text-blue-800',
+  'bg-green-100 border-green-300 text-green-800',
+  'bg-yellow-100 border-yellow-300 text-yellow-800',
+  'bg-purple-100 border-purple-300 text-purple-800',
+  'bg-pink-100 border-pink-300 text-pink-800',
+  'bg-indigo-100 border-indigo-300 text-indigo-800',
+  'bg-orange-100 border-orange-300 text-orange-800',
+  'bg-rose-100 border-rose-300 text-rose-800',
+];
+
+const grupoColorMap = new Map();
+let coloresUsados = new Set();
+
+function colorDeFondoPorGrupo(nombreGrupo = '') {
+  if (grupoColorMap.has(nombreGrupo)) {
+    return grupoColorMap.get(nombreGrupo);
+  }
+
+  const disponibles = COLORES_GRUPO.filter(c => !coloresUsados.has(c));
+  const color =
+    disponibles[Math.floor(Math.random() * disponibles.length)] ||
+    COLORES_GRUPO[Math.floor(Math.random() * COLORES_GRUPO.length)];
+
+  grupoColorMap.set(nombreGrupo, color);
+  coloresUsados.add(color);
+  return color;
+}
 
 export default function ResponderEncuestaForm() {
   const [clienteId, setClienteId] = useState(null);
@@ -15,6 +43,7 @@ export default function ResponderEncuestaForm() {
   const [respuestas, setRespuestas] = useState({});
   const [mensaje, setMensaje] = useState('');
   const [loading, setLoading] = useState(false);
+  const [encuestasRespondidas, setEncuestasRespondidas] = useState(new Set());
   const { userEmail } = useAuth();
 
   useEffect(() => {
@@ -49,7 +78,6 @@ export default function ResponderEncuestaForm() {
 
   const replicarPuntaje = (preguntaId, puntaje) => {
     const nuevasRespuestas = { ...respuestas };
-
     encuestas.forEach(encuesta => {
       encuesta.preguntas.forEach(pregunta => {
         if (pregunta.id === preguntaId) {
@@ -62,7 +90,6 @@ export default function ResponderEncuestaForm() {
         }
       });
     });
-
     setRespuestas(nuevasRespuestas);
     setMensaje('✅ Puntaje replicado a todas las encuestas');
   };
@@ -73,11 +100,12 @@ export default function ResponderEncuestaForm() {
       return;
     }
 
-    const respuestasDeEncuesta = encuestas
-      .find(encuesta => encuesta.id === encuestaId)
-      ?.preguntas || [];
+    const encuesta = encuestas.find(e => e.id === encuestaId);
+    if (!encuesta) return;
 
-    for (const pregunta of respuestasDeEncuesta) {
+    const preguntas = encuesta.preguntas || [];
+
+    for (const pregunta of preguntas) {
       const clave = `${encuestaId}_${pregunta.id}`;
       const resp = respuestas[clave];
 
@@ -95,8 +123,7 @@ export default function ResponderEncuestaForm() {
       }
     }
 
-
-    const payload = respuestasDeEncuesta.map(pregunta => {
+    const payload = preguntas.map(pregunta => {
       const clave = `${encuestaId}_${pregunta.id}`;
       const data = respuestas[clave];
       return {
@@ -111,7 +138,17 @@ export default function ResponderEncuestaForm() {
       setLoading(true);
       await responderEncuesta(clienteId, encuestaId, payload);
       setMensaje('✅ Encuesta respondida correctamente');
-      setRespuestas({});
+
+      // 💡 Limpiar solo respuestas de esta encuesta
+      setRespuestas(prev => {
+        const nuevas = { ...prev };
+        preguntas.forEach(p => delete nuevas[`${encuestaId}_${p.id}`]);
+        return nuevas;
+      });
+
+      // 💡 Quitar encuesta respondida
+      setEncuestas(prev => prev.filter(e => e.id !== encuestaId));
+      setEncuestasRespondidas(prev => new Set(prev).add(encuestaId));
     } catch {
       setMensaje('❌ Error al enviar respuestas');
     } finally {
@@ -122,7 +159,7 @@ export default function ResponderEncuestaForm() {
   return (
     <div className="max-w-4xl mx-auto mt-12 px-4">
       <div className="bg-white rounded-2xl shadow border border-gray-100 p-8">
-                <img src={logo} alt="BBVA" className="mx-auto h-20 mb-6" />
+        <img src={logo} alt="Logo" className="mx-auto h-20 mb-6" />
         <h2 className="text-3xl font-bold text-gray-900 mb-6 flex items-center gap-3">
           <CheckCircle className="text-blue-600 w-6 h-6" />
           Responder Encuestas
@@ -145,137 +182,102 @@ export default function ResponderEncuestaForm() {
           <p className="text-gray-500 text-center py-8">No hay encuestas disponibles.</p>
         ) : (
           <div className="space-y-10">
-            {encuestas.map(encuesta => (
-              <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
-  {/* 🟦 ENCABEZADO de la encuesta */}
-  <div className="mb-4">
-  <div
-    className={`rounded-lg px-6 py-4 shadow-sm text-center border ${
-      colorDeFondoPorGrupo(encuesta.grupos?.[0]?.descripcion)
-    }`}
-  >
-    <h3 className="text-lg font-semibold">📝 Encuesta #{encuesta.id}</h3>
-    <p className="text-sm">
-      <span className="font-medium">Periodo:</span>{' '}
-      {new Date(encuesta.fechaInicio).toLocaleDateString()} -{' '}
-      {new Date(encuesta.fechaFin).toLocaleDateString()}
-    </p>
-    <p className="text-sm">
-      <span className="font-medium">Grupo:</span>{' '}
-      {encuesta.grupos?.[0]?.descripcion || `Grupo ${encuesta.grupos?.[0]?.id}`}
-    </p>
-  </div>
-</div>
+            {encuestas
+              .filter(encuesta => !encuestasRespondidas.has(encuesta.id))
+              .map(encuesta => (
+                <div key={encuesta.id} className="bg-gray-50 border border-gray-200 rounded-xl p-6 transition-all duration-500 ease-in-out">
+                  <div className="mb-4">
+                    <div
+                      className={`rounded-lg px-6 py-4 shadow-sm text-center border ${colorDeFondoPorGrupo(
+                        encuesta.grupos?.[0]?.descripcion
+                      )}`}
+                    >
+                      <h3 className="text-lg font-semibold">📝 Encuesta #{encuesta.id}</h3>
+                      <p className="text-sm">
+                        <span className="font-medium">Periodo:</span>{' '}
+                        {new Date(encuesta.fechaInicio).toLocaleDateString()} -{' '}
+                        {new Date(encuesta.fechaFin).toLocaleDateString()}
+                      </p>
+                      <p className="text-sm">
+                        <span className="font-medium">Grupo:</span>{' '}
+                        {encuesta.grupos?.[0]?.descripcion || `Grupo ${encuesta.grupos?.[0]?.id}`}
+                      </p>
+                    </div>
+                  </div>
 
+                  <div className="space-y-6">
+                    {encuesta.preguntas.map(pregunta => {
+                      const clave = `${encuesta.id}_${pregunta.id}`;
+                      const puntaje = respuestas[clave]?.puntaje;
 
-  {/* 📋 Aquí siguen las preguntas */}
+                      return (
+                        <div key={pregunta.id} className="bg-white border border-gray-200 rounded-lg p-5">
+                          <p className="text-sm font-medium text-gray-800 mb-2">{pregunta.texto}</p>
 
-
-                <div className="space-y-6">
-                  {encuesta.preguntas.map(pregunta => {
-                    const clave = `${encuesta.id}_${pregunta.id}`;
-                    const puntaje = respuestas[clave]?.puntaje;
-
-                    return (
-                      <div key={pregunta.id} className="bg-white border border-gray-200 rounded-lg p-5">
-                        <p className="text-sm font-medium text-gray-800 mb-2">{pregunta.texto}</p>
-
-                        <div className="flex items-center gap-4 mb-3">
-                          <select
-                            className="w-32 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            value={puntaje || ''}
-                            onChange={e =>
-                              handlePuntajeChange(
-                                pregunta.id,
-                                encuesta.id,
-                                encuesta.grupos?.[0]?.id || 1,
-                                Number(e.target.value)
-                              )
-                            }
-                          >
-                            <option value="">Puntaje</option>
-                            {[...Array(10)].map((_, i) => (
-                              <option key={i + 1} value={i + 1}>
-                                {i + 1}
-                              </option>
-                            ))}
-                          </select>
-
-                          {puntaje < 8 && puntaje != null && (
-                            <input
-                              type="text"
-                              placeholder="Justificación (requerida)"
-                              className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          <div className="flex items-center gap-4 mb-3">
+                            <select
+                              className="w-32 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              value={puntaje || ''}
                               onChange={e =>
-                                handleJustificacionChange(pregunta.id, encuesta.id, e.target.value)
+                                handlePuntajeChange(
+                                  pregunta.id,
+                                  encuesta.id,
+                                  encuesta.grupos?.[0]?.id || 1,
+                                  Number(e.target.value)
+                                )
                               }
-                            />
-                          )}
+                            >
+                              <option value="">Puntaje</option>
+                              {[...Array(10)].map((_, i) => (
+                                <option key={i + 1} value={i + 1}>
+                                  {i + 1}
+                                </option>
+                              ))}
+                            </select>
+
+                            {puntaje < 8 && puntaje != null && (
+                              <input
+                                type="text"
+                                placeholder="Justificación (requerida)"
+                                className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                onChange={e =>
+                                  handleJustificacionChange(pregunta.id, encuesta.id, e.target.value)
+                                }
+                              />
+                            )}
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => replicarPuntaje(pregunta.id, puntaje)}
+                            className="flex items-center gap-1 text-sm text-blue-600 hover:underline"
+                          >
+                            <CopyIcon className="w-4 h-4" />
+                            Aplicar puntaje a todas las encuestas
+                          </button>
                         </div>
+                      );
+                    })}
+                  </div>
 
-                        <button
-                          type="button"
-                          onClick={() => replicarPuntaje(pregunta.id, puntaje)}
-                          className="flex items-center gap-1 text-sm text-blue-600 hover:underline"
-                        >
-                          <CopyIcon className="w-4 h-4" />
-                          Aplicar puntaje a todas las encuestas
-                        </button>
-                      </div>
-                    );
-                  })}
+                  <button
+                    onClick={() => handleSubmit(encuesta.id)}
+                    disabled={loading}
+                    className="mt-6 w-full rounded-md bg-blue-600 text-white px-5 py-2.5 text-sm font-semibold shadow hover:bg-blue-700 transition disabled:opacity-60"
+                  >
+                    {loading ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <Loader2 className="animate-spin w-4 h-4" /> Enviando...
+                      </span>
+                    ) : (
+                      'Enviar respuestas'
+                    )}
+                  </button>
                 </div>
-
-                <button
-                  onClick={() => handleSubmit(encuesta.id)}
-                  disabled={loading}
-                  className="mt-6 w-full rounded-md bg-blue-600 text-white px-5 py-2.5 text-sm font-semibold shadow hover:bg-blue-700 transition disabled:opacity-60"
-                >
-                  {loading ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <Loader2 className="animate-spin w-4 h-4" /> Enviando...
-                    </span>
-                  ) : (
-                    'Enviar respuestas'
-                  )}
-                </button>
-              </div>
-            ))}
+              ))}
           </div>
         )}
       </div>
     </div>
   );
-}
-
- // 🎨 Colores disponibles
-const COLORES_GRUPO = [
-  'bg-blue-100 border-blue-300 text-blue-800',
-  'bg-green-100 border-green-300 text-green-800',
-  'bg-yellow-100 border-yellow-300 text-yellow-800',
-  'bg-purple-100 border-purple-300 text-purple-800',
-  'bg-pink-100 border-pink-300 text-pink-800',
-  'bg-indigo-100 border-indigo-300 text-indigo-800',
-  'bg-orange-100 border-orange-300 text-orange-800',
-  'bg-rose-100 border-rose-300 text-rose-800',
-];
-
-// 🧠 Mapa que guarda qué grupo tiene qué color
-const grupoColorMap = new Map();
-let coloresUsados = new Set();
-
-// 🧩 Función que asigna un color único por grupo
-function colorDeFondoPorGrupo(nombreGrupo = '') {
-  if (grupoColorMap.has(nombreGrupo)) {
-    return grupoColorMap.get(nombreGrupo);
-  }
-
-  const coloresDisponibles = COLORES_GRUPO.filter(c => !coloresUsados.has(c));
-  const colorAsignado =
-    coloresDisponibles[Math.floor(Math.random() * coloresDisponibles.length)] ||
-    COLORES_GRUPO[Math.floor(Math.random() * COLORES_GRUPO.length)]; // fallback por si se agotan
-
-  grupoColorMap.set(nombreGrupo, colorAsignado);
-  coloresUsados.add(colorAsignado);
-  return colorAsignado;
 }

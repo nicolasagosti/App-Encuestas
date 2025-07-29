@@ -41,7 +41,7 @@ public class ClienteController {
     @PostMapping("/{grupoId}")
     public ResponseEntity<HttpStatus> asignarClientesAGrupo(@PathVariable Long grupoId,
                                                             @RequestBody List<Long> idClientes) {
-        clienteService.asignarClientesAGrupo(grupoId,idClientes);
+        clienteService.asignarClientesAGrupo(grupoId, idClientes);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 

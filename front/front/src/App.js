@@ -7,6 +7,8 @@ import RegisterPage from './pages/RegisterPage';
 import AdminDashboard from './pages/AdminDashboard';
 import UserDashboard from './pages/UserDashboard';
 import EstadisticasGrupo from './components/EstadisticasGrupo';
+import LandingPage from './pages/LandingPage';
+
 
 // Protege rutas según rol
 function PrivateRoute({ children, requiredRole }) {
@@ -67,7 +69,9 @@ function AppContent() {
             </PrivateRoute>
           }
         />
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<LandingPage />} />
+
+  <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>
   );

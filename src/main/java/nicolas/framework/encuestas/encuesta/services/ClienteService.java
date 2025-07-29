@@ -6,6 +6,7 @@ import nicolas.framework.encuestas.encuesta.models.entities.Grupo;
 import nicolas.framework.encuestas.encuesta.models.entities.User;
 import nicolas.framework.encuestas.encuesta.models.repositories.GrupoRepository;
 import nicolas.framework.encuestas.encuesta.models.repositories.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,14 +17,11 @@ import java.util.stream.Collectors;
 @Service
 public class ClienteService implements IClienteService {
 
-    private final UserRepository clienteRepository;
-    private final GrupoRepository grupoRepository;
+    @Autowired
+    private UserRepository clienteRepository;
 
-    public ClienteService(UserRepository clienteRepository,
-                          GrupoRepository grupoRepository) {
-        this.clienteRepository = clienteRepository;
-        this.grupoRepository = grupoRepository;
-    }
+    @Autowired
+    private GrupoRepository grupoRepository;
 
     @Override
     public void asignarClientesAGrupo(Long grupoId, List<Long> clienteIds) {
@@ -103,11 +101,14 @@ public class ClienteService implements IClienteService {
 
     @Override
     public Long obtenerIdDeCLiente(String mailCliente) {
-        User user = clienteRepository.findByUsername(mailCliente)
+        System.out.println("🛬 Buscando ID para: " + mailCliente);
+        String normalizado = mailCliente.trim().toLowerCase();
+        User user = clienteRepository.findByUsername(normalizado)
                 .orElseThrow(() -> new DatabaseException(
-                        "Cliente no encontrado con mail: " + mailCliente
+                        "Cliente no encontrado con mail: " + normalizado
                 ));
         return user.getId();
     }
+
 }
 

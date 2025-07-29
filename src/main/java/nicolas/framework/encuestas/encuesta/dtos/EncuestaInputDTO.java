@@ -28,20 +28,19 @@ public class EncuestaInputDTO {
     @FutureOrPresent(message = "La fecha de fin debe ser en el futuro")
     private LocalDate fechaFin;
 
-
-    public List<Long> getGrupos() {
-        return grupos;
-    }
-
-    public List<Long> getPreguntas() {
-        return preguntas;
-    }
-
     public @NotBlank(message = "El campo 'fecha de inicio' es obligatorio") LocalDate getFechaInicio() {
         return fechaInicio;
     }
 
     public @NotBlank(message = "El campo 'fecha de fin' es obligatorio") LocalDate getFechaFin() {
         return fechaFin;
+    }
+
+    public EncuestaInputDTO(List<Long> grupos, List<Long> preguntas, LocalDate fechaInicio, LocalDate fechaFin) {
+
+        this.grupos = grupos;
+        this.preguntas = preguntas;
+        this.fechaInicio = fechaInicio;
+        this.fechaFin = fechaFin;
     }
 }

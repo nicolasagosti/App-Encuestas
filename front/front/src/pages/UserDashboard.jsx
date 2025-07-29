@@ -7,6 +7,7 @@ import {
 } from '../services/api';
 import { CheckCircle, AlertCircle, Loader2, CopyIcon } from 'lucide-react';
 import logo from './logoaccenture.png';
+import { obtenerBanco } from '../services/api';
 
 const COLORES_GRUPO = [
   'bg-blue-100 border-blue-300 text-blue-800',
@@ -45,6 +46,8 @@ export default function ResponderEncuestaForm() {
   const [loading, setLoading] = useState(false);
   const [encuestasRespondidas, setEncuestasRespondidas] = useState(new Set());
   const { userEmail } = useAuth();
+  const [logoBancoBase64, setLogoBancoBase64] = useState(null);
+
 
   useEffect(() => {
     if (!userEmail) return;
@@ -52,6 +55,21 @@ export default function ResponderEncuestaForm() {
       .then(res => setClienteId(res.data))
       .catch(() => setMensaje('❌ No se pudo obtener el ID de cliente'));
   }, [userEmail]);
+
+  
+useEffect(() => {
+  if (!userEmail) return;
+
+  const extension = userEmail.split('@')[1]?.toLowerCase();
+  if (extension) {
+    obtenerBanco(extension)
+      .then(res => setLogoBancoBase64(res.data.logoBase64))
+      .catch(() => {
+        console.warn(`No se encontró banco para ${extension}`);
+        setLogoBancoBase64(null); // usa el logo por defecto si falla
+      });
+  }
+}, [userEmail]);
 
   useEffect(() => {
     if (clienteId == null) return;
@@ -159,7 +177,11 @@ export default function ResponderEncuestaForm() {
   return (
     <div className="max-w-4xl mx-auto mt-12 px-4">
       <div className="bg-white rounded-2xl shadow border border-gray-100 p-8">
-        <img src={logo} alt="Logo" className="mx-auto h-20 mb-6" />
+<img
+  src={logoBancoBase64 ? `data:image/png;base64,${logoBancoBase64}` : logo}
+  alt="Logo del banco"
+  className="mx-auto h-20 mb-6"
+/>
         <h2 className="text-3xl font-bold text-gray-900 mb-6 flex items-center gap-3">
           <CheckCircle className="text-blue-600 w-6 h-6" />
           Responder Encuestas

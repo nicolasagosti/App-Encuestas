@@ -6,9 +6,11 @@ import EncuestaForm from "../components/EncuestaForm";
 import CrearGrupoYAsignar from "../components/CrearGrupoYAsignar";
 import CargarClienteForm from "../components/CargarClienteForm";  // nuevo componente
 import { useAuth } from "../AuthContext";
+import { useNavigate } from "react-router-dom"; 
 
 export default function AdminDashboard() {
   const { userEmail } = useAuth();
+  const navigate = useNavigate();
 
   const handleTabChange = (tabValue) => {
     const token = localStorage.getItem('token');
@@ -20,6 +22,12 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto">
         <header className="mb-8 flex flex-col items-center">
           <h1 className="text-3xl font-extrabold text-gray-800">Panel de Administración</h1>
+          <button
+            onClick={() => navigate('/estadisticas')}
+            className="mt-4 inline-flex items-center gap-2 text-sm bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+          >
+            📊 Ver estadísticas
+          </button>
         </header>
 
         <Tabs defaultValue="preguntas" className="space-y-6" onValueChange={handleTabChange}>

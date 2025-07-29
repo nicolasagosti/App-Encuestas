@@ -3,6 +3,7 @@ package nicolas.framework.encuestas.encuesta.models.entities;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import nicolas.framework.encuestas.encuesta.dtos.PreguntaInputDTO;
 
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.List;
 @Entity
 @Table(name = "pregunta")
 @Data
+@NoArgsConstructor
 public class Pregunta {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,32 +21,16 @@ public class Pregunta {
     private String texto;
 
     @Column
-    private boolean visible = true;
+    private Boolean visible = true;
 
-    public Long getId() {
-        return id;
-    }
-
-    public String getTexto() {
-        return texto;
-    }
 
     public Pregunta(PreguntaInputDTO dto) {
         this.texto = dto.getTexto();
     }
 
-    public Pregunta() {
-    }
 
-    public void setTexto(String texto) {
-        this.texto = texto;
-    }
-
-    public boolean isVisible() {
+    public Boolean isVisible() {
         return visible;
     }
 
-    public void setVisible(boolean visible) {
-        this.visible = visible;
-    }
 }

@@ -51,26 +51,4 @@ public class Encuesta {
         this.grupos = grupos;
     }
 
-    public Encuesta() {
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public LocalDate getFechaInicio() {
-        return fechaInicio;
-    }
-
-    public LocalDate getFechaFin() {
-        return fechaFin;
-    }
-
-    public List<Pregunta> getPreguntas() {
-        return preguntas;
-    }
-
-    public List<Grupo> getGrupos() {
-        return grupos;
-    }
 }

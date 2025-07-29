@@ -1,6 +1,8 @@
 package nicolas.framework.encuestas.encuesta.models.entities;
 
 import jakarta.persistence.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,6 +15,8 @@ import java.util.List;
         name = "user",
         uniqueConstraints = @UniqueConstraint(columnNames = {"username"})
 )
+@Data
+@NoArgsConstructor
 public class User implements UserDetails {
     @Id
     @GeneratedValue
@@ -37,8 +41,6 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "cliente")
     private List<Respuesta> respuestas;
 
-    public User() {}
-
     public User(Long id,
                 String username,
                 String password,
@@ -48,47 +50,19 @@ public class User implements UserDetails {
         this.password = password;
         this.role = role;
     }
-
-
-    public Long getId() {
-        return id;
-    }
-    public void setId(Long id) {
-        this.id = id;
-    }
     @Override
     public String getUsername() {
         return username;
-    }
-    public void setUsername(String username) {
-        this.username = username;
     }
     @Override
     public String getPassword() {
         return password;
     }
-    public void setPassword(String password) {
-        this.password = password;
-    }
-    public Role getRole() {
-        return role;
-    }
-    public void setRole(Role role) {
-        this.role = role;
-    }
-
-    public List<Grupo> getGrupos() {
-        return grupos;
-    }
-
-    public List<Respuesta> getRespuestas() {
-        return respuestas;
-    }
 
     // UserDetails methods
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(role.name()));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role));
     }
     @Override
     public boolean isAccountNonExpired() {

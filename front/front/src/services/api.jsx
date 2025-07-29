@@ -96,6 +96,8 @@ export async function obtenerEstadisticasPorTrimestre() {
   return fetch('/estadisticas/trimestrales').then(res => res.json());
 }
 
+//ClientesBancos
+
 export function cargarBanco(formData) {
   return api.post(
     '/api/banco/agregar',

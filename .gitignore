@@ -1,4 +1,7 @@
-HELP.md
+# Node.js dependencies
+**/node_modules/
+
+# Maven build artifacts
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/

@@ -1,12 +1,12 @@
 // src/pages/LandingPage.jsx
 import { Link } from 'react-router-dom';
-import logo from './bbva-2019.svg';
+import logo from './accenture.png';
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center px-4">
       <div className="max-w-md w-full bg-white shadow-lg rounded-xl p-8 border border-gray-200 text-center">
-        <img src={logo} alt="BBVA" className="mx-auto h-20 mb-6" />
+        <img src={logo} alt="Accenture" className="mx-auto h-20 mb-10" />
         <h1 className="text-2xl font-bold text-gray-800 mb-4">Bienvenido a la App de Encuestas</h1>
         <p className="text-gray-600 mb-6">Accedé o registrate para comenzar</p>
         <div className="flex flex-col gap-3">

@@ -1,11 +1,14 @@
 package nicolas.framework.encuestas.Auth.Jwt;
 
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import nicolas.framework.encuestas.Auth.Services.JwtService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,58 +24,76 @@ import java.io.IOException;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
 
-    public JwtAuthenticationFilter(JwtService jwtService, UserDetailsService userDetailsService) {
+    public JwtAuthenticationFilter(JwtService jwtService,
+                                   UserDetailsService userDetailsService) {
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
     }
 
     /**
-     * Evita que el filtro se ejecute en las rutas de login y register
+     * Skip filtering for:
+     *  - CORS preflight OPTIONS
+     *  - /auth/**
+     *  - /api/banco/**
      */
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = new UrlPathHelper().getPathWithinApplication(request);
-        return path.startsWith("/auth/");
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            return true;
+        }
+        if (path.startsWith("/auth/") || path.startsWith("/api/banco/")) {
+            return true;
+        }
+        return false;
     }
 
     @Override
-    protected void doFilterInternal(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain
-    ) throws ServletException, IOException {
-        final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-        String token = null;
-        String username = null;
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
+
+        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 
         if (StringUtils.hasText(authHeader) && authHeader.startsWith("Bearer ")) {
-            token = authHeader.substring(7);
+            String token = authHeader.substring(7).trim();
+
             try {
-                username = jwtService.getUsernameFromToken(token);
-            } catch (ExpiredJwtException ex) {
-                logger.warn("JWT expirado", ex);
-                SecurityContextHolder.clearContext();
-            }
-        }
+                // Quick sanity check: JWT must contain exactly two dots
+                long dotCount = token.chars().filter(ch -> ch == '.').count();
+                if (dotCount != 2) {
+                    throw new JwtException("Malformed JWT token");
+                }
 
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
-            if (jwtService.isTokenValid(token, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities()
+                String username = jwtService.getUsernameFromToken(token);
+                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    if (jwtService.isTokenValid(token, userDetails)) {
+                        UsernamePasswordAuthenticationToken authToken =
+                                new UsernamePasswordAuthenticationToken(
+                                        userDetails,
+                                        null,
+                                        userDetails.getAuthorities()
+                                );
+                        authToken.setDetails(
+                                new org.springframework.security.web.authentication.WebAuthenticationDetailsSource()
+                                        .buildDetails(request)
                         );
-                authToken.setDetails(
-                        new org.springframework.security.web.authentication.WebAuthenticationDetailsSource()
-                                .buildDetails(request)
-                );
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                        SecurityContextHolder.getContext().setAuthentication(authToken);
+                    }
+                }
+            } catch (ExpiredJwtException ex) {
+                log.warn("JWT expired for request {}: {}", request.getRequestURI(), ex.getMessage());
+                SecurityContextHolder.clearContext();
+            } catch (JwtException | IllegalArgumentException ex) {
+                log.warn("JWT parsing/validation failed for request {}: {}", request.getRequestURI(), ex.getMessage());
+                SecurityContextHolder.clearContext();
             }
         }
 

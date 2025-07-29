@@ -1,10 +1,38 @@
-import React from 'react';
-import { Navigate } from 'react-router-dom';
-import { useAuth } from './AuthContext';
+function AdminRoute({ children }) {
+  const { isLogged, isLoading } = useAuth();
 
-export function AdminRoute({ children }) {
-  const { isLogged, userRole } = useAuth();
-  if (!isLogged)          return <Navigate to="/login" replace />;
-  if (userRole !== 'ADMIN') return <Navigate to="/dashboard" replace />;
-  return children;
+  if (isLoading) {
+      console.log("paso por is loading en admin route")
+    return null;
+  }
+
+  if (!isLogged) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return (
+    <>
+      <NavBar />
+      {children}
+    </>
+  );
+}
+
+function UserRoute({ children }) {
+  const { isLogged, isLoading } = useAuth();
+
+  if (isLoading) {
+    return null;
+  }
+
+  if (!isLogged) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return (
+    <>
+      <NavBar />
+      {children}
+    </>
+  );
 }

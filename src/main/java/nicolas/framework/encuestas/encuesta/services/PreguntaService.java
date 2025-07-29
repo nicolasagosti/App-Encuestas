@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class PreguntaService implements IPreguntaService {
@@ -30,7 +31,10 @@ public class PreguntaService implements IPreguntaService {
 
     @Override
     public List<Pregunta> listarPreguntas() {
-        return preguntaRepository.findAll();
+        return preguntaRepository.findAll()
+                .stream()
+                .filter(Pregunta::isVisible)
+                .collect(Collectors.toList());
     }
 
     public List<Pregunta> buscarPreguntasPorId(List<Long> id) {
@@ -44,14 +48,15 @@ public class PreguntaService implements IPreguntaService {
                 .orElseThrow(() -> new RuntimeException("Pregunta no encontrada"));
 
         List<Encuesta> encuestas = encuestaRepository.findAllByPreguntas_Id(id);
-
         for (Encuesta enc : encuestas) {
             enc.getPreguntas().remove(pregunta);
             encuestaRepository.save(enc);
         }
 
-        preguntaRepository.delete(pregunta);
+        pregunta.setVisible(false);
+        preguntaRepository.save(pregunta);
     }
+
 
     @Override
     @Transactional

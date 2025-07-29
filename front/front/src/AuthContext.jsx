@@ -1,62 +1,69 @@
+// src/AuthContext.jsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [isLogged, setIsLogged]   = useState(false);
-  const [userEmail, setUserEmail] = useState('');
-  const [userRole, setUserRole]   = useState('');
+  const [isLogged, setIsLogged]     = useState(false);
+  const [userEmail, setUserEmail]   = useState('');
+  const [userRole, setUserRole]     = useState('');
+  const [isLoading, setIsLoading]   = useState(true);
 
- useEffect(() => {
-  const token = localStorage.getItem('token');
-  const email = localStorage.getItem('userEmail');
-  const storedRole = localStorage.getItem('userRole');
-  console.log('Cargando contexto inicial...');
-  console.log({ token, email, storedRole });
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const email   = payload.email || payload.sub || '';
+        const rawRole = payload.role;
+        const isAdmin =
+          (rawRole && rawRole.toUpperCase() === 'ADMIN') ||
+          Object.values(payload).some(val =>
+            (typeof val === 'string' && val.toUpperCase().includes('ADMIN')) ||
+            (Array.isArray(val) && val.some(item => typeof item === 'string' && item.toUpperCase().includes('ADMIN')))
+          );
 
-  if (token) {
+        setIsLogged(true);
+        setUserEmail(email);
+        setUserRole(isAdmin ? 'ADMIN' : 'USER');
+      } catch (err) {
+        console.error('Error decodificando token:', err);
+        logout();
+      }
+    }
+    setIsLoading(false);
+  }, []);
+
+  const login = token => {
+    localStorage.setItem('token', token);
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
-      console.log('Payload:', payload);
-      const rawRole = payload.role || '';
+      const email   = payload.email || payload.sub || '';
+      const rawRole = payload.role;
       const isAdmin =
-        rawRole.toUpperCase() === 'ADMIN' ||
+        (rawRole && rawRole.toUpperCase() === 'ADMIN') ||
         Object.values(payload).some(val =>
-          typeof val === 'string' && val.toUpperCase().includes('ADMIN')
+          (typeof val === 'string' && val.toUpperCase().includes('ADMIN')) ||
+          (Array.isArray(val) && val.some(item => typeof item === 'string' && item.toUpperCase().includes('ADMIN')))
         );
 
       setIsLogged(true);
-      setUserEmail(email || '');
+      setUserEmail(email);
       setUserRole(isAdmin ? 'ADMIN' : 'USER');
-    } catch (e) {
-      console.error('Error decodificando token', e);
-      logout();
+    } catch (err) {
+      console.error('Error decodificando token en login():', err);
     }
-  }
-}, []);
-
-
-  const login = (email, role, callback) => {
-  setIsLogged(true);
-  setUserEmail(email);
-  setUserRole(role);
-  localStorage.setItem('userEmail', email);
-  localStorage.setItem('userRole', role);
-  if (callback) callback();
-};
-
+  };
 
   const logout = () => {
+    localStorage.removeItem('token');
     setIsLogged(false);
     setUserEmail('');
     setUserRole('');
-    localStorage.removeItem('token');
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('userRole');
   };
 
   return (
-    <AuthContext.Provider value={{ isLogged, userEmail, userRole, login, logout }}>
+    <AuthContext.Provider value={{ isLogged, userEmail, userRole, isLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

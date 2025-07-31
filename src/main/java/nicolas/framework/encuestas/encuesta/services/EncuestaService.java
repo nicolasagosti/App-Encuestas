@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -71,12 +72,19 @@ public class EncuestaService implements IEncuestaService {
         List<Encuesta> encuestasPendientes = new ArrayList<>();
 
         for (Encuesta encuesta : todasLasEncuestas) {
+
+            LocalDate hoy = LocalDate.now();
+
             Grupo grupo = encuesta.getGrupos().stream()
                     .filter(g -> g.getClientes().stream().anyMatch(c -> c.getId().equals(clienteId)))
                     .findFirst()
                     .orElse(null);
 
             if (grupo == null) continue;
+
+            if(encuesta.getFechaInicio().isAfter(hoy) || encuesta.getFechaFin().isBefore(hoy)) {
+                continue;
+            }
 
             boolean respondioTodas = true;
             for (Pregunta pregunta : encuesta.getPreguntas()) {
@@ -92,8 +100,8 @@ public class EncuestaService implements IEncuestaService {
             if (!respondioTodas) {
                 encuestasPendientes.add(encuesta);
             }
-
         }
+
 
         return getEncuestaOutputDTOS(encuestasPendientes);
     }

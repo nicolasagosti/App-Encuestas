@@ -1,41 +1,29 @@
 import { useState, useEffect } from 'react';
 import {
   obtenerEstadisticasTodosLosGrupos,
-  obtenerEstadisticasPorTrimestre
+  obtenerEstadisticasGrupoPorPeriodo,
+  obtenerEstadisticasClientePorPeriodo,
+  obtenerEstadisticasClientes
 } from '../services/api';
 
 export default function EstadisticasGrupo() {
-  const [estadisticas, setEstadisticas] = useState([]);
-  const [estadisticasPorTrimestre, setEstadisticasPorTrimestre] = useState([]);
+  const [estadisticasGlobalesGrupo, setEstadisticasGlobalesGrupo] = useState([]);
+  const [estadisticasGlobalesCliente, setEstadisticasGlobalesCliente] = useState([]);
+  const [estadisticasPeriodo, setEstadisticasPeriodo] = useState([]);
   const [error, setError] = useState('');
+  const [fechaInicio, setFechaInicio] = useState('');
+  const [fechaFin, setFechaFin] = useState('');
+  const [tipo, setTipo] = useState('grupo');
 
   useEffect(() => {
     obtenerEstadisticasTodosLosGrupos()
-      .then(res => setEstadisticas(res.data))
-      .catch(() => setError('❌ Error al cargar las estadísticas'));
+      .then(res => setEstadisticasGlobalesGrupo(res.data))
+      .catch(() => setError('❌ Error al cargar las estadísticas globales de grupos'));
 
-    obtenerEstadisticasPorTrimestre()
-      .then(res => {
-        if (Array.isArray(res)) {
-          setEstadisticasPorTrimestre(res);
-        } else {
-          console.error('⚠️ La respuesta de obtenerEstadisticasPorTrimestre no es un array:', res);
-          setEstadisticasPorTrimestre([]);
-        }
-      })
-      .catch(() => setError('❌ Error al cargar estadísticas por trimestre'));
+    obtenerEstadisticasClientes()
+      .then(res => setEstadisticasGlobalesCliente(res.data))
+      .catch(() => setError('❌ Error al cargar estadísticas globales de clientes'));
   }, []);
-
-  // 🔄 Sacar todos los trimestres únicos para las columnas
-  const trimestresUnicos = Array.from(
-    new Set(
-      Array.isArray(estadisticasPorTrimestre)
-        ? estadisticasPorTrimestre.flatMap(grupo =>
-            Object.keys(grupo.promediosPorTrimestre || {})
-          )
-        : []
-    )
-  ).sort();
 
   const getColor = (valor) => {
     if (valor >= 7.5) return 'bg-green-100 text-green-800';
@@ -43,82 +31,175 @@ export default function EstadisticasGrupo() {
     return 'bg-red-100 text-red-800';
   };
 
+  const handleBuscarPeriodo = async () => {
+    if (!fechaInicio || !fechaFin) {
+      setError('⚠️ Debe seleccionar ambas fechas');
+      return;
+    }
+    setError('');
+    try {
+      const res =
+        tipo === 'grupo'
+          ? await obtenerEstadisticasGrupoPorPeriodo(fechaInicio, fechaFin)
+          : await obtenerEstadisticasClientePorPeriodo(fechaInicio, fechaFin);
+      setEstadisticasPeriodo(res.data);
+    } catch (err) {
+      setError('❌ Error al cargar estadísticas por período');
+    }
+  };
+
   return (
     <div className="p-6 max-w-6xl mx-auto mt-10 bg-white shadow rounded space-y-10">
-      <h2 className="text-2xl font-bold text-center">Estadísticas por Grupo</h2>
+      <h2 className="text-2xl font-bold text-center">Estadísticas</h2>
 
-      {error && <p className="text-red-600 mb-4">{error}</p>}
+      {error && <p className="text-red-600 mb-4 text-center">{error}</p>}
 
-      {/* 🔹 Primera tabla: global */}
-      <div className="overflow-x-auto">
-        <table className="min-w-full border border-gray-300">
-          <thead className="bg-gray-100 text-gray-700 text-left">
-            <tr>
-              <th className="p-3 border-b">Grupo</th>
-              <th className="p-3 border-b">Cantidad de Personas</th>
-              <th className="p-3 border-b">Promedio</th>
-            </tr>
-          </thead>
-          <tbody>
-            {estadisticas.map((grupo, idx) => (
-              <tr key={idx} className="hover:bg-gray-50">
-                <td className="p-3 border-b">{grupo.descripcion || `Grupo ${grupo.grupoId}`}</td>
-                <td className="p-3 border-b">{grupo.cantidadDeColaboradores ?? '—'}</td>
-                <td className={`p-3 border-b text-center font-semibold ${grupo.promedio != null ? getColor(grupo.promedio) : 'text-gray-400 italic'}`}>
-  {typeof grupo.promedio === 'number'
-    ? grupo.promedio.toFixed(2)
-    : '—'}
-</td>
-              </tr>
-            ))}
-            {estadisticas.length === 0 && (
-              <tr>
-                <td colSpan="3" className="p-4 text-center text-gray-500">No hay datos disponibles.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      {/* 🔎 Filtro por período */}
+      <section className="text-center space-y-4">
+        <h3 className="text-xl font-semibold">Filtrar por período</h3>
+        <div className="flex flex-wrap items-center justify-center gap-4">
+          <label>
+            Desde:{' '}
+            <input
+              type="date"
+              value={fechaInicio}
+              onChange={e => setFechaInicio(e.target.value)}
+              className="ml-2 border px-2 py-1 rounded"
+            />
+          </label>
+          <label>
+            Hasta:{' '}
+            <input
+              type="date"
+              value={fechaFin}
+              onChange={e => setFechaFin(e.target.value)}
+              className="ml-2 border px-2 py-1 rounded"
+            />
+          </label>
+          <select
+            value={tipo}
+            onChange={e => setTipo(e.target.value)}
+            className="border px-2 py-1 rounded"
+          >
+            <option value="grupo">Por Grupo</option>
+            <option value="cliente">Por Cliente</option>
+          </select>
+          <button
+            onClick={handleBuscarPeriodo}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            Buscar
+          </button>
+        </div>
 
-      {/* 🔹 Segunda tabla: por trimestre */}
-      <div>
-        <h3 className="text-xl font-semibold mb-4 text-center">Promedios por Trimestre</h3>
+        {/* 📊 Tabla de resultados del período */}
+        {estadisticasPeriodo.length > 0 && (
+          <div className="overflow-x-auto mt-4">
+            <table className="min-w-full border border-gray-300 text-sm">
+              <thead className="bg-gray-100 text-gray-700 text-left">
+                <tr>
+                  <th className="p-3 border-b">
+                    {tipo === 'grupo' ? 'Grupo' : 'Cliente'}
+                  </th>
+                  <th className="p-3 border-b text-center">Promedio</th>
+                </tr>
+              </thead>
+              <tbody>
+                {estadisticasPeriodo.map((item, idx) => (
+                  <tr key={idx} className="hover:bg-gray-50">
+                    <td className="p-3 border-b">
+                      {tipo === 'grupo'
+                        ? item.descripcion || `Grupo ${item.grupoId}`
+                        : item.mail || `Cliente ${item.clienteId}`}
+                    </td>
+                    <td
+                      className={`p-3 border-b text-center font-semibold ${
+                        item.promedio != null
+                          ? getColor(item.promedio)
+                          : 'text-gray-400 italic'
+                      }`}
+                    >
+                      {typeof item.promedio === 'number'
+                        ? item.promedio.toFixed(2)
+                        : '—'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
 
+      {/* 🧾 Tabla global por grupo */}
+      <section>
+        <h3 className="text-xl font-semibold mb-4">Promedios Globales por Grupo</h3>
         <div className="overflow-x-auto">
           <table className="min-w-full border border-gray-300 text-sm">
             <thead className="bg-gray-100 text-gray-700 text-left">
               <tr>
                 <th className="p-3 border-b">Grupo</th>
-                {trimestresUnicos.map(tri => (
-                  <th key={tri} className="p-3 border-b text-center">{tri}</th>
-                ))}
+                <th className="p-3 border-b">Cantidad de Personas</th>
+                <th className="p-3 border-b text-center">Promedio</th>
               </tr>
             </thead>
             <tbody>
-              {estadisticasPorTrimestre.map((grupo, idx) => (
+              {estadisticasGlobalesGrupo.map((grupo, idx) => (
                 <tr key={idx} className="hover:bg-gray-50">
-                  <td className="p-3 border-b font-medium">{grupo.grupoDescripcion}</td>
-                  {trimestresUnicos.map(tri => {
-                    const valor = grupo.promediosPorTrimestre?.[tri];
-                    return (
-                      <td key={tri} className={`p-3 border-b text-center font-semibold rounded ${valor != null ? getColor(valor) : 'text-gray-400 italic'}`}>
-                        {valor != null ? valor.toFixed(2) : '—'}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-              {estadisticasPorTrimestre.length === 0 && (
-                <tr>
-                  <td colSpan={1 + trimestresUnicos.length} className="p-4 text-center text-gray-500">
-                    No hay datos disponibles.
+                  <td className="p-3 border-b">
+                    {grupo.descripcion || `Grupo ${grupo.grupoId}`}
+                  </td>
+                  <td className="p-3 border-b">{grupo.cantidadDeColaboradores ?? '—'}</td>
+                  <td
+                    className={`p-3 border-b text-center font-semibold ${
+                      grupo.promedio != null
+                        ? getColor(grupo.promedio)
+                        : 'text-gray-400 italic'
+                    }`}
+                  >
+                    {typeof grupo.promedio === 'number'
+                      ? grupo.promedio.toFixed(2)
+                      : '—'}
                   </td>
                 </tr>
-              )}
+              ))}
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
+
+      {/* 🧾 Tabla global por cliente */}
+      <section>
+        <h3 className="text-xl font-semibold mb-4">Promedios Globales por Cliente</h3>
+        <div className="overflow-x-auto">
+          <table className="min-w-full border border-gray-300 text-sm">
+            <thead className="bg-gray-100 text-gray-700 text-left">
+              <tr>
+                <th className="p-3 border-b">Cliente</th>
+                <th className="p-3 border-b text-center">Promedio</th>
+              </tr>
+            </thead>
+            <tbody>
+              {estadisticasGlobalesCliente.map((cliente, idx) => (
+                <tr key={idx} className="hover:bg-gray-50">
+                  <td className="p-3 border-b">{cliente.mail || `Cliente ${cliente.clienteId}`}</td>
+                  <td
+                    className={`p-3 border-b text-center font-semibold ${
+                      cliente.promedio != null
+                        ? getColor(cliente.promedio)
+                        : 'text-gray-400 italic'
+                    }`}
+                  >
+                    {typeof cliente.promedio === 'number'
+                      ? cliente.promedio.toFixed(2)
+                      : '—'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
     </div>
   );
 }

@@ -12,4 +12,5 @@ import java.util.Optional;
 public interface GrupoRepository extends JpaRepository<Grupo, Long> {
 
     List<Grupo> findAllByDescripcionIgnoreCase(String descripcion);
+
 }

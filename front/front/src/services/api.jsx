@@ -92,8 +92,16 @@ export function obtenerEstadisticasTodosLosGrupos() {
   return api.get('/estadisticas');
 }
 
-export async function obtenerEstadisticasPorTrimestre() {
-  return fetch('/estadisticas/trimestrales').then(res => res.json());
+export async function obtenerEstadisticasGrupoPorPeriodo(fechaInicio, fechaFin) {
+  return api.get(`/estadisticas/grupos/periodo?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`);
+}
+
+export async function obtenerEstadisticasClientes() {
+  return api.get('/estadisticas/clientes');
+}
+
+export async function obtenerEstadisticasClientePorPeriodo(fechaInicio, fechaFin) {
+  return api.get(`/estadisticas/clientes/periodo?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`);
 }
 
 //ClientesBancos

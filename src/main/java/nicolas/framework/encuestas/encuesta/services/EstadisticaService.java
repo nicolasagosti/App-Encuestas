@@ -1,9 +1,8 @@
 package nicolas.framework.encuestas.encuesta.services;
 
-import nicolas.framework.encuestas.encuesta.dtos.GrupoOutputDTO;
-import nicolas.framework.encuestas.encuesta.dtos.GrupoPromedioOutputDTO;
-import nicolas.framework.encuestas.encuesta.dtos.GrupoPromedioPorFechaOutputDTO;
+import nicolas.framework.encuestas.encuesta.dtos.*;
 import nicolas.framework.encuestas.encuesta.models.entities.Respuesta;
+import nicolas.framework.encuestas.encuesta.models.repositories.GrupoRepository;
 import nicolas.framework.encuestas.encuesta.models.repositories.RespuestaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,6 +20,8 @@ public class EstadisticaService implements IEstadisticaService {
     @Autowired
     GrupoService grupoService;
 
+    @Autowired
+    ClienteService clienteService;
 
     @Override
     public Float calcularPromedio(List <Respuesta> respuestas) {
@@ -42,70 +43,96 @@ public class EstadisticaService implements IEstadisticaService {
     }
 
     @Override
-    public Float promedioDeGrupoPorTrimestre(LocalDate fechaInicial, LocalDate fechaFinal, Long grupoId) {
+    public List<GrupoPromedioOutputDTO> promediosDeTodosLosGrupos(){
+
+        List<GrupoOutputDTO> grupos = grupoService.todosLosGrupos();
+        List<GrupoPromedioOutputDTO> grupoPromedios = new ArrayList<>();
+
+        for (GrupoOutputDTO grupo : grupos) {
+            Float promedio = promedioDeGrupo(grupo.getId());
+            grupoPromedios.add(new GrupoPromedioOutputDTO(grupo, promedio));
+        }
+
+        return grupoPromedios;
+    }
+
+    @Override
+    public Float promedioDeGrupoPorFecha(LocalDate fechaInicial, LocalDate fechaFinal, Long grupoId) {
 
         List<Respuesta> respuestas = respuestaRepository.encontrarRespuestasPorGrupoYFecha(fechaInicial, fechaFinal, grupoId);
-
        return calcularPromedio(respuestas);
     }
 
     @Override
-    public List<GrupoPromedioOutputDTO> promediosDeTodosLosGrupos(){
+    public List<GrupoPromedioOutputDTO> promediosDeTodosLosGruposPorPeriodo(LocalDate fechaInicio, LocalDate fechaFin) {
+        List<GrupoOutputDTO> grupos = grupoService.todosLosGrupos();
+        List<GrupoPromedioOutputDTO> estadisticas = new ArrayList<>();
 
-            List<GrupoOutputDTO> grupos = grupoService.todosLosGrupos();
-            List<GrupoPromedioOutputDTO> grupoPromedios = new ArrayList<>();
+        for(GrupoOutputDTO grupo : grupos) {
 
-            for (GrupoOutputDTO grupo : grupos) {
-                Float promedio = promedioDeGrupo(grupo.getId());
-                grupoPromedios.add(new GrupoPromedioOutputDTO(grupo, promedio));
-            }
+           Float promedio = promedioDeGrupoPorFecha(fechaInicio, fechaFin, grupo.getId());
+           estadisticas.add(new GrupoPromedioOutputDTO(grupo, promedio));
+        }
 
-            return grupoPromedios;
+        return estadisticas;
     }
 
     @Override
-    public List<GrupoPromedioPorFechaOutputDTO> promediosDeTodosLosGruposPorTrimestre() {
-        List<GrupoOutputDTO> grupos = grupoService.todosLosGrupos();
-        List<Respuesta> todasLasRespuestas = respuestaRepository.findAll();
+    public Float promedioDeCliente(Long clienteId) {
 
-        Set<String> trimestresUnicos = todasLasRespuestas.stream()
-                .map(r -> {
-                    LocalDate fecha = r.getFechaRespuesta();
-                    int trimestre = (fecha.getMonthValue() - 1) / 3 + 1;
-                    return fecha.getYear() + "-Q" + trimestre;
-                })
-                .collect(Collectors.toSet());
+        List <Respuesta> respuestasDeCliente = respuestaRepository.findByClienteId(clienteId);
+       return calcularPromedio(respuestasDeCliente);
+    }
 
-        // 2. Armar la lista de DTOs
-        List<GrupoPromedioPorFechaOutputDTO> resultado = new ArrayList<>();
+    @Override
+    public List<ClientePromedioOutputDTO> promediosDeTodosLosClientes() {
 
-        for (GrupoOutputDTO grupo : grupos) {
-            Map<String, Float> promediosPorTrimestre = new HashMap<>();
+        List<ClienteOutputDTO> clientes = sacarAdmin();
 
-            for (String trimestre : trimestresUnicos) {
-                int anio = Integer.parseInt(trimestre.split("-Q")[0]);
-                int q = Integer.parseInt(trimestre.split("-Q")[1]);
+        List<ClientePromedioOutputDTO> resultado = new ArrayList<>();
 
-                LocalDate inicio = LocalDate.of(anio, (q - 1) * 3 + 1, 1);
-                LocalDate fin = inicio.plusMonths(3).minusDays(1);
-
-                List<Respuesta> respuestasEnTrimestre = respuestaRepository
-                        .encontrarRespuestasPorGrupoYFecha(inicio, fin, grupo.getId());
-
-                Float promedio = calcularPromedio(respuestasEnTrimestre);
-                if (promedio != null) {
-                    promediosPorTrimestre.put(trimestre, promedio);
-                }
-            }
-
-            resultado.add(new GrupoPromedioPorFechaOutputDTO(
-                    grupo.getId(),
-                    grupo.getDescripcion(),
-                    promediosPorTrimestre
-            ));
+        for (ClienteOutputDTO cliente : clientes) {
+            Float promedio = promedioDeCliente(cliente.getId());
+            resultado.add(new ClientePromedioOutputDTO(cliente, promedio));
         }
 
         return resultado;
+    }
+
+    @Override
+    public Float promedioDeClientePorFecha(LocalDate fechaInicial, LocalDate fechaFinal, Long clienteId) {
+
+        List<Respuesta> respuestas = respuestaRepository.encontrarRespuestasPorClienteYFecha(fechaInicial, fechaFinal, clienteId);
+        return calcularPromedio(respuestas);
+    }
+
+    @Override
+    public List<ClientePromedioOutputDTO> promediosDeTodosLosClientesPorPeriodo(LocalDate fechaInicio, LocalDate fechaFin){
+
+        List<ClienteOutputDTO> clientes = sacarAdmin();
+
+        List<ClientePromedioOutputDTO> estadisticas = new ArrayList<>();
+
+        for(ClienteOutputDTO cliente : clientes) {
+
+            Float promedio = promedioDeClientePorFecha(fechaInicio, fechaFin, cliente.getId());
+            estadisticas.add(new ClientePromedioOutputDTO(cliente, promedio));
+        }
+
+        return estadisticas;
+
+    }
+
+    public List<ClienteOutputDTO> sacarAdmin() {
+
+        List<ClienteOutputDTO> clientes = clienteService.obtenerClientes();
+
+        for(int i = 0; i<clientes.size(); i++){
+            if(Objects.equals(clientes.get(i).getMail(), "admin@gmail.com")){
+                clientes.remove(i);
+            }
+        }
+        return clientes;
     }
 
 }

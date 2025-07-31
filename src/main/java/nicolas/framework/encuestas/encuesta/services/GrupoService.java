@@ -9,12 +9,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class GrupoService implements IGrupoService{
 
     @Autowired
     private GrupoRepository grupoRepository;
+
+    @Override
+    public GrupoOutputDTO buscarGrupo(Long id) {
+        Optional<Grupo> grupo = grupoRepository.findById(id);
+        return new GrupoOutputDTO(grupo.get().getId(), grupo.get().getDescripcion(), grupo.get().getCantidadDeColaboradores());
+    }
 
     @Override
     public List<GrupoOutputDTO> todosLosGrupos() {

@@ -4,6 +4,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../AuthContext';
 import logo from './accenture.png';
+import { Navigate } from 'react-router-dom'
+
 
 export default function RegisterPage() {
   const [username, setUsername]               = useState('');
@@ -11,7 +13,15 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError]                     = useState('');
   const navigate                              = useNavigate();
-  const { login }                             = useAuth();
+  const { login, isLogged, userRole, isLoading }   = useAuth();
+  
+
+    if (isLoading) return null;
+
+  // 🔐 Redirigir si ya está logueado
+  if (isLogged) {
+    return <Navigate to={userRole === 'ADMIN' ? '/admin' : '/dashboard'} replace />;
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();

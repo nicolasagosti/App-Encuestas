@@ -3,13 +3,22 @@ import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../AuthContext';
 import logo from './accenture.png';
+import { Navigate } from 'react-router-dom';
+
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError]       = useState('');
   const navigate                = useNavigate();
-  const { login }               = useAuth();
+  const { login, isLogged, userRole, isLoading }   = useAuth();
+
+  if (isLoading) return null;
+
+  // 🔐 Redirigir si ya está logueado
+  if (isLogged) {
+    return <Navigate to={userRole === 'ADMIN' ? '/admin' : '/dashboard'} replace />;
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();

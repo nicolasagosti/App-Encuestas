@@ -63,7 +63,7 @@ export default function EstadisticasGrupo() {
           className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
           onClick={() => exportarEstadisticasAGrupo(estadisticasGlobalesGrupo)}
         >
-          Exportar Grupos (Global)
+          Estadisticas de Grupos (Global)
         </button>
 
          {tipo === 'grupo' && estadisticasPeriodo.length > 0 && (
@@ -81,7 +81,7 @@ export default function EstadisticasGrupo() {
           className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
           onClick={() => exportarEstadisticasClientes(estadisticasGlobalesCliente)}
         >
-          Exportar Clientes
+          Estadisticas de Clientes (Global)
         </button>
 
         {tipo === 'cliente' && estadisticasPeriodo.length > 0 && (

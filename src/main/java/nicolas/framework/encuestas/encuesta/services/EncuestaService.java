@@ -91,7 +91,6 @@ public class EncuestaService implements IEncuestaService {
                 boolean existeRespuesta = respuestaRepository
                         .existsByCliente_IdAndGrupo_IdAndPregunta_Id(clienteId, grupo.getId(), pregunta.getId());
 
-
                 if (!existeRespuesta) {
                     respondioTodas = false;
                     break;
@@ -101,12 +100,8 @@ public class EncuestaService implements IEncuestaService {
                 encuestasPendientes.add(encuesta);
             }
         }
-
-
         return getEncuestaOutputDTOS(encuestasPendientes);
     }
-
-
 
     @Override
     public List<EncuestaOutputDTO> findAll() {

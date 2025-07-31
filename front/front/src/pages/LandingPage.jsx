@@ -1,8 +1,22 @@
 // src/pages/LandingPage.jsx
 import { Link } from 'react-router-dom';
 import logo from './accenture.png';
+import { Navigate } from 'react-router-dom'
+import { useAuth } from '../AuthContext';
+
 
 export default function LandingPage() {
+
+  const {isLogged, userRole, isLoading }   = useAuth();
+  
+
+ if (isLoading) return null;
+
+  // 🔐 Redirigir si ya está logueado
+  if (isLogged) {
+    return <Navigate to={userRole === 'ADMIN' ? '/admin' : '/dashboard'} replace />;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center px-4">
       <div className="max-w-md w-full bg-white shadow-lg rounded-xl p-8 border border-gray-200 text-center">

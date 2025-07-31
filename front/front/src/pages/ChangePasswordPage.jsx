@@ -20,7 +20,7 @@ export default function ChangePasswordPage() {
   const [success, setSuccess]         = useState('');
   const [loading, setLoading]         = useState(false);
   const navigate                      = useNavigate();
-  const { logout }                    = useAuth();
+  const { login }                    = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -38,7 +38,6 @@ export default function ChangePasswordPage() {
       return;
     }
 
-    // Extraer email/username del token (asume que está en "sub" o en "username")
     const payload = parseJwt(token);
     const email = (payload?.sub || payload?.username || '').toLowerCase();
     if (!email) {
@@ -48,16 +47,34 @@ export default function ChangePasswordPage() {
 
     setLoading(true);
     try {
+      // 1) Cambiar contraseña
       await api.put('/auth/change-password', {
         email,
         newPassword,
       });
 
-      setSuccess('Contraseña cambiada con éxito. Redirigiendo al login...');
+      // 2) Re-login para obtener token nuevo
+      const loginResp = await api.post('/auth/login', {
+        username: email,
+        password: newPassword,
+      });
+      const { token: newToken } = loginResp.data;
+      login(newToken); // guarda el nuevo token
+
+      setSuccess('Contraseña cambiada. Redirigiendo al dashboard...');
+
+      // 3) Decidir ruta según rol y redirigir
+      const newPayload = parseJwt(newToken);
+      const rawRole = newPayload?.role;
+      const isAdminClaim = rawRole && rawRole.toUpperCase() === 'ADMIN';
+      const isAdminInArray = Object.values(newPayload || {}).some(
+        (val) => typeof val === 'string' && val.toUpperCase().includes('ADMIN')
+      );
+      const role = (isAdminClaim || isAdminInArray) ? 'ADMIN' : 'USER';
+
       setTimeout(() => {
-        logout();
-        navigate('/login');
-      }, 1000);
+        navigate(role === 'ADMIN' ? '/admin' : '/dashboard', { replace: true });
+      }, 800);
     } catch (err) {
       console.error('Error cambiando contraseña:', err);
       if (err.response) {

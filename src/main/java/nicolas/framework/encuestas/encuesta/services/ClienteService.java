@@ -110,5 +110,15 @@ public class ClienteService implements IClienteService {
         return user.getId();
     }
 
+    public boolean obtenerMustChangePassword(String mailCliente) {
+        System.out.println("🛬 Buscando mustChangePassword para: " + mailCliente);
+        String normalizado = mailCliente.trim().toLowerCase();
+        User user = clienteRepository.findByUsername(normalizado)
+                .orElseThrow(() -> new DatabaseException(
+                        "Cliente no encontrado con mail: " + normalizado
+                ));
+        return user.isMustChangePassword();
+    }
+
 }
 

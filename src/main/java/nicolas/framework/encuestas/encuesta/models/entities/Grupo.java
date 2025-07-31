@@ -62,4 +62,6 @@ public class Grupo {
     public List<Respuesta> getRespuestas() {
         return respuestas;
     }
+
+
 }

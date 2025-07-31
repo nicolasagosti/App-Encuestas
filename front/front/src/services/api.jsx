@@ -2,10 +2,10 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:8080'
+  baseURL: 'http://localhost:8080',
 });
 
-// Añade token a todas las peticiones excepto al login y registro
+// Añade token a todas las peticiones excepto al login y register
 api.interceptors.request.use(
   (config) => {
     if (
@@ -15,11 +15,25 @@ api.interceptors.request.use(
       return config;
     }
     const token = localStorage.getItem('token');
-    if (token) config.headers.Authorization = `Bearer ${token}`;
+    if (token) {
+      config.headers = config.headers || {};
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => Promise.reject(error)
 );
+
+// Auth
+export function login(payload) {
+  return api.post('/auth/login', payload);
+}
+export function register(payload) {
+  return api.post('/auth/register', payload);
+}
+export function cambiarPassword(newPassword) {
+  return api.put('/auth/change-password', { newPassword });
+}
 
 // Preguntas
 export function crearPregunta(texto) {
@@ -39,7 +53,6 @@ export function eliminarPregunta(id) {
 export function crearEncuesta(data) {
   return api.post('/encuestas', data);
 }
-
 export function obtenerEncuestas() {
   return api.get('/encuestas');
 }
@@ -59,19 +72,12 @@ export function cargarCliente() {
 export function asignarGruposACliente(clienteId, idGrupos) {
   return api.post(`/clientes/${clienteId}/grupos`, idGrupos);
 }
-
 export function obtenerIdDeCliente(mailCliente) {
-  return api.post(
-    `/clientes/id`,
-    { mailCliente }
-  );
+  return api.post('/clientes/id', { mailCliente });
 }
-
 export function asignarClientesAGrupo(grupoId, idClientes) {
   return api.post(`/clientes/${grupoId}`, idClientes);
 }
-
-// Encuestas de cliente y respuestas
 export function obtenerEncuestasDeCliente(clienteId) {
   return api.get(`/clientes/${clienteId}/encuestas`);
 }
@@ -81,36 +87,31 @@ export function responderEncuesta(clienteId, encuestaId, respuestas) {
     respuestas
   );
 }
+export function debeCambiarPassword(email) {
+  return api.get('/clientes/must-change-password', {
+    params: { email: email.trim().toLowerCase() },
+  });
+}
 
-//Estadisticas
-
-export const obtenerPromedioGrupo = async (grupoId) => {
+// Estadísticas
+export function obtenerPromedioGrupo(grupoId) {
   return api.get(`/estadisticas/${grupoId}`);
-};
-
+}
 export function obtenerEstadisticasTodosLosGrupos() {
   return api.get('/estadisticas');
 }
-
-export async function obtenerEstadisticasPorTrimestre() {
-  return fetch('/estadisticas/trimestrales').then(res => res.json());
+export function obtenerEstadisticasPorTrimestre() {
+  return api.get('/estadisticas/trimestrales');
 }
 
-//ClientesBancos
-
+// Clientes Bancos
 export function cargarBanco(formData) {
-  return api.post(
-    '/api/banco/agregar',
-    formData,
-    // Axios detecta automáticamente multipart/form-data,
-    // pero si quieres forzar el header:
-    { headers: { 'Content-Type': 'multipart/form-data' } }
-  );
+  return api.post('/api/banco/agregar', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
 }
-
 export function obtenerBanco(extension) {
   return api.get(`/api/banco/obtener/${extension}`);
 }
-
 
 export default api;

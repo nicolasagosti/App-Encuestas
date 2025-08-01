@@ -59,6 +59,7 @@ public class ClienteController {
         return ResponseEntity.ok(clientes);
     }
 
+
     @GetMapping("/must-change-password")
     public ResponseEntity<Boolean> debeCambiarPassword(@RequestParam("email") String email) {
         boolean flag = clienteService.obtenerMustChangePassword(email);

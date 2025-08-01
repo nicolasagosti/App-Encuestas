@@ -14,4 +14,5 @@ public interface IEncuestaService {
     public List<EncuestaOutputDTO> getEncuestaOutputDTOS(List<Encuesta> encuestas);
     public List<EncuestaOutputDTO> obtenerEncuestasPendientes(Long clienteId);
     List<EncuestaOutputDTO> findAll();
+    EncuestaOutputDTO editarEncuesta(Long id, EncuestaInputDTO dto);
 }

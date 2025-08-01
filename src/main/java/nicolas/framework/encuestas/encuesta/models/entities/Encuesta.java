@@ -44,6 +44,9 @@ public class Encuesta {
     )
     private List<Grupo> grupos = new ArrayList<>();
 
+    public Encuesta() {
+    }
+
     public Encuesta(LocalDate fechaInicio, LocalDate fechaFin, List<Pregunta> preguntas, List<Grupo> grupos) {
         this.fechaInicio = fechaInicio;
         this.fechaFin = fechaFin;

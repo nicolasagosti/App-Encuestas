@@ -1,11 +1,9 @@
-// src/pages/AdminDashboard.jsx
-
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@radix-ui/react-tabs";
 import PreguntaForm from "../components/PreguntaForm";
 import EncuestaForm from "../components/EncuestaForm";
 import CrearGrupoYAsignar from "../components/CrearGrupoYAsignar";
 import CargarClienteForm from "../components/CargarClienteForm";
-import CrearUsuarioForm from "../components/CrearUsuarioForm";  // <-- import nuevo
+import CrearUsuarioForm from "../components/CrearUsuarioForm";
 import { useAuth } from "../AuthContext";
 import { useNavigate } from "react-router-dom";
 
@@ -43,31 +41,31 @@ export default function AdminDashboard() {
               value="preguntas"
               className="px-4 py-2 rounded-t-lg bg-white shadow-sm hover:bg-blue-50"
             >
-              ➕ Crear Preguntas
+              ➕ Preguntas
             </TabsTrigger>
             <TabsTrigger
               value="encuestas"
               className="px-4 py-2 rounded-t-lg bg-white shadow-sm hover:bg-blue-50"
             >
-              📝 Crear Encuestas
+              📝 Encuestas
             </TabsTrigger>
             <TabsTrigger
               value="grupos"
               className="px-4 py-2 rounded-t-lg bg-white shadow-sm hover:bg-blue-50"
             >
-              👥 Crear Grupos
+              👥 Grupos
             </TabsTrigger>
             <TabsTrigger
               value="clientes"
               className="px-4 py-2 rounded-t-lg bg-white shadow-sm hover:bg-blue-50"
             >
-              👤 Cargar Cliente
+              👤 Clientes
             </TabsTrigger>
             <TabsTrigger
               value="usuarios"
               className="px-4 py-2 rounded-t-lg bg-white shadow-sm hover:bg-blue-50"
             >
-              👤 Crear Usuario
+              👤 Usuarios
             </TabsTrigger>
           </TabsList>
 

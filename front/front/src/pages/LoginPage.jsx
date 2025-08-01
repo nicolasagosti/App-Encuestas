@@ -1,50 +1,52 @@
-// src/pages/LoginPage.jsx
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import api, { debeCambiarPassword } from '../services/api';
 import { useAuth } from '../AuthContext';
 import logo from './accenture.png';
-import { Navigate } from 'react-router-dom';
-
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError]       = useState('');
+  const [forcePasswordChange, setForcePasswordChange] = useState(false);
   const navigate                = useNavigate();
   const { login, isLogged, userRole, isLoading }   = useAuth();
 
   if (isLoading) return null;
 
-  // 🔐 Redirigir si ya está logueado
-  if (isLogged) {
+  // 🔐 Redirigir si ya está logueado y NO está pendiente el cambio de password
+  if (isLogged && !forcePasswordChange) {
     return <Navigate to={userRole === 'ADMIN' ? '/admin' : '/dashboard'} replace />;
   }
+
+  const needsPasswordChange = (flag) => {
+    return flag === true || flag === 1 || flag === '1' || flag === 'true';
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
     try {
-      // 1) Login al backend
       const { data } = await api.post('/auth/login', { username, password });
       console.log('Login response:', data);
       const { token, mustChangePassword } = data;
 
-      // 2) Guardar token en contexto
-      login(token);
+      login(token); // marca como logueado
 
-      // 3) Si el backend devolvió el flag directamente
-      if (mustChangePassword === true || mustChangePassword === '1' || mustChangePassword === 1) {
+      // si debe cambiar contraseña, activamos el flag y redirigimos
+      if (needsPasswordChange(mustChangePassword)) {
+        setForcePasswordChange(true);
         navigate('/change-password', { replace: true });
         return;
       }
 
-      // 4) Fallback: consulta explícita por email
+      // fallback por si no vino claro
       try {
         const resp = await debeCambiarPassword(username);
         console.log('Fallback mustChangePassword response:', resp.data);
-        if (resp.data === true || resp.data === 1 || resp.data === '1') {
+        if (needsPasswordChange(resp.data)) {
+          setForcePasswordChange(true);
           navigate('/change-password', { replace: true });
           return;
         }
@@ -52,14 +54,19 @@ export default function LoginPage() {
         console.warn('Error al consultar mustChangePassword adicional:', innerErr);
       }
 
-      // 5) Navegación por rol
-      const payload = JSON.parse(atob(token.split('.')[1] || ''));
-      const rawRole = payload.role;
-      const isAdminClaim = rawRole && rawRole.toUpperCase() === 'ADMIN';
-      const isAdminInArray = Object.values(payload).some(val =>
-        typeof val === 'string' && val.toUpperCase().includes('ADMIN')
-      );
-      const role = (isAdminClaim || isAdminInArray) ? 'ADMIN' : 'USER';
+      // navegar por rol
+      let role = 'USER';
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1] || ''));
+        const rawRole = payload.role;
+        const isAdminClaim = rawRole && rawRole.toString().toUpperCase() === 'ADMIN';
+        const isAdminInArray = Object.values(payload).some(val =>
+          typeof val === 'string' && val.toUpperCase().includes('ADMIN')
+        );
+        role = (isAdminClaim || isAdminInArray) ? 'ADMIN' : 'USER';
+      } catch (err) {
+        console.warn('No se pudo parsear token para rol, usando USER por defecto', err);
+      }
 
       navigate(role === 'ADMIN' ? '/admin' : '/dashboard', { replace: true });
     } catch (err) {
@@ -130,7 +137,6 @@ export default function LoginPage() {
             Ingresar
           </button>
         </form>
-
       </div>
     </div>
   );

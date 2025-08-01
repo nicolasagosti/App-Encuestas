@@ -121,7 +121,7 @@ export default function CrearUsuarioForm() {
 
       {/* Lista de clientes */}
       <div>
-        <h2 className="text-lg font-semibold mb-4">Lista de Clientes</h2>
+        <h2 className="text-lg font-semibold mb-4">Lista de Usuarios</h2>
         <ul className="space-y-2">
           {clientesFiltrados.length > 0 ? (
             clientesFiltrados.map((cliente) => (
@@ -130,7 +130,7 @@ export default function CrearUsuarioForm() {
               </li>
             ))
           ) : (
-            <li className="p-2 text-gray-500">No se encontraron clientes</li>
+            <li className="p-2 text-gray-500">No se encontraron usuarios</li>
           )}
         </ul>
       </div>

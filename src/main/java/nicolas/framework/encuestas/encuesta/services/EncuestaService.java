@@ -46,19 +46,34 @@ public class EncuestaService implements IEncuestaService {
                 .orElseThrow(() -> new ResourceNotFoundException("Encuesta no encontrada con id " + id));
     }
 
+    @Override
     public List<EncuestaOutputDTO> getEncuestaOutputDTOS(List<Encuesta> encuestas) {
-        return encuestas.stream().map(encuesta -> {
-            List<PreguntaOutputDTO> preguntas = encuesta.getPreguntas().stream()
-                    .map(p -> new PreguntaOutputDTO(p.getId(), p.getTexto()))
-                    .toList();
+        return encuestas.stream()
+                .map(encuesta -> {
+                    List<PreguntaOutputDTO> preguntas = encuesta.getPreguntas().stream()
+                            .map(p -> new PreguntaOutputDTO(p.getId(), p.getTexto()))
+                            .toList();
 
-            List<GrupoOutputDTO> grupos = encuesta.getGrupos().stream()
-                    .map(g -> new GrupoOutputDTO(g.getId(), g.getDescripcion(), g.getCantidadDeColaboradores()))
-                    .toList();
+                    List<GrupoOutputDTO> grupos = encuesta.getGrupos().stream()
+                            .map(g -> new GrupoOutputDTO(
+                                    g.getId(),
+                                    g.getDescripcion(),
+                                    g.getCantidadDeColaboradores(),
+                                    g.getNombre()          // ahora incluye el nombre
+                            ))
+                            .toList();
 
-            return new EncuestaOutputDTO(encuesta.getFechaInicio(), encuesta.getFechaFin(), preguntas, encuesta.getId(), grupos);
-        }).toList();
+                    return new EncuestaOutputDTO(
+                            encuesta.getFechaInicio(),
+                            encuesta.getFechaFin(),
+                            preguntas,
+                            encuesta.getId(),
+                            grupos
+                    );
+                })
+                .toList();
     }
+
 
     @Override
     public List<EncuestaOutputDTO> obtenerEncuestasPendientes(Long clienteId) {

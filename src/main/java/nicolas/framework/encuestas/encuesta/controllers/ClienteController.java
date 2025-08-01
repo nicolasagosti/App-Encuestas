@@ -1,8 +1,6 @@
-// src/main/java/nicolas/framework/encuestas/encuesta/controllers/ClienteController.java
 package nicolas.framework.encuestas.encuesta.controllers;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
-import nicolas.framework.encuestas.encuesta.dtos.ClienteInputDTO;
 import nicolas.framework.encuestas.encuesta.dtos.ClienteOutputDTO;
 import nicolas.framework.encuestas.encuesta.dtos.EncuestaOutputDTO;
 import nicolas.framework.encuestas.encuesta.dtos.MailClienteDTO;
@@ -13,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
 
 @Tag(name = "Clientes")
 @CrossOrigin(origins = "http://localhost:3000")
@@ -29,7 +26,6 @@ public class ClienteController {
         this.clienteService = clienteService;
         this.encuestaService = encuestaService;
     }
-
 
     @PostMapping("/{clienteId}/grupos")
     public ResponseEntity<HttpStatus> asignarGruposACliente(@PathVariable Long clienteId,
@@ -57,10 +53,15 @@ public class ClienteController {
         return ResponseEntity.ok(encuestas);
     }
 
-
     @GetMapping
     public ResponseEntity<List<ClienteOutputDTO>> obtenerClientes() {
         List<ClienteOutputDTO> clientes = clienteService.obtenerClientes();
         return ResponseEntity.ok(clientes);
+    }
+
+    @GetMapping("/must-change-password")
+    public ResponseEntity<Boolean> debeCambiarPassword(@RequestParam("email") String email) {
+        boolean flag = clienteService.obtenerMustChangePassword(email);
+        return ResponseEntity.ok(flag);
     }
 }

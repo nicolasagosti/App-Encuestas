@@ -1,6 +1,5 @@
 package nicolas.framework.encuestas.Config;
 
-
 import jakarta.annotation.PostConstruct;
 import nicolas.framework.encuestas.encuesta.models.entities.Role;
 import nicolas.framework.encuestas.encuesta.models.entities.User;
@@ -24,13 +23,12 @@ public class AdminInitializer {
         String adminEmail = "admin@gmail.com";
         String adminPassword = "admin";
 
-        // Si ya existe, no hace nada
         if (userRepository.findUserByUsername(adminEmail).isEmpty()) {
             User admin = new User();
-            admin.setUsername("Administrador");
-            admin.setUsername(adminEmail);
+            admin.setUsername(adminEmail); // email como username
             admin.setPassword(passwordEncoder.encode(adminPassword));
-            admin.setRole(Role.valueOf("ADMIN"));
+            admin.setRole(Role.ADMIN);
+            admin.setMustChangePassword(false); // no lo obliga a cambiar
             userRepository.save(admin);
 
             System.out.println("🛡️  Usuario admin creado automáticamente");

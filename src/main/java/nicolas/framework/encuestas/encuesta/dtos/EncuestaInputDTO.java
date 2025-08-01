@@ -43,4 +43,28 @@ public class EncuestaInputDTO {
         this.fechaInicio = fechaInicio;
         this.fechaFin = fechaFin;
     }
+
+    public @NotNull(message = "El campo 'grupos' es obligatorio") List<Long> getGrupos() {
+        return grupos;
+    }
+
+    public void setGrupos(@NotNull(message = "El campo 'grupos' es obligatorio") List<Long> grupos) {
+        this.grupos = grupos;
+    }
+
+    public @NotNull(message = "El campo 'preguntas' es obligatorio") List<Long> getPreguntas() {
+        return preguntas;
+    }
+
+    public void setPreguntas(@NotNull(message = "El campo 'preguntas' es obligatorio") List<Long> preguntas) {
+        this.preguntas = preguntas;
+    }
+
+    public void setFechaInicio(@NotNull(message = "El campo 'fecha de inicio' es obligatorio") @FutureOrPresent(message = "La fecha de inicio debe ser hoy o en el futuro") LocalDate fechaInicio) {
+        this.fechaInicio = fechaInicio;
+    }
+
+    public void setFechaFin(@NotNull(message = "El campo 'fecha de fin' es obligatorio") @FutureOrPresent(message = "La fecha de fin debe ser en el futuro") LocalDate fechaFin) {
+        this.fechaFin = fechaFin;
+    }
 }

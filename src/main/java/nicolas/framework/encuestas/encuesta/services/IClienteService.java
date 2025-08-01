@@ -12,6 +12,6 @@ public interface IClienteService {
     public void asignarGruposACliente(Long clienteId, List<Long> ids);
     public void asignarClientesAGrupo(Long grupoId, List<Long> clienteIds);
     public List<ClienteOutputDTO> obtenerClientes();
-
+    boolean obtenerMustChangePassword(String mailCliente);
     Long obtenerIdDeCLiente(String mailCliente);
 }

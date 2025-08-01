@@ -15,11 +15,25 @@ api.interceptors.request.use(
       return config;
     }
     const token = localStorage.getItem('token');
-    if (token) config.headers.Authorization = `Bearer ${token}`;
+    if (token) {
+      config.headers = config.headers || {};
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => Promise.reject(error)
 );
+
+// Auth
+export function login(payload) {
+  return api.post('/auth/login', payload);
+}
+export function register(payload) {
+  return api.post('/auth/register', payload);
+}
+export function cambiarPassword(newPassword) {
+  return api.put('/auth/change-password', { newPassword });
+}
 
 // Preguntas
 export function crearPregunta(texto) {
@@ -61,10 +75,7 @@ export function asignarGruposACliente(clienteId, idGrupos) {
 }
 
 export function obtenerIdDeCliente(mailCliente) {
-  return api.post(
-    `/clientes/id`,
-    { mailCliente }
-  );
+  return api.post('/clientes/id', { mailCliente });
 }
 
 export function asignarClientesAGrupo(grupoId, idClientes) {
@@ -80,6 +91,11 @@ export function responderEncuesta(clienteId, encuestaId, respuestas) {
     `/clientes/${clienteId}/encuestas/${encuestaId}/respuestas`,
     respuestas
   );
+}
+export function debeCambiarPassword(email) {
+  return api.get('/clientes/must-change-password', {
+    params: { email: email.trim().toLowerCase() },
+  });
 }
 
 //Estadisticas
@@ -104,8 +120,7 @@ export async function obtenerEstadisticasClientePorPeriodo(fechaInicio, fechaFin
   return api.get(`/estadisticas/clientes/periodo?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`);
 }
 
-//ClientesBancos
-
+// Clientes Bancos
 export function cargarBanco(formData) {
   return api.post(
     '/api/banco/agregar',

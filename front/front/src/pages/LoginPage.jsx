@@ -1,6 +1,7 @@
+// src/pages/LoginPage.jsx
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import api from '../services/api';
+import api, { debeCambiarPassword } from '../services/api';
 import { useAuth } from '../AuthContext';
 import logo from './accenture.png';
 import { Navigate } from 'react-router-dom';
@@ -25,27 +26,51 @@ export default function LoginPage() {
     setError('');
 
     try {
+      // 1) Login al backend
       const { data } = await api.post('/auth/login', { username, password });
-      const token = data.token;
-      // Llamamos a login con el JWT
+      console.log('Login response:', data);
+      const { token, mustChangePassword } = data;
+
+      // 2) Guardar token en contexto
       login(token);
 
-      // Decidir ruta según rol recién seteado
+      // 3) Si el backend devolvió el flag directamente
+      if (mustChangePassword === true || mustChangePassword === '1' || mustChangePassword === 1) {
+        navigate('/change-password', { replace: true });
+        return;
+      }
+
+      // 4) Fallback: consulta explícita por email
+      try {
+        const resp = await debeCambiarPassword(username);
+        console.log('Fallback mustChangePassword response:', resp.data);
+        if (resp.data === true || resp.data === 1 || resp.data === '1') {
+          navigate('/change-password', { replace: true });
+          return;
+        }
+      } catch (innerErr) {
+        console.warn('Error al consultar mustChangePassword adicional:', innerErr);
+      }
+
+      // 5) Navegación por rol
       const payload = JSON.parse(atob(token.split('.')[1] || ''));
       const rawRole = payload.role;
       const isAdminClaim = rawRole && rawRole.toUpperCase() === 'ADMIN';
       const isAdminInArray = Object.values(payload).some(val =>
-        (typeof val === 'string' && val.toUpperCase().includes('ADMIN')) ||
-        (Array.isArray(val) && val.some(item => typeof item === 'string' && item.toUpperCase().includes('ADMIN')))
+        typeof val === 'string' && val.toUpperCase().includes('ADMIN')
       );
       const role = (isAdminClaim || isAdminInArray) ? 'ADMIN' : 'USER';
 
-      navigate(role === 'ADMIN' ? '/admin' : '/dashboard');
+      navigate(role === 'ADMIN' ? '/admin' : '/dashboard', { replace: true });
     } catch (err) {
+      console.error('Login error:', err.response?.status, err.response?.data);
       if (err.response) {
         const status = err.response.status;
-        if (status === 401 || status === 403) setError('Usuario o contraseña incorrectos');
-        else setError(`Error ${status}: ${err.response.statusText}`);
+        setError(
+          status === 401 || status === 403
+            ? 'Usuario o contraseña incorrectos'
+            : `Error ${status}: ${err.response.statusText}`
+        );
       } else {
         setError('Error de conexión. Verifica CORS y el backend.');
       }
@@ -106,16 +131,6 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p className="text-center text-sm text-gray-600 mt-4">
-          ¿No tienes cuenta?{' '}
-          <Link to="/register" className="font-semibold text-blue-600 hover:underline">
-            Regístrate
-          </Link>
-        </p>
-
-        <p className="mt-6 text-center text-xs text-gray-400">
-          © {new Date().getFullYear()} Banco Francés. Todos los derechos reservados.
-        </p>
       </div>
     </div>
   );

@@ -52,6 +52,7 @@ public class AuthService {
         // 3) Genera token en todos los casos
         String token = jwtService.getToken(user);
 
+        System.out.println("Usuario: " + user.getUsername() + ", mustChangePassword: " + user.isMustChangePassword());
         // 4) Devuelve token + flag mustChangePassword
         return AuthResponse.builder()
                 .token(token)

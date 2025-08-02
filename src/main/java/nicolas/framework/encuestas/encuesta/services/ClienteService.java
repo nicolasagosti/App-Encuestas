@@ -23,6 +23,8 @@ public class ClienteService implements IClienteService {
     @Autowired
     private GrupoRepository grupoRepository;
 
+    //commit de prueba
+
     @Override
     public void asignarClientesAGrupo(Long grupoId, List<Long> clienteIds) {
         // 1. Buscamos el Grupo

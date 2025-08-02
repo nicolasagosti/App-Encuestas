@@ -13,11 +13,14 @@ public class RegisterRequest {
     private String username;
     private String password;
     private String role;
+    private boolean mustChangePassword = true;
+
 
 
     public RegisterRequest(String mail, String number) {
         this.username = mail;
         this.password = number;
+        this.mustChangePassword = true;
     }
 
     public String getUsername() {

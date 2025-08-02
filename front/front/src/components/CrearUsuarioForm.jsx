@@ -15,7 +15,11 @@ export default function CrearUsuarioForm() {
 
     try {
       // Llamada al endpoint de registro (ajusta la ruta si es otra)
-      await api.post('/auth/register', { username, password });
+await api.post('/auth/register', {
+  username,
+  password,
+  mustChangePassword: true,  // <--- esto es lo que faltaba
+});
 
       setSuccess('Usuario creado con éxito');
       setUsername('');

@@ -67,6 +67,7 @@ public class AuthService {
                     "Ya existe un usuario con ese email"
             );
         }
+
         Role roleEnum;
         try {
             roleEnum = request.getRole() != null
@@ -76,20 +77,23 @@ public class AuthService {
             roleEnum = Role.USER;
         }
 
+        boolean mustChange = roleEnum != Role.ADMIN; // los ADMIN no deben cambiar
+
         User user = User.builder()
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(roleEnum)
-                .mustChangePassword(true)
+                .mustChangePassword(mustChange)
                 .build();
         userRepository.save(user);
 
         String token = jwtService.getToken(user);
         return AuthResponse.builder()
                 .token(token)
-                .mustChangePassword(true)
+                .mustChangePassword(mustChange)
                 .build();
     }
+
 
     public void changePassword(String username, String newPassword) {
         User user = userRepository.findByUsername(username)

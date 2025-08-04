@@ -1,4 +1,3 @@
-// src/services/api.js
 import axios from 'axios';
 
 const api = axios.create({
@@ -53,7 +52,9 @@ export function eliminarPregunta(id) {
 export function crearEncuesta(data) {
   return api.post('/encuestas', data);
 }
-
+export function editarEncuesta(id, data) {
+  return api.put(`/encuestas/${id}`, data);
+}
 export function obtenerEncuestas() {
   return api.get('/encuestas');
 }
@@ -68,6 +69,10 @@ export function agregarGrupo(data) {
 
 // Clientes
 export function cargarCliente() {
+  return api.get('/clientes');
+}
+
+export function obtenerClientes() {
   return api.get('/clientes');
 }
 export function asignarGruposACliente(clienteId, idGrupos) {
@@ -134,6 +139,5 @@ export function cargarBanco(formData) {
 export function obtenerBanco(extension) {
   return api.get(`/api/banco/obtener/${extension}`);
 }
-
 
 export default api;

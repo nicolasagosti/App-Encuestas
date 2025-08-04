@@ -11,16 +11,11 @@ import nicolas.framework.encuestas.encuesta.models.entities.Pregunta;
 import nicolas.framework.encuestas.encuesta.models.repositories.EncuestaRepository;
 import nicolas.framework.encuestas.encuesta.models.repositories.RespuestaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 
 @Service
 public class EncuestaService implements IEncuestaService {
@@ -33,15 +28,15 @@ public class EncuestaService implements IEncuestaService {
 
     @Autowired
     private IGrupoService grupoService;
+
     @Autowired
     private RespuestaRepository respuestaRepository;
 
     @Override
     public void crearEncuesta(EncuestaInputDTO encuestaDTO) {
-
         List<Pregunta> preguntas = preguntaService.buscarPreguntasPorId(encuestaDTO.getPreguntas());
         List<Grupo> grupos = grupoService.buscarGrupos(encuestaDTO.getGrupos());
-        Encuesta encuesta = new Encuesta(encuestaDTO.getFechaInicio(),encuestaDTO.getFechaFin(), preguntas,grupos);
+        Encuesta encuesta = new Encuesta(encuestaDTO.getFechaInicio(), encuestaDTO.getFechaFin(), preguntas, grupos);
         encuestaRepository.save(encuesta);
     }
 
@@ -51,28 +46,41 @@ public class EncuestaService implements IEncuestaService {
                 .orElseThrow(() -> new ResourceNotFoundException("Encuesta no encontrada con id " + id));
     }
 
+    @Override
     public List<EncuestaOutputDTO> getEncuestaOutputDTOS(List<Encuesta> encuestas) {
-        return encuestas.stream().map(encuesta -> {
-            List<PreguntaOutputDTO> preguntas = encuesta.getPreguntas().stream()
-                    .map(p -> new PreguntaOutputDTO(p.getId(), p.getTexto()))
-                    .toList();
+        return encuestas.stream()
+                .map(encuesta -> {
+                    List<PreguntaOutputDTO> preguntas = encuesta.getPreguntas().stream()
+                            .map(p -> new PreguntaOutputDTO(p.getId(), p.getTexto()))
+                            .toList();
 
-            List<GrupoOutputDTO> grupos = encuesta.getGrupos().stream()
-                    .map(g -> new GrupoOutputDTO(g.getId(), g.getDescripcion(), g.getCantidadDeColaboradores()))
-                    .toList();
+                    List<GrupoOutputDTO> grupos = encuesta.getGrupos().stream()
+                            .map(g -> new GrupoOutputDTO(
+                                    g.getId(),
+                                    g.getDescripcion(),
+                                    g.getCantidadDeColaboradores(),
+                                    g.getNombre()          // ahora incluye el nombre
+                            ))
+                            .toList();
 
-            return new EncuestaOutputDTO(encuesta.getFechaInicio(),encuesta.getFechaFin(), preguntas, encuesta.getId(), grupos);
-        }).toList();
+                    return new EncuestaOutputDTO(
+                            encuesta.getFechaInicio(),
+                            encuesta.getFechaFin(),
+                            preguntas,
+                            encuesta.getId(),
+                            grupos
+                    );
+                })
+                .toList();
     }
+
 
     @Override
     public List<EncuestaOutputDTO> obtenerEncuestasPendientes(Long clienteId) {
-
         List<Encuesta> todasLasEncuestas = encuestaRepository.findDistinctByGruposClientesId(clienteId);
         List<Encuesta> encuestasPendientes = new ArrayList<>();
 
         for (Encuesta encuesta : todasLasEncuestas) {
-
             LocalDate hoy = LocalDate.now();
 
             Grupo grupo = encuesta.getGrupos().stream()
@@ -82,7 +90,7 @@ public class EncuestaService implements IEncuestaService {
 
             if (grupo == null) continue;
 
-            if(encuesta.getFechaInicio().isAfter(hoy) || encuesta.getFechaFin().isBefore(hoy)) {
+            if (encuesta.getFechaInicio().isAfter(hoy) || encuesta.getFechaFin().isBefore(hoy)) {
                 continue;
             }
 
@@ -105,10 +113,37 @@ public class EncuestaService implements IEncuestaService {
 
     @Override
     public List<EncuestaOutputDTO> findAll() {
-       List<Encuesta> encuestas = encuestaRepository.findAll();
-
+        List<Encuesta> encuestas = encuestaRepository.findAll();
         return getEncuestaOutputDTOS(encuestas);
     }
 
+    @Override
+    public EncuestaOutputDTO editarEncuesta(Long id, EncuestaInputDTO dto) {
+        Encuesta encuesta = encuestaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Encuesta no encontrada con id " + id));
+
+        // Solo actualiza preguntas si vienen en el DTO (no nulas)
+        if (dto.getPreguntas() != null) {
+            List<Pregunta> preguntas = preguntaService.buscarPreguntasPorId(dto.getPreguntas());
+            encuesta.setPreguntas(preguntas);
+        }
+
+        // Solo actualiza grupos si vienen en el DTO (no nulos)
+        if (dto.getGrupos() != null) {
+            List<Grupo> grupos = grupoService.buscarGrupos(dto.getGrupos());
+            encuesta.setGrupos(grupos);
+        }
+
+        // Solo actualiza fechas si vienen (no nulas)
+        if (dto.getFechaInicio() != null) {
+            encuesta.setFechaInicio(dto.getFechaInicio());
+        }
+        if (dto.getFechaFin() != null) {
+            encuesta.setFechaFin(dto.getFechaFin());
+        }
+
+        Encuesta encuestaActualizada = encuestaRepository.save(encuesta);
+        return getEncuestaOutputDTOS(List.of(encuestaActualizada)).get(0);
+    }
 
 }

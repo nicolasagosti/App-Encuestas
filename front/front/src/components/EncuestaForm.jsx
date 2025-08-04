@@ -1,5 +1,12 @@
-import { useState, useEffect } from 'react';
-import { obtenerPreguntas, crearEncuesta, obtenerGrupos, crearPregunta } from '../services/api';
+import React, { useState, useEffect } from 'react';
+import {
+  obtenerPreguntas,
+  crearEncuesta,
+  editarEncuesta,
+  obtenerGrupos,
+  crearPregunta,
+  obtenerEncuestas
+} from '../services/api';
 
 export default function EncuestaForm() {
   const [preguntasDisponibles, setPreguntasDisponibles] = useState([]);
@@ -11,10 +18,13 @@ export default function EncuestaForm() {
   const [mensaje, setMensaje] = useState('');
   const [busqueda, setBusqueda] = useState('');
   const [coincidencias, setCoincidencias] = useState([]);
+  const [encuestasExistentes, setEncuestasExistentes] = useState([]);
+  const [editingEncuestaId, setEditingEncuestaId] = useState(null);
 
   useEffect(() => {
     obtenerPreguntas().then(res => setPreguntasDisponibles(res.data));
     obtenerGrupos().then(res => setGruposDisponibles(res.data));
+    fetchEncuestas();
   }, []);
 
   useEffect(() => {
@@ -27,6 +37,15 @@ export default function EncuestaForm() {
       preguntasDisponibles.filter(p => p.texto.toLowerCase().includes(lower))
     );
   }, [busqueda, preguntasDisponibles]);
+
+  const fetchEncuestas = async () => {
+    try {
+      const res = await obtenerEncuestas();
+      setEncuestasExistentes(res.data);
+    } catch (err) {
+      console.error('Error al obtener encuestas', err);
+    }
+  };
 
   const handleCheckbox = (id, list, setter) => {
     setter(prev => (prev.includes(id) ? prev.filter(v => v !== id) : [...prev, id]));
@@ -56,49 +75,94 @@ export default function EncuestaForm() {
     setBusqueda('');
   };
 
+  const resetForm = () => {
+    setPreguntaIdsSeleccionadas([]);
+    setGrupoIdsSeleccionados([]);
+    setFechaInicio('');
+    setFechaFin('');
+    setEditingEncuestaId(null);
+    setBusqueda('');
+    setCoincidencias([]);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await crearEncuesta({
+      const payload = {
         grupos: grupoIdsSeleccionados,
         preguntas: preguntaIdsSeleccionadas,
-        fechaInicio,
-        fechaFin
-      });
-      setMensaje('✅ Encuesta creada correctamente');
-      setPreguntaIdsSeleccionadas([]);
-      setGrupoIdsSeleccionados([]);
-      setFechaInicio('');
-      setFechaFin('');
+        fechaInicio: fechaInicio || null,
+        fechaFin: fechaFin || null
+      };
+      if (editingEncuestaId) {
+        await editarEncuesta(editingEncuestaId, payload);
+        setMensaje('✅ Encuesta actualizada correctamente');
+      } else {
+        await crearEncuesta(payload);
+        setMensaje('✅ Encuesta creada correctamente');
+      }
+      resetForm();
+      await fetchEncuestas(); // refrescar listado
+    } catch (err) {
+      console.error(err);
+      setMensaje(editingEncuestaId ? '❌ Error al editar encuesta' : '❌ Error al crear encuesta');
+    }
+  };
+
+  const selectEncuesta = (enc) => {
+    // llenar formulario con la encuesta seleccionada para editar
+    setEditingEncuestaId(enc.id);
+    setFechaInicio(enc.fechaInicio || '');
+    setFechaFin(enc.fechaFin || '');
+    // grupos y preguntas vienen como objetos o strings; extraer ids
+    const grupos = Array.isArray(enc.grupos)
+      ? enc.grupos.map(g => (typeof g === 'object' ? g.id : g))
+      : [];
+    const preguntas = Array.isArray(enc.preguntas)
+      ? enc.preguntas.map(p => (typeof p === 'object' ? p.id : p))
+      : [];
+    setGrupoIdsSeleccionados(grupos);
+    setPreguntaIdsSeleccionadas(preguntas);
+    setMensaje('');
+  };
+
+  const formatDate = (d) => {
+    if (!d) return '-';
+    try {
+      return new Date(d).toLocaleDateString('es-AR');
     } catch {
-      setMensaje('❌ Error al crear encuesta');
+      return d;
     }
   };
 
   return (
     <div className="space-y-6">
-      <h2 className="text-center text-2xl font-bold text-gray-800">Crear Encuesta</h2>
+      <h2 className="text-center text-2xl font-bold text-gray-800">
+        {editingEncuestaId ? 'Editar Encuesta' : 'Crear Encuesta'}
+      </h2>
 
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Fechas */}
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de inicio</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Fecha de inicio
+            </label>
             <input
               type="date"
               value={fechaInicio}
               onChange={e => setFechaInicio(e.target.value)}
-              required
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de fin</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Fecha de fin
+            </label>
             <input
               type="date"
               value={fechaFin}
               onChange={e => setFechaFin(e.target.value)}
-              required
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
@@ -131,7 +195,9 @@ export default function EncuestaForm() {
         {/* Preguntas */}
         <div className="space-y-6">
           <div>
-            <label className="block font-semibold text-gray-700 mb-1">Buscá o escribí una pregunta</label>
+            <label className="block font-semibold text-gray-700 mb-1">
+              Buscá o escribí una pregunta
+            </label>
             <div className="flex gap-2">
               <input
                 type="text"
@@ -173,7 +239,9 @@ export default function EncuestaForm() {
           {/* Preguntas seleccionadas */}
           {preguntaIdsSeleccionadas.length > 0 && (
             <div className="mt-4 border border-indigo-200 bg-indigo-50 p-3 rounded">
-              <h4 className="text-sm font-medium text-indigo-800 mb-2">Preguntas seleccionadas:</h4>
+              <h4 className="text-sm font-medium text-indigo-800 mb-2">
+                Preguntas seleccionadas:
+              </h4>
               <ul className="list-disc list-inside text-indigo-700 text-sm space-y-1">
                 {preguntasDisponibles
                   .filter(p => preguntaIdsSeleccionadas.includes(p.id))
@@ -185,13 +253,22 @@ export default function EncuestaForm() {
           )}
         </div>
 
-        <div>
+        <div className="flex gap-2">
           <button
             type="submit"
-            className="w-full rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 py-2 transition"
+            className="flex-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 py-2 transition"
           >
-            Crear encuesta
+            {editingEncuestaId ? 'Guardar cambios' : 'Crear encuesta'}
           </button>
+          {editingEncuestaId && (
+            <button
+              type="button"
+              onClick={resetForm}
+              className="rounded-lg border border-gray-300 px-6 py-2 text-gray-700"
+            >
+              Cancelar edición
+            </button>
+          )}
         </div>
       </form>
 
@@ -200,6 +277,54 @@ export default function EncuestaForm() {
           {mensaje}
         </p>
       )}
+
+      {/* Listado de encuestas existentes sin mostrar ID */}
+      <div className="mt-8">
+        <h3 className="text-lg font-semibold mb-3">Encuestas existentes</h3>
+        {encuestasExistentes.length > 0 ? (
+          <ul className="space-y-3">
+            {encuestasExistentes.map((enc) => (
+              <li
+                key={enc.id}
+                onClick={() => selectEncuesta(enc)}
+                className="cursor-pointer border rounded p-3 bg-white shadow-sm hover:shadow-md transition flex flex-col sm:flex-row sm:justify-between gap-2"
+              >
+                <div>
+                  <div className="text-sm text-gray-600 mb-1">
+                    Fecha inicio: {formatDate(enc.fechaInicio)} — Fecha fin:{' '}
+                    {formatDate(enc.fechaFin)}
+                  </div>
+                  <div className="text-sm">
+                    <div>
+                      <strong>Grupos:</strong>{' '}
+                      {Array.isArray(enc.grupos)
+                        ? enc.grupos
+                            .map(g => (typeof g === 'object' ? g.descripcion || '' : g))
+                            .filter(Boolean)
+                            .join(', ')
+                        : enc.grupos || '-'}
+                    </div>
+                    <div>
+                      <strong>Preguntas:</strong>{' '}
+                      {Array.isArray(enc.preguntas)
+                        ? enc.preguntas
+                            .map(p => (typeof p === 'object' ? p.texto || '' : p))
+                            .filter(Boolean)
+                            .join(', ')
+                        : enc.preguntas || '-'}
+                    </div>
+                  </div>
+                </div>
+                <div className="text-xs text-gray-400 mt-2 sm:mt-0">
+                  (click para editar)
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-gray-500">No hay encuestas creadas aún.</p>
+        )}
+      </div>
     </div>
   );
 }

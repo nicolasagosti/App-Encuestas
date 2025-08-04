@@ -60,9 +60,10 @@ public class CargaInicial implements CommandLineRunner {
                 );
 
                 // 👉 3. Crear grupos
-                Long grupo1Id = grupoService.registrarGrupo(new GrupoInputDTO("Grupo A", 5)).getId();
-                Long grupo2Id = grupoService.registrarGrupo(new GrupoInputDTO("Grupo B", 5)).getId();
-                Long grupo3Id = grupoService.registrarGrupo(new GrupoInputDTO("Grupo C", 5)).getId();
+                Long grupo1Id = grupoService.registrarGrupo(new GrupoInputDTO("Grupo A", 5, "Grupo A")).getId();
+                Long grupo2Id = grupoService.registrarGrupo(new GrupoInputDTO("Grupo B", 5, "Grupo B")).getId();
+                Long grupo3Id = grupoService.registrarGrupo(new GrupoInputDTO("Grupo C", 5, "Grupo C")).getId();
+
 
                 // 👉 4. Asignar grupos a clientes
                 clienteService.asignarGruposACliente(idCliente1, List.of(grupo1Id, grupo2Id));

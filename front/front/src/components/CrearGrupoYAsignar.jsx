@@ -1,18 +1,34 @@
-// src/components/CrearGrupoYAsignarForm.jsx
 import React, { useState, useEffect } from 'react';
-import { cargarCliente, agregarGrupo, asignarClientesAGrupo } from '../services/api';
+import {
+  cargarCliente,
+  agregarGrupo,
+  asignarClientesAGrupo,
+  obtenerGrupos
+} from '../services/api';
 
-export default function CrearGrupoYAsignarForm({ onSave }) {
+export default function CrearGrupoYAsignarForm({ onSave = async () => {} }) {
   const [descripcion, setDescripcion] = useState('');
+  const [nombre, setNombre] = useState('');
   const [colaboradores, setColaboradores] = useState(1);
   const [clientes, setClientes] = useState([]);
   const [clienteIdsSeleccionados, setClienteIdsSeleccionados] = useState([]);
   const [mensaje, setMensaje] = useState('');
+  const [grupos, setGrupos] = useState([]);
 
   useEffect(() => {
     cargarCliente()
       .then(res => setClientes(res.data))
       .catch(() => setMensaje('❌ Error al cargar clientes'));
+
+    const fetchGrupos = async () => {
+      try {
+        const res = await obtenerGrupos();
+        setGrupos(res.data);
+      } catch (err) {
+        console.error('Error al obtener grupos', err);
+      }
+    };
+    fetchGrupos();
   }, []);
 
   const toggleCliente = (id) => {
@@ -21,43 +37,73 @@ export default function CrearGrupoYAsignarForm({ onSave }) {
     );
   };
 
+  const refreshGrupos = async () => {
+    try {
+      const updated = await obtenerGrupos();
+      setGrupos(updated.data);
+    } catch (err) {
+      console.error('Error al refrescar grupos', err);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMensaje('');
     try {
-  const { data: grupoCreado } = await agregarGrupo({
-    descripcion,
-    cantidadDeColaboradores: colaboradores
-  });
-console.log('✅ Grupo creado:', grupoCreado);
+      const payload = {
+        descripcion,
+        nombre,
+        cantidadDeColaboradores: colaboradores
+      };
+      const { data: grupoCreado } = await agregarGrupo(payload);
 
+      if (!grupoCreado || !grupoCreado.id) {
+        throw new Error('Grupo no devuelto correctamente');
+      }
 
-  if (!grupoCreado || !grupoCreado.id) {
-    throw new Error('Grupo no devuelto correctamente');
-  }
+      if (clienteIdsSeleccionados.length > 0) {
+        await asignarClientesAGrupo(grupoCreado.id, clienteIdsSeleccionados);
+      }
 
-  if (clienteIdsSeleccionados.length > 0) {
-    await asignarClientesAGrupo(grupoCreado.id, clienteIdsSeleccionados);
-  }
-
-  setMensaje('✅ Grupo creado correctamente');
-  setDescripcion('');
-  setColaboradores(1);
-  setClienteIdsSeleccionados([]);
-  await onSave();
-} catch (err) {
-  console.error(err);
-  //setMensaje('❌ Error al crear el grupo, intentá con otro nombre');
-}
-
+      setMensaje('✅ Grupo creado correctamente');
+      setDescripcion('');
+      setNombre('');
+      setColaboradores(1);
+      setClienteIdsSeleccionados([]);
+      await onSave();
+      await refreshGrupos();
+    } catch (err) {
+      if (err.response && err.response.status === 409) {
+        setMensaje('❌ Grupo ya existente');
+      } else {
+        console.error(err);
+        setMensaje('❌ Error al crear el grupo');
+      }
+      await refreshGrupos();
+    }
   };
 
   return (
     <div className="space-y-6">
-
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Nombre del grupo
+          </label>
+          <input
+            type="text"
+            className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="Nombre interno o corto"
+            value={nombre}
+            onChange={e => setNombre(e.target.value)}
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Descripción
+          </label>
           <input
             type="text"
             className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -68,7 +114,9 @@ console.log('✅ Grupo creado:', grupoCreado);
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Cantidad de colaboradores</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Cantidad de colaboradores
+          </label>
           <input
             type="number"
             className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -93,7 +141,9 @@ console.log('✅ Grupo creado:', grupoCreado);
                   onChange={() => toggleCliente(c.id)}
                   className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                 />
-                <span>{c.mail} <span className="text-xs text-gray-400">(ID: {c.id})</span></span>
+                <span>
+                  {c.mail} <span className="text-xs text-gray-400">(ID: {c.id})</span>
+                </span>
               </label>
             ))}
             {!clientes.length && (
@@ -115,7 +165,31 @@ console.log('✅ Grupo creado:', grupoCreado);
           {mensaje}
         </p>
       )}
+
+      {/* Lista de grupos al final sin mostrar ID */}
+      <div className="mt-6">
+        <h2 className="text-lg font-semibold mb-3">Grupos existentes</h2>
+        {grupos.length > 0 ? (
+          <ul className="space-y-2">
+            {grupos.map((g) => (
+              <li
+                key={g.id}
+                className="p-3 border rounded flex flex-col"
+              >
+                <div className="font-medium">{g.nombre || g.descripcion}</div>
+                <div className="text-sm text-gray-600 mb-1">
+                  {g.descripcion}
+                </div>
+                <div className="text-xs text-gray-500">
+                  Colaboradores: {g.cantidadDeColaboradores}
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-gray-500">No hay grupos cargados.</p>
+        )}
+      </div>
     </div>
   );
-
-  }
+}

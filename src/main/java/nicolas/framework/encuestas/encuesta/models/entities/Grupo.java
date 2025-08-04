@@ -19,6 +19,9 @@ public class Grupo {
     private String descripcion;
 
     @Column
+    private String nombre; // agregado
+
+    @Column
     private int cantidadDeColaboradores;
 
     @ManyToMany(mappedBy = "grupos")
@@ -47,6 +50,10 @@ public class Grupo {
         return descripcion;
     }
 
+    public String getNombre() {
+        return nombre;
+    }
+
     public int getCantidadDeColaboradores() {
         return cantidadDeColaboradores;
     }
@@ -63,5 +70,7 @@ public class Grupo {
         return respuestas;
     }
 
-
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
 }

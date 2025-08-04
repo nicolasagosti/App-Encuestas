@@ -67,4 +67,13 @@ public class EncuestaController {
         List<EncuestaOutputDTO> encuestas = encuestaService.findAll();
         return ResponseEntity.ok(encuestas);
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<EncuestaOutputDTO> editarEncuesta(
+            @PathVariable Long id,
+            @RequestBody @Valid EncuestaInputDTO dto
+    ) {
+        EncuestaOutputDTO actualizada = encuestaService.editarEncuesta(id, dto);
+        return ResponseEntity.ok(actualizada);
+    }
 }

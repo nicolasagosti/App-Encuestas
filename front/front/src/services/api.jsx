@@ -136,6 +136,10 @@ export function cargarBanco(formData) {
   );
 }
 
+export function editarClienteParcial(clienteId, data) {
+  return api.patch(`/clientes/${clienteId}`, data);
+}
+
 export function obtenerBanco(extension) {
   return api.get(`/api/banco/obtener/${extension}`);
 }

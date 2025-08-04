@@ -166,7 +166,7 @@ export default function CrearGrupoYAsignarForm({ onSave = async () => {} }) {
         </p>
       )}
 
-      {/* Lista de grupos al final sin mostrar ID */}
+      {/* Lista de grupos al final mostrando por nombre */}
       <div className="mt-6">
         <h2 className="text-lg font-semibold mb-3">Grupos existentes</h2>
         {grupos.length > 0 ? (
@@ -176,7 +176,7 @@ export default function CrearGrupoYAsignarForm({ onSave = async () => {} }) {
                 key={g.id}
                 className="p-3 border rounded flex flex-col"
               >
-                <div className="font-medium">{g.nombre || g.descripcion}</div>
+                <div className="font-medium">{g.nombre}</div>
                 <div className="text-sm text-gray-600 mb-1">
                   {g.descripcion}
                 </div>

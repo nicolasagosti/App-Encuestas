@@ -116,10 +116,6 @@ export default function AdminDashboard() {
             value="usuarios"
             className="bg-white p-6 rounded-xl shadow"
           >
-            <h2 className="text-xl font-semibold mb-2">Crear Usuario</h2>
-            <p className="text-gray-500 mb-4">
-              Registra un nuevo usuario en el sistema.
-            </p>
             <CrearUsuarioForm />
           </TabsContent>
         </Tabs>

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
   cargarBanco,
-  obtenerClientes,
   obtenerBancos
 } from '../services/api';
 
@@ -82,30 +81,12 @@ export default function CargarClienteForm() {
   const [extension, setExtension] = useState('');
   const [nombre, setNombre] = useState('');
   const [mensaje, setMensaje] = useState('');
-  const [extensiones, setExtensiones] = useState([]);
   const [bancos, setBancos] = useState([]);
   const [loadingBancos, setLoadingBancos] = useState(false);
 
   useEffect(() => {
-    fetchClientes();
     fetchBancos();
   }, []);
-
-  const fetchClientes = async () => {
-    try {
-      const res = await obtenerClientes();
-      const uniqueExtensiones = [
-        ...new Set(
-          res.data
-            .map((cliente) => cliente.mail.split('@')[1])
-            .filter((ext) => ext)
-        ),
-      ];
-      setExtensiones(uniqueExtensiones);
-    } catch (error) {
-      console.error('Error al obtener clientes', error);
-    }
-  };
 
   const fetchBancos = async () => {
     setLoadingBancos(true);
@@ -229,22 +210,6 @@ export default function CargarClienteForm() {
           Guardar Banco
         </button>
       </form>
-
-      {/* Lista de extensiones únicas */}
-      <div>
-        <h2 className="text-lg font-semibold mb-4">Extensiones registradas</h2>
-        <ul className="space-y-2">
-          {extensiones.length > 0 ? (
-            extensiones.map((ext, index) => (
-              <li key={index} className="p-2 border rounded break-words">
-                {ext}
-              </li>
-            ))
-          ) : (
-            <li className="p-2 text-gray-500">No hay extensiones registradas</li>
-          )}
-        </ul>
-      </div>
 
       {/* Lista de bancos con logo */}
       <div>

@@ -140,4 +140,8 @@ export function obtenerBanco(extension) {
   return api.get(`/api/banco/obtener/${extension}`);
 }
 
+export function obtenerBancos() {
+  return api.get('/api/banco/todos');
+}
+
 export default api;

@@ -11,6 +11,9 @@ public class Bank {
     @Column(name = "extension", nullable = false, unique = true, length = 100)
     private String extension;
 
+    @Column
+    private String nombre;
+
     @Lob
     @Column(
             name             = "logo_base64",
@@ -21,9 +24,10 @@ public class Bank {
 
     public Bank() { }
 
-    public Bank(String extension, String logoBase64) {
-        this.extension   = extension;
-        this.logoBase64  = logoBase64;
+    public Bank(String extension, String nombre, String logoBase64) {
+        this.extension = extension;
+        this.nombre = nombre;
+        this.logoBase64 = logoBase64;
     }
 
     public String getExtension() {
@@ -40,5 +44,13 @@ public class Bank {
 
     public void setLogoBase64(String logoBase64) {
         this.logoBase64 = logoBase64;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
     }
 }

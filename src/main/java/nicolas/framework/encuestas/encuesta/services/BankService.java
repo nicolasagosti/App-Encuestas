@@ -1,8 +1,6 @@
-// src/main/java/nicolas/framework/encuestas/encuesta/services/BankService.java
 package nicolas.framework.encuestas.encuesta.services;
 
 import nicolas.framework.encuestas.encuesta.dtos.BankInputDTO;
-
 import nicolas.framework.encuestas.encuesta.models.entities.Bank;
 import nicolas.framework.encuestas.encuesta.models.repositories.BankRepository;
 import org.springframework.stereotype.Service;
@@ -11,9 +9,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Base64;
+import java.util.List;
 
 @Service
-public class BankService implements IBankService{
+public class BankService implements IBankService {
 
     private final BankRepository bankRepository;
 
@@ -21,7 +20,7 @@ public class BankService implements IBankService{
         this.bankRepository = bankRepository;
     }
 
-    public BankInputDTO addBank(String extension, MultipartFile logo) throws IOException {
+    public BankInputDTO addBank(String extension, String nombre, MultipartFile logo) throws IOException {
         String ext = extension.trim().toLowerCase();
         if (!StringUtils.hasText(ext)) {
             throw new IllegalArgumentException("La extensión no puede estar vacía");
@@ -30,17 +29,23 @@ public class BankService implements IBankService{
         byte[] logoBytes = logo.getBytes();
         String logoBase64 = Base64.getEncoder().encodeToString(logoBytes);
 
-        Bank bank = new Bank(ext, logoBase64);
+        Bank bank = new Bank(ext, nombre, logoBase64);
         bankRepository.save(bank);
 
-        return new BankInputDTO(ext, logoBase64);
+        return new BankInputDTO(ext, nombre, logoBase64);
     }
 
     public BankInputDTO getBank(String extension) {
         String ext = extension.trim().toLowerCase();
         return bankRepository.findById(ext)
-                .map(b -> new BankInputDTO(b.getExtension(), b.getLogoBase64()))
+                .map(b -> new BankInputDTO(b.getExtension(), b.getNombre(), b.getLogoBase64()))
                 .orElse(null);
     }
-}
 
+    @Override
+    public List<BankInputDTO> getBanks() {
+        return bankRepository.findAll().stream()
+                .map(b -> new BankInputDTO(b.getExtension(), b.getNombre(), b.getLogoBase64()))
+                .toList();
+    }
+}

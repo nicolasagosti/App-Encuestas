@@ -23,17 +23,29 @@ public class AdminInitializer {
         String adminEmail = "admin@gmail.com";
         String adminPassword = "admin";
 
-        if (userRepository.findUserByUsername(adminEmail).isEmpty()) {
-            User admin = new User();
-            admin.setUsername(adminEmail); // email como username
-            admin.setPassword(passwordEncoder.encode(adminPassword));
-            admin.setRole(Role.ADMIN);
-            admin.setMustChangePassword(false); // no lo obliga a cambiar
-            userRepository.save(admin);
+        try {
+            if (userRepository.findUserByUsername(adminEmail).isEmpty()) {
+                User admin = new User();
+                admin.setUsername(adminEmail); // email como username
+                admin.setPassword(passwordEncoder.encode(adminPassword));
+                admin.setRole(Role.ADMIN);
+                admin.setMustChangePassword(false); // no lo obliga a cambiar
 
-            System.out.println("🛡️  Usuario admin creado automáticamente");
-        } else {
-            System.out.println("✅ Usuario admin ya existe");
+                // Campos obligatorios que en la base no pueden ser null
+                admin.setNombre("Admin");
+                admin.setApellido("User");
+
+                // Si hay otras columnas no nulas (ej: telefono), se puede poner valor por defecto:
+                // admin.setTelefono(""); // descomentar si hace falta
+
+                userRepository.save(admin);
+                System.out.println("🛡️  Usuario admin creado automáticamente");
+            } else {
+                System.out.println("✅ Usuario admin ya existe");
+            }
+        } catch (Exception e) {
+            System.err.println("❌ Error al inicializar usuario admin: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }

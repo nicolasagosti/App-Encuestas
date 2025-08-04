@@ -22,6 +22,14 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column()
+    private String nombre;
+
+    @Column()
+    private String apellido;
+
+    @Column()
+    private String telefono;
 
     @Column(name = "must_change_password", nullable = false)
     private boolean mustChangePassword = true;
@@ -61,6 +69,30 @@ public class User implements UserDetails {
         this.username = username;
         this.password = password;
         this.role = role;
+    }
+
+    public String getApellido() {
+        return apellido;
+    }
+
+    public void setApellido(String apellido) {
+        this.apellido = apellido;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getTelefono() {
+        return telefono;
+    }
+
+    public void setTelefono(String telefono) {
+        this.telefono = telefono;
     }
 
     @Override
@@ -110,6 +142,8 @@ public class User implements UserDetails {
         private Role role;
         private List<Grupo> grupos = new ArrayList<>();
         private List<Respuesta> respuestas = new ArrayList<>();
+
+
 
         public Builder id(Long id) {
             this.id = id;

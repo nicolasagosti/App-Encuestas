@@ -1,4 +1,3 @@
-// src/main/java/nicolas/framework/encuestas/encuesta/controllers/BankController.java
 package nicolas.framework.encuestas.encuesta.controllers;
 
 import nicolas.framework.encuestas.encuesta.dtos.BankInputDTO;
@@ -10,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
@@ -26,6 +26,7 @@ public class BankController {
      * Agrega un nuevo banco.
      * Espera multipart/form-data con:
      *  - extension (text)
+     *  - nombre (text)
      *  - logo      (file)
      */
     @PostMapping(
@@ -35,23 +36,22 @@ public class BankController {
     )
     public ResponseEntity<BankInputDTO> agregarBanco(
             @RequestParam("extension") String extension,
+            @RequestParam("nombre") String nombre,
             @RequestParam("logo") MultipartFile logo
     ) {
         try {
-            BankInputDTO dto = bankService.addBank(extension, logo);
+            BankInputDTO dto = bankService.addBank(extension, nombre, logo);
             return ResponseEntity
                     .status(HttpStatus.CREATED)
                     .body(dto);
         } catch (IllegalArgumentException e) {
-            // Parámetro inválido (p.ej. extension vacía)
             return ResponseEntity
                     .badRequest()
-                    .build();
+                    .body(null);
         } catch (IOException e) {
-            // Error al leer el archivo
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .build();
+                    .body(null);
         }
     }
 
@@ -72,7 +72,18 @@ public class BankController {
                     .status(HttpStatus.NOT_FOUND)
                     .build();
         }
-        return ResponseEntity
-                .ok(dto);
+        return ResponseEntity.ok(dto);
+    }
+
+    /**
+     * Lista todos los bancos.
+     */
+    @GetMapping(
+            path = {"/todos", ""},
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<List<BankInputDTO>> obtenerTodosLosBancos() {
+        List<BankInputDTO> bancos = bankService.getBanks();
+        return ResponseEntity.ok(bancos);
     }
 }

@@ -2,8 +2,9 @@ package nicolas.framework.encuestas.encuesta.dtos;
 
 public class BankInputDTO {
     private String extension;
-    private String logoBase64;
     private String nombre;
+
+    private String logoBase64;
 
     public BankInputDTO() { }
 

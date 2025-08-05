@@ -132,9 +132,9 @@ export default function CargarClienteForm() {
     }
 
     const formData = new FormData();
-    formData.append('logo', logoFile);
     formData.append('extension', extension);
     formData.append('nombre', nombre.trim());
+    formData.append('logo', logoFile);
 
     try {
       await cargarBanco(formData);
@@ -185,7 +185,7 @@ export default function CargarClienteForm() {
             type="text"
             value={nombre}
             onChange={handleNombreChange}
-            placeholder="Banco Provincia"
+            placeholder="BBVA"
             className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>

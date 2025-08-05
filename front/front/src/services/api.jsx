@@ -113,7 +113,7 @@ export function obtenerEstadisticasTodosLosGrupos() {
   return api.get('/estadisticas');
 }
 
-export const obtenerEstadisticasGruposPorBanco = (fechaInicio, fechaFin, banco) =>
+export const obtenerEstadisticasGrupoPorPeriodo = (fechaInicio, fechaFin, banco) =>
   api.get('/estadisticas/grupos/periodo/por-banco', {
     params: { fechaInicio, fechaFin, banco }
   });
@@ -124,8 +124,6 @@ export function cargarBanco(formData) {
   return api.post(
     '/api/banco/agregar',
     formData,
-    // Axios detecta automáticamente multipart/form-data,
-    // pero si quieres forzar el header:
     { headers: { 'Content-Type': 'multipart/form-data' } }
   );
 }

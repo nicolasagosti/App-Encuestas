@@ -4,14 +4,14 @@ package nicolas.framework.encuestas.encuesta.models.entities;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "banks")
+@Table(name = "bank")
 public class Bank {
 
     @Id
     @Column(name = "extension", nullable = false, unique = true, length = 100)
     private String extension;
 
-    @Column
+    @Column(length = 100)
     private String nombre;
 
     @Lob

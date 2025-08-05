@@ -4,6 +4,7 @@ import nicolas.framework.encuestas.Exception.ResourceNotFoundException;
 import nicolas.framework.encuestas.encuesta.dtos.GrupoInputDTO;
 import nicolas.framework.encuestas.encuesta.dtos.GrupoOutputDTO;
 import nicolas.framework.encuestas.encuesta.models.entities.Grupo;
+import nicolas.framework.encuestas.encuesta.models.entities.User;
 import nicolas.framework.encuestas.encuesta.models.repositories.GrupoRepository;
 import nicolas.framework.encuestas.encuesta.models.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,6 +88,13 @@ public class GrupoService implements IGrupoService{
 
         List<Long> referentes = clienteService.obtenerReferentesDeUnBanco(banco);
         List<Grupo> grupos = grupoRepository.findAllById(referentes);
+        return convertirADTOs(grupos);
+    }
+
+    public List<GrupoOutputDTO> gruposDeUnReferente(String mail) {
+        Long cliente = clienteService.obtenerIdDeCLiente(mail);
+        List<Grupo> grupos = grupoRepository.findGruposByCliente(cliente);
+
         return convertirADTOs(grupos);
     }
 

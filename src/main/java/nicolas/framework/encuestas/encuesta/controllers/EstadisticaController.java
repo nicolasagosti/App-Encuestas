@@ -38,4 +38,11 @@ public class EstadisticaController {
         return ResponseEntity.ok(estadisticas);
     }
 
+    @GetMapping("/grupos/periodo/por-cliente")
+    public ResponseEntity<List<GrupoPromedioOutputDTO>> todosLosGruposPorReferente(
+            @RequestParam LocalDate fechaInicio, @RequestParam LocalDate fechaFin, @RequestParam String referente){
+        List <GrupoPromedioOutputDTO> estadisticas = estadisticaService.promediosDeGruposPorReferente(fechaInicio, fechaFin, referente);
+        return ResponseEntity.ok(estadisticas);
+    }
+
 }

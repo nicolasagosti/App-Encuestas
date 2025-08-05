@@ -73,10 +73,8 @@ public class EstadisticaService implements IEstadisticaService {
         return resultados;
     }
 
-    @Override
-    public List<GrupoPromedioOutputDTO> promediosDeGruposPorBanco(LocalDate fechaInicio, LocalDate fechaFin, String banco) {
+    public List<GrupoPromedioOutputDTO> calcularEstadisticas(List<GrupoOutputDTO> grupos, LocalDate fechaInicio, LocalDate fechaFin) {
 
-        List<GrupoOutputDTO> grupos = grupoService.gruposDeUnBanco(banco);
         List<GrupoPromedioOutputDTO> resultados = new ArrayList<>();
 
         for (GrupoOutputDTO grupo : grupos) {
@@ -89,6 +87,19 @@ public class EstadisticaService implements IEstadisticaService {
 
     }
 
+    @Override
+    public List<GrupoPromedioOutputDTO> promediosDeGruposPorBanco(LocalDate fechaInicio, LocalDate fechaFin, String banco) {
+
+        List<GrupoOutputDTO> grupos = grupoService.gruposDeUnBanco(banco);
+        return calcularEstadisticas(grupos, fechaInicio, fechaFin);
+    }
+
+    @Override
+    public List<GrupoPromedioOutputDTO> promediosDeGruposPorReferente(LocalDate fechaInicio, LocalDate fechaFin, String referente) {
+        List <GrupoOutputDTO> grupos = grupoService.gruposDeUnReferente(referente);
+
+        return calcularEstadisticas(grupos, fechaInicio, fechaFin);
+    }
 
     public List<ClienteOutputDTO> sacarAdmin() {
 

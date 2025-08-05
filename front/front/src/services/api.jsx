@@ -113,10 +113,22 @@ export function obtenerEstadisticasTodosLosGrupos() {
   return api.get('/estadisticas');
 }
 
-export const obtenerEstadisticasGrupoPorPeriodo = (fechaInicio, fechaFin, banco) =>
-  api.get('/estadisticas/grupos/periodo/por-banco', {
-    params: { fechaInicio, fechaFin, banco }
+export const obtenerEstadisticasGrupoPorPeriodo = (fechaInicio, fechaFin, tipo, valor) => {
+  if (tipo === 'banco') {
+    return api.get('/estadisticas/grupos/periodo/por-banco', {
+      params: { fechaInicio, fechaFin, banco: valor }
+    });
+  }
+  if (tipo === 'cliente') {
+    return api.get('/estadisticas/grupos/periodo/por-cliente', {
+      params: { fechaInicio, fechaFin, referente: valor }
+    });
+  }
+  return api.get('/estadisticas/grupos/periodo', {
+    params: { fechaInicio, fechaFin }
   });
+};
+
 
 
 // Clientes Bancos

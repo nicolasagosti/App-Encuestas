@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import {
   obtenerEstadisticasTodosLosGrupos,
   obtenerEstadisticasGrupoPorPeriodo,
-  obtenerBancos
+  obtenerBancos,
+  obtenerClientes
 } from '../services/api';
 import { exportarEstadisticasAGrupo } from '../utils/ExportarEstadisticas';
 
@@ -13,7 +14,9 @@ export default function EstadisticasGrupo() {
   const [fechaFin, setFechaFin] = useState('');
   const [tipo, setTipo] = useState('todos');
   const [bancos, setBancos] = useState([]);
+  const [clientes, setClientes] = useState([]);
   const [bancoSeleccionado, setBancoSeleccionado] = useState('');
+  const [clienteSeleccionado, setClienteSeleccionado] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -24,6 +27,10 @@ export default function EstadisticasGrupo() {
     obtenerBancos()
       .then(res => setBancos(res.data))
       .catch(() => setError('❌ Error al cargar bancos'));
+
+    obtenerClientes()
+      .then(res => setClientes(res.data.filter(c => c.mail !== 'admin@gmail.com')))
+      .catch(() => setError('❌ Error al cargar clientes'));
   }, []);
 
   const getColor = valor => {
@@ -37,15 +44,25 @@ export default function EstadisticasGrupo() {
       setError('⚠️ Debe seleccionar ambas fechas');
       return;
     }
-
     if (tipo === 'banco' && !bancoSeleccionado) {
       setError('⚠️ Debe seleccionar un banco');
+      return;
+    }
+    if (tipo === 'cliente' && !clienteSeleccionado) {
+      setError('⚠️ Debe seleccionar un cliente');
       return;
     }
 
     setError('');
     try {
-      const res = await obtenerEstadisticasGrupoPorPeriodo(fechaInicio, fechaFin, tipo, bancoSeleccionado);
+      const valorSeleccionado =
+        tipo === 'banco' ? bancoSeleccionado :
+        tipo === 'cliente' ? clienteSeleccionado :
+        null;
+
+      const res = await obtenerEstadisticasGrupoPorPeriodo(
+        fechaInicio, fechaFin, tipo, valorSeleccionado
+      );
       setEstadisticasPeriodo(res.data);
     } catch (err) {
       setError('❌ Error al cargar estadísticas por período');
@@ -73,14 +90,12 @@ export default function EstadisticasGrupo() {
               <td className="p-3 border-b text-center">{grupo.referentesQueRespondieron}</td>
               <td
                 className={`p-3 border-b text-center font-semibold ${
-                  grupo.promedio != null
-                    ? getColor(grupo.promedio)
-                    : 'text-gray-400 italic'
-                }`}
+  grupo.promedio != null
+    ? getColor(grupo.promedio)
+    : 'text-gray-400 italic'
+}`}
               >
-                {typeof grupo.promedio === 'number'
-                  ? grupo.promedio.toFixed(2)
-                  : '—'}
+                {typeof grupo.promedio === 'number' ? grupo.promedio.toFixed(2) : '—'}
               </td>
             </tr>
           ))}
@@ -130,10 +145,25 @@ export default function EstadisticasGrupo() {
               onChange={e => setBancoSeleccionado(e.target.value)}
               className="border px-2 py-1 rounded"
             >
-              <option value="">-- Seleccionar banco --</option>
+              <option value=""> Seleccionar banco </option>
               {bancos.map((b, idx) => (
                 <option key={idx} value={b.extension}>
-                  {b.extension.toUpperCase()}
+                  {b.extension.toLowerCase()}
+                </option>
+              ))}
+            </select>
+          )}
+
+          {tipo === 'cliente' && (
+            <select
+              value={clienteSeleccionado}
+              onChange={e => setClienteSeleccionado(e.target.value)}
+              className="border px-2 py-1 rounded"
+            >
+              <option value="">-- Seleccionar cliente --</option>
+              {clientes.map((c, idx) => (
+                <option key={idx} value={c.mail}>
+                  {c.mail}
                 </option>
               ))}
             </select>

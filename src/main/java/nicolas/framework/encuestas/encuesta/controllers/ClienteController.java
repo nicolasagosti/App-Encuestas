@@ -2,6 +2,7 @@ package nicolas.framework.encuestas.encuesta.controllers;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import nicolas.framework.encuestas.encuesta.dtos.ClienteOutputDTO;
+import nicolas.framework.encuestas.encuesta.dtos.EditarClienteInputDTO;
 import nicolas.framework.encuestas.encuesta.dtos.EncuestaOutputDTO;
 import nicolas.framework.encuestas.encuesta.dtos.MailClienteDTO;
 import nicolas.framework.encuestas.encuesta.services.IClienteService;
@@ -64,5 +65,14 @@ public class ClienteController {
     public ResponseEntity<Boolean> debeCambiarPassword(@RequestParam("email") String email) {
         boolean flag = clienteService.obtenerMustChangePassword(email);
         return ResponseEntity.ok(flag);
+    }
+
+    @PatchMapping("/{clienteId}")
+    public ResponseEntity<ClienteOutputDTO> editarParcial(
+            @PathVariable Long clienteId,
+            @RequestBody EditarClienteInputDTO input
+    ) {
+        ClienteOutputDTO actualizado = clienteService.editarClienteParcial(clienteId, input);
+        return ResponseEntity.ok(actualizado);
     }
 }

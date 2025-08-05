@@ -56,7 +56,7 @@ public class ClienteController {
 
     @GetMapping
     public ResponseEntity<List<ClienteOutputDTO>> obtenerClientes() {
-        List<ClienteOutputDTO> clientes = clienteService.obtenerClientes();
+        List<ClienteOutputDTO> clientes = clienteService.obtenerTodosLosClientes();
         return ResponseEntity.ok(clientes);
     }
 

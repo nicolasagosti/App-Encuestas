@@ -18,6 +18,21 @@ public class GrupoService implements IGrupoService{
     @Autowired
     private GrupoRepository grupoRepository;
 
+    @Autowired
+    private ClienteService clienteService;
+
+
+    public List<GrupoOutputDTO> convertirADTOs(List<Grupo> grupos) {
+        return grupos.stream()
+                .map(grupo -> new GrupoOutputDTO(
+                        grupo.getId(),
+                        grupo.getDescripcion(),
+                        grupo.getCantidadDeColaboradores(),
+                        grupo.getNombre()
+                ))
+                .toList();
+    }
+
     @Override
     public GrupoOutputDTO buscarGrupo(Long id) {
         Grupo grupo = grupoRepository.findById(id)
@@ -33,14 +48,7 @@ public class GrupoService implements IGrupoService{
     @Override
     public List<GrupoOutputDTO> todosLosGrupos() {
         List<Grupo> grupos = grupoRepository.findAll();
-        return grupos.stream()
-                .map(grupo -> new GrupoOutputDTO(
-                        grupo.getId(),
-                        grupo.getDescripcion(),
-                        grupo.getCantidadDeColaboradores(),
-                        grupo.getNombre()
-                ))
-                .toList();
+        return convertirADTOs(grupos);
     }
 
 
@@ -75,6 +83,11 @@ public class GrupoService implements IGrupoService{
         }
     }
 
+    public List<GrupoOutputDTO> gruposDeUnBanco(String banco) {
 
+        List<Long> referentes = clienteService.obtenerReferentesDeUnBanco(banco);
+        List<Grupo> grupos = grupoRepository.findAllById(referentes);
+        return convertirADTOs(grupos);
+    }
 
 }

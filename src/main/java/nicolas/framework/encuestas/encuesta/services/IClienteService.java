@@ -12,7 +12,7 @@ public interface IClienteService {
     ClienteOutputDTO editarClienteParcial(Long clienteId, EditarClienteInputDTO input);
     public void asignarGruposACliente(Long clienteId, List<Long> ids);
     public void asignarClientesAGrupo(Long grupoId, List<Long> clienteIds);
-    public List<ClienteOutputDTO> obtenerClientes();
+    public List<ClienteOutputDTO> obtenerTodosLosClientes();
     boolean obtenerMustChangePassword(String mailCliente);
     Long obtenerIdDeCLiente(String mailCliente);
 }

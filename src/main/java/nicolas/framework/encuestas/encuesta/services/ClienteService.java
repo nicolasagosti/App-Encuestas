@@ -19,20 +19,17 @@ import java.util.stream.Collectors;
 @Service
 public class ClienteService implements IClienteService {
 
-    private final UserRepository clienteRepository;
-    private final GrupoRepository grupoRepository;
-    private final PasswordEncoder passwordEncoder;
-
     @Autowired
-    public ClienteService(UserRepository clienteRepository,
-                          GrupoRepository grupoRepository,
-                          PasswordEncoder passwordEncoder) {
-        this.clienteRepository = clienteRepository;
-        this.grupoRepository = grupoRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
+    private UserRepository clienteRepository;
+    @Autowired
+    private GrupoRepository grupoRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    BankService bankService;
 
-    //commit de prueba
 
     @Override
     public void asignarClientesAGrupo(Long grupoId, List<Long> clienteIds) {
@@ -92,8 +89,18 @@ public class ClienteService implements IClienteService {
         clienteRepository.save(cliente);
     }
 
+    List <Long> obtenerReferentesDeUnGrupo(Long grupoId){
+        List <Long> ids = userRepository.findDistinctByGrupoId(grupoId).stream().map(User::getId).toList();
+        return ids;
+    }
+
+    List<Long> obtenerReferentesDeUnBanco(String banco){
+        String extension = bankService.obtenerExtension(banco);
+        return userRepository.findByUsernameEndingWith(extension).stream().map(User::getId).toList();
+    }
+
     @Override
-    public List<ClienteOutputDTO> obtenerClientes() {
+    public List<ClienteOutputDTO> obtenerTodosLosClientes() {
         List<User> users = clienteRepository.findAll();
         return users.stream()
                 .map(u -> new ClienteOutputDTO(

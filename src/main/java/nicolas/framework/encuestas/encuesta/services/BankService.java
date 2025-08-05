@@ -48,4 +48,11 @@ public class BankService implements IBankService {
                 .map(b -> new BankInputDTO(b.getExtension(), b.getNombre(), b.getLogoBase64()))
                 .toList();
     }
+
+    public String obtenerExtension(String nombre) {
+        Bank banco = bankRepository.findTopByNombre(nombre);
+        return banco.getExtension();
+    }
+
+
 }

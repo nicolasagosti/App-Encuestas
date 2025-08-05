@@ -1,33 +1,26 @@
+// src/components/EstadisticasGrupo.jsx
 import { useState, useEffect } from 'react';
 import {
   obtenerEstadisticasTodosLosGrupos,
-  obtenerEstadisticasGrupoPorPeriodo,
-  obtenerEstadisticasClientePorPeriodo,
-  obtenerEstadisticasClientes
+  obtenerEstadisticasGruposPorBanco
 } from '../services/api';
 import {
-  exportarEstadisticasAGrupo,
-  exportarEstadisticasClientes,
-  exportarEstadisticasClientesPorPeriodo
+  exportarEstadisticasAGrupo
 } from '../utils/ExportarEstadisticas';
 
 export default function EstadisticasGrupo() {
-  const [estadisticasGlobalesGrupo, setEstadisticasGlobalesGrupo] = useState([]);
-  const [estadisticasGlobalesCliente, setEstadisticasGlobalesCliente] = useState([]);
+  const [estadisticasGlobales, setEstadisticasGlobales] = useState([]);
   const [estadisticasPeriodo, setEstadisticasPeriodo] = useState([]);
-  const [error, setError] = useState('');
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
-  const [tipo, setTipo] = useState('grupo');
+  const [tipoFiltro, setTipoFiltro] = useState('banco');
+  const [valorFiltro, setValorFiltro] = useState('');
+  const [error, setError] = useState('');
 
   useEffect(() => {
     obtenerEstadisticasTodosLosGrupos()
-      .then(res => setEstadisticasGlobalesGrupo(res.data))
-      .catch(() => setError('❌ Error al cargar las estadísticas globales de grupos'));
-
-    obtenerEstadisticasClientes()
-      .then(res => setEstadisticasGlobalesCliente(res.data))
-      .catch(() => setError('❌ Error al cargar estadísticas globales de clientes'));
+      .then(res => setEstadisticasGlobales(res.data))
+      .catch(() => setError('❌ Error al cargar estadísticas globales'));
   }, []);
 
   const getColor = (valor) => {
@@ -37,16 +30,16 @@ export default function EstadisticasGrupo() {
   };
 
   const handleBuscarPeriodo = async () => {
-    if (!fechaInicio || !fechaFin) {
-      setError('⚠️ Debe seleccionar ambas fechas');
+    if (!fechaInicio || !fechaFin || !valorFiltro.trim()) {
+      setError('⚠️ Completa las fechas y el filtro');
       return;
     }
     setError('');
     try {
       const res =
-        tipo === 'grupo'
-          ? await obtenerEstadisticasGrupoPorPeriodo(fechaInicio, fechaFin)
-          : await obtenerEstadisticasClientePorPeriodo(fechaInicio, fechaFin);
+        tipoFiltro === 'banco'
+          ? await obtenerEstadisticasGruposPorBanco(fechaInicio, fechaFin, valorFiltro):
+          //: await obtenerEstadisticasGruposPorCliente(fechaInicio, fechaFin, valorFiltro);
       setEstadisticasPeriodo(res.data);
     } catch (err) {
       setError('❌ Error al cargar estadísticas por período');
@@ -55,53 +48,31 @@ export default function EstadisticasGrupo() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto mt-10 bg-white shadow rounded space-y-10">
-      <h2 className="text-2xl font-bold text-center">Estadísticas</h2>
+      <h2 className="text-2xl font-bold text-center">Estadísticas de Grupos</h2>
 
-      {/* Botones de exportación */}
       <div className="flex flex-wrap justify-center gap-4">
         <button
           className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-          onClick={() => exportarEstadisticasAGrupo(estadisticasGlobalesGrupo)}
+          onClick={() => exportarEstadisticasAGrupo(estadisticasGlobales, 'Estadísticas Globales')}
         >
-          Estadisticas de Grupos (Global)
+          Exportar Grupos (Global)
         </button>
 
-         {tipo === 'grupo' && estadisticasPeriodo.length > 0 && (
-    <button
-      className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-      onClick={() =>
-        exportarEstadisticasAGrupo(estadisticasPeriodo, "Estadísticas por Grupo - Período")
-      }
-    >
-      Exportar Grupos (Por Período)
-    </button>
-  )}
-
-        <button
-          className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
-          onClick={() => exportarEstadisticasClientes(estadisticasGlobalesCliente)}
-        >
-          Estadisticas de Clientes (Global)
-        </button>
-
-        {tipo === 'cliente' && estadisticasPeriodo.length > 0 && (
-  <button
-    className="bg-pink-600 text-white px-4 py-2 rounded hover:bg-pink-700"
-    onClick={() =>
-      exportarEstadisticasClientesPorPeriodo(estadisticasPeriodo)
-    }
-  >
-    Exportar Clientes (Por Período)
-  </button>
-)}
-
+        {estadisticasPeriodo.length > 0 && (
+          <button
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            onClick={() => exportarEstadisticasAGrupo(estadisticasPeriodo, 'Estadísticas por Período')}
+          >
+            Exportar Grupos (Por Período)
+          </button>
+        )}
       </div>
 
-      {error && <p className="text-red-600 mb-4 text-center">{error}</p>}
+      {error && <p className="text-red-600 text-center">{error}</p>}
 
       {/* 🔎 Filtro por período */}
       <section className="text-center space-y-4">
-        <h3 className="text-xl font-semibold">Filtrar por período</h3>
+        <h3 className="text-xl font-semibold">Filtrar por Período y Filtro</h3>
         <div className="flex flex-wrap items-center justify-center gap-4">
           <label>
             Desde:{' '}
@@ -122,13 +93,20 @@ export default function EstadisticasGrupo() {
             />
           </label>
           <select
-            value={tipo}
-            onChange={e => setTipo(e.target.value)}
+            value={tipoFiltro}
+            onChange={e => setTipoFiltro(e.target.value)}
             className="border px-2 py-1 rounded"
           >
-            <option value="grupo">Por Grupo</option>
+            <option value="banco">Por Banco</option>
             <option value="cliente">Por Cliente</option>
           </select>
+          <input
+            type="text"
+            value={valorFiltro}
+            onChange={e => setValorFiltro(e.target.value)}
+            placeholder={tipoFiltro === 'banco' ? 'ej: bbva.com' : 'ej: u1@gmail.com'}
+            className="border px-2 py-1 rounded w-48"
+          />
           <button
             onClick={handleBuscarPeriodo}
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
@@ -143,29 +121,27 @@ export default function EstadisticasGrupo() {
             <table className="min-w-full border border-gray-300 text-sm">
               <thead className="bg-gray-100 text-gray-700 text-left">
                 <tr>
-                  <th className="p-3 border-b">
-                    {tipo === 'grupo' ? 'Grupo' : 'Cliente'}
-                  </th>
+                  <th className="p-3 border-b">Grupo</th>
+                  <th className="p-3 border-b text-center">Cantidad</th>
+                  <th className="p-3 border-b text-center">Respondieron</th>
                   <th className="p-3 border-b text-center">Promedio</th>
                 </tr>
               </thead>
               <tbody>
-                {estadisticasPeriodo.map((item, idx) => (
+                {estadisticasPeriodo.map((grupo, idx) => (
                   <tr key={idx} className="hover:bg-gray-50">
-                    <td className="p-3 border-b">
-                      {tipo === 'grupo'
-                        ? item.descripcion || `Grupo ${item.grupoId}`
-                        : item.mail || `Cliente ${item.clienteId}`}
-                    </td>
+                    <td className="p-3 border-b">{grupo.descripcion}</td>
+                    <td className="p-3 border-b text-center">{grupo.cantidadDeColaboradores}</td>
+                    <td className="p-3 border-b text-center">{grupo.cantidadQueRespondieron}</td>
                     <td
                       className={`p-3 border-b text-center font-semibold ${
-                        item.promedio != null
-                          ? getColor(item.promedio)
+                        grupo.promedio != null
+                          ? getColor(grupo.promedio)
                           : 'text-gray-400 italic'
                       }`}
                     >
-                      {typeof item.promedio === 'number'
-                        ? item.promedio.toFixed(2)
+                      {typeof grupo.promedio === 'number'
+                        ? grupo.promedio.toFixed(2)
                         : '—'}
                     </td>
                   </tr>
@@ -176,27 +152,25 @@ export default function EstadisticasGrupo() {
         )}
       </section>
 
-      {/* 🧾 Tabla global por grupo */}
+      {/* 🧾 Tabla global */}
       <section>
-        <h3 className="text-xl font-semibold mb-4">Promedios Globales por Grupo</h3>
+        <h3 className="text-xl font-semibold mb-4">Promedios Globales</h3>
         <div className="overflow-x-auto">
           <table className="min-w-full border border-gray-300 text-sm">
             <thead className="bg-gray-100 text-gray-700 text-left">
               <tr>
                 <th className="p-3 border-b">Grupo</th>
-                <th className="p-3 border-b">Cantidad de Personas</th>
+                <th className="p-3 border-b text-center">Cantidad</th>
+                <th className="p-3 border-b text-center">Respondieron</th>
                 <th className="p-3 border-b text-center">Promedio</th>
               </tr>
             </thead>
             <tbody>
-              {estadisticasGlobalesGrupo.map((grupo, idx) => (
+              {estadisticasGlobales.map((grupo, idx) => (
                 <tr key={idx} className="hover:bg-gray-50">
-                  <td className="p-3 border-b">
-                    {grupo.descripcion || `Grupo ${grupo.grupoId}`}
-                  </td>
-                  <td className="p-3 border-b">
-                    {grupo.cantidadDeColaboradores ?? '—'}
-                  </td>
+                  <td className="p-3 border-b">{grupo.descripcion}</td>
+                  <td className="p-3 border-b text-center">{grupo.cantidadDeColaboradores}</td>
+                  <td className="p-3 border-b text-center">{grupo.cantidadQueRespondieron}</td>
                   <td
                     className={`p-3 border-b text-center font-semibold ${
                       grupo.promedio != null
@@ -206,41 +180,6 @@ export default function EstadisticasGrupo() {
                   >
                     {typeof grupo.promedio === 'number'
                       ? grupo.promedio.toFixed(2)
-                      : '—'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      {/* 🧾 Tabla global por cliente */}
-      <section>
-        <h3 className="text-xl font-semibold mb-4">Promedios Globales por Cliente</h3>
-        <div className="overflow-x-auto">
-          <table className="min-w-full border border-gray-300 text-sm">
-            <thead className="bg-gray-100 text-gray-700 text-left">
-              <tr>
-                <th className="p-3 border-b">Cliente</th>
-                <th className="p-3 border-b text-center">Promedio</th>
-              </tr>
-            </thead>
-            <tbody>
-              {estadisticasGlobalesCliente.map((cliente, idx) => (
-                <tr key={idx} className="hover:bg-gray-50">
-                  <td className="p-3 border-b">
-                    {cliente.mail || `Cliente ${cliente.clienteId}`}
-                  </td>
-                  <td
-                    className={`p-3 border-b text-center font-semibold ${
-                      cliente.promedio != null
-                        ? getColor(cliente.promedio)
-                        : 'text-gray-400 italic'
-                    }`}
-                  >
-                    {typeof cliente.promedio === 'number'
-                      ? cliente.promedio.toFixed(2)
                       : '—'}
                   </td>
                 </tr>

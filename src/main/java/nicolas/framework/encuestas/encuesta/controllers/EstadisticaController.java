@@ -1,7 +1,6 @@
 package nicolas.framework.encuestas.encuesta.controllers;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
-import nicolas.framework.encuestas.encuesta.dtos.ClientePromedioOutputDTO;
 import nicolas.framework.encuestas.encuesta.dtos.GrupoPromedioOutputDTO;
 import nicolas.framework.encuestas.encuesta.services.IEstadisticaService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,23 +30,12 @@ public class EstadisticaController {
         return ResponseEntity.ok(estadisticas);
     }
 
-    @GetMapping("/grupos/periodo")
-    public ResponseEntity<List<GrupoPromedioOutputDTO>> todosLosGruposPorPeriodo(@RequestParam LocalDate fechaInicio, @RequestParam LocalDate fechaFin){
-        List<GrupoPromedioOutputDTO> estadisticas = estadisticaService.promediosDeTodosLosGruposPorPeriodo(fechaInicio, fechaFin);
+    @GetMapping("/grupos/periodo/por-banco")
+    public ResponseEntity<List<GrupoPromedioOutputDTO>> todosLosGruposPorBanco(
+            @RequestParam LocalDate fechaInicio, @RequestParam LocalDate fechaFin, @RequestParam String banco
+    ){
+        List<GrupoPromedioOutputDTO> estadisticas = estadisticaService.promediosDeGruposPorBanco(fechaInicio,fechaFin,banco);
         return ResponseEntity.ok(estadisticas);
     }
-
-    @GetMapping("/clientes")
-    public ResponseEntity<List<ClientePromedioOutputDTO>> todosLosClientes(){
-        List<ClientePromedioOutputDTO> estadisticas = estadisticaService.promediosDeTodosLosClientes();
-        return ResponseEntity.ok(estadisticas);
-    }
-
-    @GetMapping("/clientes/periodo")
-    public ResponseEntity<List<ClientePromedioOutputDTO>> todosLosClientesPorPeriodo(@RequestParam LocalDate fechaInicio, @RequestParam LocalDate fechaFin){
-        List<ClientePromedioOutputDTO> estadisticas = estadisticaService.promediosDeTodosLosClientesPorPeriodo(fechaInicio, fechaFin);
-        return ResponseEntity.ok(estadisticas);
-    }
-
 
 }

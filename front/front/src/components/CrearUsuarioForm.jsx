@@ -118,19 +118,17 @@ export default function CrearUsuarioForm() {
 
   return (
     <div className="space-y-6 px-4">
-      {/* Sticky header con botón Crear usuario */}
+      {/* Sticky header con título y botón Crear usuario */}
       <div className="sticky top-0 z-10 bg-white py-3 flex justify-between items-center border-b shadow-sm">
-        <div className="flex gap-2">
-          <h2 className="text-lg font-semibold">Usuarios</h2>
-        </div>
-        <div className="flex gap-2">
+        <h2 className="text-lg font-semibold">Usuarios</h2>
+        {!mostrarFormulario && (
           <button
             onClick={iniciarCreacion}
             className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
           >
             Crear usuario
           </button>
-        </div>
+        )}
       </div>
 
       {/* Formulario arriba si se está creando o editando */}
@@ -291,7 +289,6 @@ export default function CrearUsuarioForm() {
                   <th className="px-3 py-2 border">Nombre</th>
                   <th className="px-3 py-2 border">Apellido</th>
                   <th className="px-3 py-2 border">Teléfono</th>
-                  <th className="px-3 py-2 border">Debe cambiar pass</th>
                 </tr>
               </thead>
               <tbody>
@@ -305,9 +302,6 @@ export default function CrearUsuarioForm() {
                     <td className="px-3 py-2 border">{cliente.nombre || '-'}</td>
                     <td className="px-3 py-2 border">{cliente.apellido || '-'}</td>
                     <td className="px-3 py-2 border">{cliente.telefono || '-'}</td>
-                    <td className="px-3 py-2 border">
-                      {cliente.mustChangePassword ? 'Sí' : 'No'}
-                    </td>
                   </tr>
                 ))}
               </tbody>

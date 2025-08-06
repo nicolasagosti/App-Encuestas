@@ -14,6 +14,9 @@ public class RegisterRequest {
     private String password;
     private String role;
     private boolean mustChangePassword = true;
+    private String nombre;
+    private String apellido;
+    private String telefono;
 
 
 
@@ -43,6 +46,40 @@ public class RegisterRequest {
         return role;
     }
 
+    public void setRole(String role) {
+        this.role = role;
+    }
 
+    public boolean isMustChangePassword() {
+        return mustChangePassword;
+    }
+
+    public void setMustChangePassword(boolean mustChangePassword) {
+        this.mustChangePassword = mustChangePassword;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getApellido() {
+        return apellido;
+    }
+
+    public void setApellido(String apellido) {
+        this.apellido = apellido;
+    }
+
+    public String getTelefono() {
+        return telefono;
+    }
+
+    public void setTelefono(String telefono) {
+        this.telefono = telefono;
+    }
 }
 

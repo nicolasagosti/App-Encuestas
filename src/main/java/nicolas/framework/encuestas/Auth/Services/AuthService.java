@@ -85,6 +85,10 @@ public class AuthService {
                 .role(roleEnum)
                 .mustChangePassword(mustChange)
                 .build();
+        user.setNombre(request.getNombre());
+        user.setApellido(request.getApellido());
+        user.setTelefono(request.getTelefono());
+
         userRepository.save(user);
 
         String token = jwtService.getToken(user);

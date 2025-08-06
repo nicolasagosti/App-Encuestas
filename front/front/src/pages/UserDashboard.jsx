@@ -3,11 +3,11 @@ import { useAuth } from '../AuthContext';
 import {
   obtenerEncuestasDeCliente,
   responderEncuesta,
-  obtenerIdDeCliente
+  obtenerIdDeCliente,
+  obtenerBanco
 } from '../services/api';
 import { CheckCircle, AlertCircle, Loader2, CopyIcon } from 'lucide-react';
 import logo from './logoaccenture.png';
-import { obtenerBanco } from '../services/api';
 
 const COLORES_GRUPO = [
   'bg-blue-100 border-blue-300 text-blue-800',
@@ -38,6 +38,32 @@ function colorDeFondoPorGrupo(nombreGrupo = '') {
   return color;
 }
 
+// --- Utilidades para el logo ---
+const looksLikeBase64Image = (s) => {
+  if (!s || typeof s !== 'string') return false;
+  const cleaned = s.replace(/\s+/g, '');
+  return (
+    cleaned.startsWith('iVBOR') || // PNG
+    cleaned.startsWith('/9j/') || // JPEG
+    cleaned.startsWith('data:image/')
+  );
+};
+
+const buildImageSrc = (raw) => {
+  if (!raw) return null;
+  const cleaned = raw.replace(/\s+/g, '');
+  if (cleaned.startsWith('data:')) {
+    return cleaned;
+  }
+  if (cleaned.startsWith('iVBOR')) {
+    return `data:image/png;base64,${cleaned}`;
+  }
+  if (cleaned.startsWith('/9j/')) {
+    return `data:image/jpeg;base64,${cleaned}`;
+  }
+  return `data:image/*;base64,${cleaned}`;
+};
+
 export default function ResponderEncuestaForm() {
   const [clienteId, setClienteId] = useState(null);
   const [encuestas, setEncuestas] = useState([]);
@@ -48,7 +74,6 @@ export default function ResponderEncuestaForm() {
   const { userEmail } = useAuth();
   const [logoBancoBase64, setLogoBancoBase64] = useState(null);
 
-
   useEffect(() => {
     if (!userEmail) return;
     obtenerIdDeCliente(userEmail)
@@ -56,20 +81,22 @@ export default function ResponderEncuestaForm() {
       .catch(() => setMensaje('❌ No se pudo obtener el ID de cliente'));
   }, [userEmail]);
 
-  
-useEffect(() => {
-  if (!userEmail) return;
+  useEffect(() => {
+    if (!userEmail) return;
 
-  const extension = userEmail.split('@')[1]?.toLowerCase();
-  if (extension) {
-    obtenerBanco(extension)
-      .then(res => setLogoBancoBase64(res.data.logoBase64))
-      .catch(() => {
-        console.warn(`No se encontró banco para ${extension}`);
-        setLogoBancoBase64(null); // usa el logo por defecto si falla
-      });
-  }
-}, [userEmail]);
+    const extension = userEmail.split('@')[1]?.toLowerCase();
+    if (extension) {
+      obtenerBanco(extension)
+        .then(res => {
+          console.log('logoBase64 que llega del backend:', res.data.nombre);
+          setLogoBancoBase64(res.data.nombre);
+        })
+        .catch(() => {
+          console.warn(`No se encontró banco para ${extension}`);
+          setLogoBancoBase64(null); // usa el logo por defecto si falla
+        });
+    }
+  }, [userEmail]);
 
   useEffect(() => {
     if (clienteId == null) return;
@@ -157,14 +184,12 @@ useEffect(() => {
       await responderEncuesta(clienteId, encuestaId, payload);
       setMensaje('✅ Encuesta respondida correctamente');
 
-      // 💡 Limpiar solo respuestas de esta encuesta
       setRespuestas(prev => {
         const nuevas = { ...prev };
         preguntas.forEach(p => delete nuevas[`${encuestaId}_${p.id}`]);
         return nuevas;
       });
 
-      // 💡 Quitar encuesta respondida
       setEncuestas(prev => prev.filter(e => e.id !== encuestaId));
       setEncuestasRespondidas(prev => new Set(prev).add(encuestaId));
     } catch {
@@ -174,14 +199,27 @@ useEffect(() => {
     }
   };
 
+  // --- LOGO final para mostrar ---
+  const srcLogo = buildImageSrc(logoBancoBase64);
+  console.log('srcLogo:', srcLogo);
+
+  // --- TEST MANUAL: cuadrado rojo (para debug) ---
+  const testBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH5AgUCCIzFO/fqAAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAAwSURBVBjTY2AgDQwMDP///xkZGTEx8TAwMHCwIwg3BhYGJDJEMQAIMABvIOAIdKEIQAAAAASUVORK5CYII=";
+  const srcTestLogo = buildImageSrc(testBase64);
+
   return (
     <div className="max-w-4xl mx-auto mt-12 px-4">
       <div className="bg-white rounded-2xl shadow border border-gray-100 p-8">
-<img
-  src={logoBancoBase64 ? `data:image/png;base64,${logoBancoBase64}` : logo}
-  alt="Logo del banco"
-  className="mx-auto h-20 mb-6"
-/>
+        {/* DEBUG: Cuadrado rojo de prueba (si esto se ve, el src funciona) */}
+        {/* <img src={srcTestLogo} alt="Test" style={{ width: 32, height: 32 }} /> */}
+
+        <img
+          src={srcLogo || logo}
+          alt="Logo del banco"
+          className="mx-auto h-20 mb-6"
+          onError={e => { e.target.onerror = null; e.target.src = logo; }}
+        />
+
         <h2 className="text-3xl font-bold text-gray-900 mb-6 flex items-center gap-3">
           <CheckCircle className="text-blue-600 w-6 h-6" />
           Responder Encuestas

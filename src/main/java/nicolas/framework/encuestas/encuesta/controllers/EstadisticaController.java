@@ -24,12 +24,6 @@ public class EstadisticaController {
         return ResponseEntity.ok(estadisticaService.promedioDeGrupo(grupoId));
     }
 
-    @GetMapping
-    public ResponseEntity<List<GrupoPromedioOutputDTO>> todosLosGrupos(){
-        List<GrupoPromedioOutputDTO> estadisticas = estadisticaService.promediosDeTodosLosGrupos();
-        return ResponseEntity.ok(estadisticas);
-    }
-
     @GetMapping("/grupos/periodo/por-banco")
     public ResponseEntity<List<GrupoPromedioOutputDTO>> todosLosGruposPorBanco(
             @RequestParam LocalDate fechaInicio, @RequestParam LocalDate fechaFin, @RequestParam String banco

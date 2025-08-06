@@ -109,9 +109,6 @@ export const obtenerPromedioGrupo = async (grupoId) => {
   return api.get(`/estadisticas/${grupoId}`);
 };
 
-export function obtenerEstadisticasTodosLosGrupos() {
-  return api.get('/estadisticas');
-}
 
 export const obtenerEstadisticasGrupoPorPeriodo = (fechaInicio, fechaFin, tipo, valor) => {
   if (tipo === 'banco') {

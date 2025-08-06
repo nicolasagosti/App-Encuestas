@@ -60,18 +60,6 @@ public class EstadisticaService implements IEstadisticaService {
        return calcularPromedio(respuestas);
     }
 
-    @Override
-    public List<GrupoPromedioOutputDTO> promediosDeTodosLosGrupos() {
-        List<GrupoOutputDTO> grupos = grupoService.todosLosGrupos();
-        List<GrupoPromedioOutputDTO> resultados = new ArrayList<>();
-        for (GrupoOutputDTO grupo : grupos) {
-            int totalReferentes = clienteService.obtenerReferentesDeUnGrupo(grupo.getId()).size();
-            int respondieron = cantidadDeReferentesQueRespondieron(grupo.getId());
-            Float promedio = promedioDeGrupo(grupo.getId());
-            resultados.add(new GrupoPromedioOutputDTO(grupo, promedio, totalReferentes, respondieron));
-        }
-        return resultados;
-    }
 
     public List<GrupoPromedioOutputDTO> calcularEstadisticas(List<GrupoOutputDTO> grupos, LocalDate fechaInicio, LocalDate fechaFin) {
 

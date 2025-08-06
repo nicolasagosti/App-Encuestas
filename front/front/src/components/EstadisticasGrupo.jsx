@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import {
-  obtenerEstadisticasTodosLosGrupos,
   obtenerEstadisticasGrupoPorPeriodo,
   obtenerBancos,
   obtenerClientes
@@ -8,7 +7,6 @@ import {
 import { exportarEstadisticasAGrupo } from '../utils/ExportarEstadisticas';
 
 export default function EstadisticasGrupo() {
-  const [estadisticasGlobales, setEstadisticasGlobales] = useState([]);
   const [estadisticasPeriodo, setEstadisticasPeriodo] = useState([]);
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
@@ -20,10 +18,6 @@ export default function EstadisticasGrupo() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    obtenerEstadisticasTodosLosGrupos()
-      .then(res => setEstadisticasGlobales(res.data))
-      .catch(() => setError('❌ Error al cargar estadísticas globales'));
-
     obtenerBancos()
       .then(res => setBancos(res.data))
       .catch(() => setError('❌ Error al cargar bancos'));
@@ -90,10 +84,8 @@ export default function EstadisticasGrupo() {
               <td className="p-3 border-b text-center">{grupo.referentesQueRespondieron}</td>
               <td
                 className={`p-3 border-b text-center font-semibold ${
-  grupo.promedio != null
-    ? getColor(grupo.promedio)
-    : 'text-gray-400 italic'
-}`}
+                  grupo.promedio != null ? getColor(grupo.promedio) : 'text-gray-400 italic'
+                }`}
               >
                 {typeof grupo.promedio === 'number' ? grupo.promedio.toFixed(2) : '—'}
               </td>
@@ -104,26 +96,34 @@ export default function EstadisticasGrupo() {
     </div>
   );
 
+  const tituloExportacion = () => {
+    const base = 'Estadísticas';
+    if (tipo === 'cliente') return `${base} por referente`;
+    if (tipo === 'banco') return `${base} por banco`;
+    return `${base} por período`;
+  };
+
   return (
     <div className="p-6 max-w-6xl mx-auto mt-10 bg-white shadow rounded space-y-10">
       <h2 className="text-2xl font-bold text-center">📊 Estadísticas de Grupos</h2>
 
-      <div className="flex flex-wrap gap-4 justify-center">
-        <button
-          onClick={() => exportarEstadisticasAGrupo(estadisticasGlobales)}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded"
-        >
-          Exportar Global
-        </button>
-        {estadisticasPeriodo.length > 0 && (
-          <button
-            onClick={() => exportarEstadisticasAGrupo(estadisticasPeriodo, "Estadísticas por Período")}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded"
-          >
-            Exportar por Período
-          </button>
-        )}
-      </div>
+      {estadisticasPeriodo.length > 0 && (
+  <div className="flex flex-wrap gap-4 justify-center">
+    <button
+      onClick={() =>
+        exportarEstadisticasAGrupo(
+          estadisticasPeriodo,
+          tituloExportacion(),
+          fechaInicio,
+          fechaFin
+        )
+      }
+      className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded"
+    >
+      Exportar PDF
+    </button>
+  </div>
+)}
 
       {error && <p className="text-red-600 text-center">{error}</p>}
 
@@ -136,7 +136,7 @@ export default function EstadisticasGrupo() {
           <select value={tipo} onChange={e => setTipo(e.target.value)} className="border px-2 py-1 rounded">
             <option value="todos">Todos</option>
             <option value="banco">Por Banco</option>
-            <option value="cliente">Por Cliente</option>
+            <option value="cliente">Por Referente</option>
           </select>
 
           {tipo === 'banco' && (
@@ -145,7 +145,7 @@ export default function EstadisticasGrupo() {
               onChange={e => setBancoSeleccionado(e.target.value)}
               className="border px-2 py-1 rounded"
             >
-              <option value=""> Seleccionar banco </option>
+              <option value="">Seleccionar banco</option>
               {bancos.map((b, idx) => (
                 <option key={idx} value={b.extension}>
                   {b.extension.toLowerCase()}
@@ -180,11 +180,6 @@ export default function EstadisticasGrupo() {
             {renderTabla(estadisticasPeriodo)}
           </>
         )}
-      </section>
-
-      <section>
-        <h3 className="text-xl font-semibold mb-4">📋 Resultados Globales</h3>
-        {renderTabla(estadisticasGlobales)}
       </section>
     </div>
   );

@@ -74,7 +74,6 @@ public class EncuestaService implements IEncuestaService {
                 .toList();
     }
 
-
     @Override
     public List<EncuestaOutputDTO> obtenerEncuestasPendientes(Long clienteId) {
         List<Encuesta> todasLasEncuestas = encuestaRepository.findDistinctByGruposClientesId(clienteId);

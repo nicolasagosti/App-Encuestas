@@ -129,7 +129,7 @@ export default function ResponderEncuestaForm() {
           const clave = `${encuesta.id}_${pregunta.id}`;
           nuevasRespuestas[clave] = {
             ...nuevasRespuestas[clave],
-            grupoId: encuesta.grupos?.[0]?.id || 1,
+grupoId: encuesta.grupoDelCliente?.id || 1,
             puntaje
           };
         }
@@ -282,7 +282,7 @@ export default function ResponderEncuestaForm() {
                                 handlePuntajeChange(
                                   pregunta.id,
                                   encuesta.id,
-                                  encuesta.grupos?.[0]?.id || 1,
+                                  encuesta.grupoDelCliente?.id || 1,
                                   Number(e.target.value)
                                 )
                               }

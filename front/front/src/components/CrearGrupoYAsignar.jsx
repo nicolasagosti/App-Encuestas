@@ -14,6 +14,7 @@ export default function CrearGrupoYAsignarForm({ onSave = async () => {} }) {
   const [clienteIdsSeleccionados, setClienteIdsSeleccionados] = useState([]);
   const [mensaje, setMensaje] = useState('');
   const [grupos, setGrupos] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     cargarCliente()
@@ -83,6 +84,13 @@ export default function CrearGrupoYAsignarForm({ onSave = async () => {} }) {
     }
   };
 
+  // --- FILTRADO DE REFERENTES ---
+  const clientesFiltrados = clientes.filter(
+    c =>
+      c.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.mail.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="space-y-6">
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -128,9 +136,16 @@ export default function CrearGrupoYAsignarForm({ onSave = async () => {} }) {
         </div>
 
         <div>
-          <h4 className="font-semibold text-gray-700 mb-2">Seleccioná clientes:</h4>
+          <h4 className="font-semibold text-gray-700 mb-2">Seleccioná referentes</h4>
+          <input
+            type="text"
+            className="w-full mb-2 rounded border px-2 py-1 focus:ring-2 focus:ring-indigo-400"
+            placeholder="Buscar por nombre o mail..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+          />
           <div className="max-h-48 overflow-y-auto space-y-2 pr-2 border p-2 rounded">
-            {clientes.map(c => (
+            {clientesFiltrados.map(c => (
               <label
                 key={c.id}
                 className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer"
@@ -142,12 +157,12 @@ export default function CrearGrupoYAsignarForm({ onSave = async () => {} }) {
                   className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                 />
                 <span>
-                  {c.mail} <span className="text-xs text-gray-400">(ID: {c.id})</span>
+                  {c.nombre} ({c.mail})
                 </span>
               </label>
             ))}
-            {!clientes.length && (
-              <p className="text-xs text-gray-500">No hay clientes cargados.</p>
+            {!clientesFiltrados.length && (
+              <p className="text-xs text-gray-500">No hay referentes con ese filtro.</p>
             )}
           </div>
         </div>
@@ -166,7 +181,6 @@ export default function CrearGrupoYAsignarForm({ onSave = async () => {} }) {
         </p>
       )}
 
-      {/* Lista de grupos al final mostrando por nombre */}
       <div className="mt-6">
         <h2 className="text-lg font-semibold mb-3">Grupos existentes</h2>
         {grupos.length > 0 ? (

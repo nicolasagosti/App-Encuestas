@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface BankRepository extends JpaRepository<Bank, String> {
 
-    Bank findTopByNombre(String nombre);
+    Bank findTopByExtension(String extension);
 }

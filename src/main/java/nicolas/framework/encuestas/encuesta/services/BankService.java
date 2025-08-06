@@ -50,7 +50,10 @@ public class BankService implements IBankService {
     }
 
     public String obtenerExtension(String nombre) {
-        Bank banco = bankRepository.findTopByNombre(nombre);
+        Bank banco = bankRepository.findTopByExtension(nombre);
+        if (banco == null) {
+            throw new IllegalArgumentException("Banco no encontrado: " + nombre);
+        }
         return banco.getExtension();
     }
 

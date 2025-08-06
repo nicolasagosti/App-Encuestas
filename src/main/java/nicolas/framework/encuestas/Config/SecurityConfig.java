@@ -25,7 +25,8 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtFilter;
     private final AuthenticationProvider authProvider;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtFilter, AuthenticationProvider authProvider) {
+    public SecurityConfig(JwtAuthenticationFilter jwtFilter,
+                          AuthenticationProvider authProvider) {
         this.jwtFilter = jwtFilter;
         this.authProvider = authProvider;
     }
@@ -52,7 +53,6 @@ public class SecurityConfig {
                         .requestMatchers("/api/**").permitAll()
                         .anyRequest().authenticated()
                 )
-
                 .authenticationProvider(authProvider)
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -63,7 +63,14 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
         cfg.setAllowedOriginPatterns(List.of("http://localhost:*"));
-        cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        cfg.setAllowedMethods(List.of(
+                "GET",
+                "POST",
+                "PUT",
+                "PATCH",    // <-- añadimos PATCH
+                "DELETE",
+                "OPTIONS"
+        ));
         cfg.setAllowedHeaders(List.of("*"));
         cfg.setAllowCredentials(true);
 

@@ -13,8 +13,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "Clientes")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(
+        origins = "http://localhost:3000",
+        methods = { RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.PATCH, RequestMethod.OPTIONS }
+)
 @RestController
 @RequestMapping("/clientes")
 public class ClienteController {
@@ -67,6 +69,7 @@ public class ClienteController {
         return ResponseEntity.ok(flag);
     }
 
+    @CrossOrigin(origins="http://localhost:3000", methods = RequestMethod.PATCH)
     @PatchMapping("/{clienteId}")
     public ResponseEntity<ClienteOutputDTO> editarParcial(
             @PathVariable Long clienteId,

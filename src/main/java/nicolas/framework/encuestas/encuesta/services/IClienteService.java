@@ -15,4 +15,6 @@ public interface IClienteService {
     public List<ClienteOutputDTO> obtenerTodosLosClientes();
     boolean obtenerMustChangePassword(String mailCliente);
     Long obtenerIdDeCLiente(String mailCliente);
+    List<Long> obtenerReferentesDeUnGrupo(Long grupoId);
+    List<Long> obtenerReferentesDeUnBanco(String banco);
 }

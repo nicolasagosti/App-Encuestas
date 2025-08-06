@@ -7,7 +7,6 @@ export default function CrearUsuarioForm() {
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
   const [telefono, setTelefono] = useState('');
-  const [mustChangePassword, setMustChangePassword] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [clientes, setClientes] = useState([]);
@@ -35,7 +34,6 @@ export default function CrearUsuarioForm() {
     setNombre('');
     setApellido('');
     setTelefono('');
-    setMustChangePassword(false);
     setEditingCliente(null);
     setCreando(false);
     setSuccess('');
@@ -51,23 +49,24 @@ export default function CrearUsuarioForm() {
 
     try {
       if (editingCliente) {
-        const payload = {};
-        if (username) payload.username = username;
-        if (password) payload.password = password;
-        if (mustChangePassword !== null) payload.mustChangePassword = mustChangePassword;
-        if (nombre) payload.nombre = nombre;
-        if (apellido) payload.apellido = apellido;
-        if (telefono) payload.telefono = telefono;
-
+        // Editar existente
+        const payload = {
+          username,
+          ...(password && { password }),
+          ...(nombre && { nombre }),
+          ...(apellido && { apellido }),
+          ...(telefono && { telefono })
+        };
         await editarClienteParcial(editingCliente.id, payload);
         setSuccess('Cliente actualizado con éxito');
       } else if (creando) {
+        // Crear nuevo
         if (!username || !password) {
-          setError('Username y password son requeridos para crear usuario');
+          setError('Username y password son requeridos');
           setIsSubmitting(false);
           return;
         }
-        await register({ username, password });
+        await register({ username, password, nombre, apellido, telefono });
         setSuccess('Usuario creado con éxito');
       }
       clearForm();
@@ -94,7 +93,6 @@ export default function CrearUsuarioForm() {
     setNombre(cliente.nombre || '');
     setApellido(cliente.apellido || '');
     setTelefono(cliente.telefono || '');
-    setMustChangePassword(Boolean(cliente.mustChangePassword));
     setPassword('');
     setSuccess('');
     setError('');
@@ -118,7 +116,7 @@ export default function CrearUsuarioForm() {
 
   return (
     <div className="space-y-6 px-4">
-      {/* Sticky header con título y botón Crear usuario */}
+      {/* Header */}
       <div className="sticky top-0 z-10 bg-white py-3 flex justify-between items-center border-b shadow-sm">
         <h2 className="text-lg font-semibold">Usuarios</h2>
         {!mostrarFormulario && (
@@ -131,7 +129,7 @@ export default function CrearUsuarioForm() {
         )}
       </div>
 
-      {/* Formulario arriba si se está creando o editando */}
+      {/* Formulario */}
       {mostrarFormulario && (
         <div className="flex justify-center">
           <form onSubmit={handleSubmit} className="space-y-5 w-full mt-4">
@@ -171,7 +169,7 @@ export default function CrearUsuarioForm() {
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="me@example.com"
                   required
-                  className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                  className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                 />
               </div>
 
@@ -187,7 +185,7 @@ export default function CrearUsuarioForm() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
                     {...(creando ? { required: true } : {})}
-                    className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                   />
                 </div>
               )}
@@ -223,18 +221,6 @@ export default function CrearUsuarioForm() {
                 />
               </div>
 
-              <div className="flex items-center gap-2">
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={mustChangePassword}
-                    onChange={(e) => setMustChangePassword(e.target.checked)}
-                    className="h-4 w-4"
-                  />
-                  Forzar cambio de contraseña
-                </label>
-              </div>
-
               <div className="flex flex-col sm:flex-row gap-2">
                 <button
                   type="submit"
@@ -264,7 +250,7 @@ export default function CrearUsuarioForm() {
         </div>
       )}
 
-      {/* Filtro y lista abajo */}
+      {/* Lista y filtro */}
       <div className="w-full">
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Buscar cliente
@@ -274,7 +260,7 @@ export default function CrearUsuarioForm() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Buscar por correo, nombre o apellido"
-          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+          className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
         />
       </div>
 

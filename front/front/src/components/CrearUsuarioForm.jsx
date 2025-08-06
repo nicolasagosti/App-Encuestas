@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import api, { obtenerClientes, editarClienteParcial, register } from '../services/api';
 
 export default function CrearUsuarioForm() {
@@ -14,6 +14,9 @@ export default function CrearUsuarioForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingCliente, setEditingCliente] = useState(null);
   const [creando, setCreando] = useState(false);
+
+  // Ref para el formulario
+  const formRef = useRef(null);
 
   const fetchClientes = async () => {
     try {
@@ -49,7 +52,6 @@ export default function CrearUsuarioForm() {
 
     try {
       if (editingCliente) {
-        // Editar existente
         const payload = {
           username,
           ...(password && { password }),
@@ -60,7 +62,6 @@ export default function CrearUsuarioForm() {
         await editarClienteParcial(editingCliente.id, payload);
         setSuccess('Cliente actualizado con éxito');
       } else if (creando) {
-        // Crear nuevo
         if (!username || !password) {
           setError('Username y password son requeridos');
           setIsSubmitting(false);
@@ -96,11 +97,20 @@ export default function CrearUsuarioForm() {
     setPassword('');
     setSuccess('');
     setError('');
+
+    // Scroll al propio formulario
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
   };
 
   const iniciarCreacion = () => {
     clearForm();
     setCreando(true);
+    // También scrollear al formulario
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
   };
 
   const clientesFiltrados = clientes.filter((cliente) => {
@@ -131,7 +141,7 @@ export default function CrearUsuarioForm() {
 
       {/* Formulario */}
       {mostrarFormulario && (
-        <div className="flex justify-center">
+        <div ref={formRef} className="flex justify-center">
           <form onSubmit={handleSubmit} className="space-y-5 w-full mt-4">
             <div className="flex justify-between items-center">
               <h3 className="text-xl font-semibold">
@@ -272,9 +282,9 @@ export default function CrearUsuarioForm() {
               <thead>
                 <tr className="bg-gray-100 text-left">
                   <th className="px-3 py-2 border">Email</th>
-                  <th className="px-3 py-2 border">Nombre</th>
-                  <th className="px-3 py-2 border">Apellido</th>
-                  <th className="px-3 py-2 border">Teléfono</th>
+                  <th className="px-3 py-2	border">Nombre</th>
+                  <th className="px-3 py-2	border">Apellido</th>
+                  <th className="px-3 py-2	border">Teléfono</th>
                 </tr>
               </thead>
               <tbody>
@@ -284,10 +294,10 @@ export default function CrearUsuarioForm() {
                     className="odd:bg-white even:bg-gray-50 cursor-pointer"
                     onClick={() => handleRowClick(cliente)}
                   >
-                    <td className="px-3 py-2 border">{cliente.mail || '-'}</td>
-                    <td className="px-3 py-2 border">{cliente.nombre || '-'}</td>
-                    <td className="px-3 py-2 border">{cliente.apellido || '-'}</td>
-                    <td className="px-3 py-2 border">{cliente.telefono || '-'}</td>
+                    <td className="px-3 py-2	border">{cliente.mail || '-'}</td>
+                    <td className="px-3 py-2	border">{cliente.nombre || '-'}</td>
+                    <td className="px-3 py-2	border">{cliente.apellido || '-'}</td>
+                    <td className="px-3 py-2	border">{cliente.telefono || '-'}</td>
                   </tr>
                 ))}
               </tbody>

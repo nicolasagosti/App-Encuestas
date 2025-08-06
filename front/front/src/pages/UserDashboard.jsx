@@ -259,9 +259,9 @@ export default function ResponderEncuestaForm() {
                         {new Date(encuesta.fechaFin).toLocaleDateString()}
                       </p>
                       <p className="text-sm">
-                        <span className="font-medium">Grupo:</span>{' '}
-                        {encuesta.grupos?.[0]?.descripcion || `Grupo ${encuesta.grupos?.[0]?.id}`}
-                      </p>
+  <span className="font-medium">Grupo:</span>{' '}
+  {encuesta.grupoDelCliente?.descripcion || `Grupo ${encuesta.grupoDelCliente?.id}`}
+</p>
                     </div>
                   </div>
 

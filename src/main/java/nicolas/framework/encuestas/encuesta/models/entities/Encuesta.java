@@ -14,8 +14,6 @@ import java.util.List;
 
 @Entity
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class Encuesta {
 
     @Id
@@ -49,6 +47,9 @@ public class Encuesta {
         this.fechaFin = fechaFin;
         this.preguntas = preguntas;
         this.grupos = grupos;
+    }
+
+    public Encuesta() {
     }
 
     public Long getId() {

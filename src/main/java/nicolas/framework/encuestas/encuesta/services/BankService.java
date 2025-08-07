@@ -58,4 +58,15 @@ public class BankService implements IBankService {
     }
 
 
+    @Override
+    public void cargarBancoDesdeCargaInicial(String extension, String nombre, String base64logo) {
+        if (bankRepository.existsByExtension(extension)) return;
+        Bank banco = new Bank();
+        banco.setExtension(extension);
+        banco.setNombre(nombre);
+        banco.setLogoBase64(base64logo != null ? base64logo : "");
+        bankRepository.save(banco);
+    }
+
+
 }

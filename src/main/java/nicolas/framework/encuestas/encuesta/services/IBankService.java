@@ -10,5 +10,6 @@ public interface IBankService {
     public BankInputDTO addBank(String extension,String nombre, MultipartFile logo) throws IOException;
     public BankInputDTO getBank(String extension);
     public List<BankInputDTO> getBanks();
+    public void cargarBancoDesdeCargaInicial(String extension, String nombre, String base64logo);
 
-}
+    }

@@ -194,9 +194,16 @@ export default function CrearGrupoYAsignarForm({ onSave = async () => {} }) {
                 <div className="text-sm text-gray-600 mb-1">
                   {g.descripcion}
                 </div>
-                <div className="text-xs text-gray-500">
-                  Colaboradores: {g.cantidadDeColaboradores}
-                </div>
+                <div className="text-xs text-gray-500 mb-1">
+  Colaboradores: {g.cantidadDeColaboradores}
+</div>
+{g.referentes && g.referentes.length > 0 && (
+  <div className="text-xs text-gray-600">
+    Referentes:&nbsp;
+    {g.referentes.map(r => `${r.nombre} ${r.apellido} (${r.username})`).join(', ')}
+  </div>
+)}
+
               </li>
             ))}
           </ul>

@@ -3,6 +3,7 @@ package nicolas.framework.encuestas.encuesta.services;
 import nicolas.framework.encuestas.Exception.DatabaseException;
 import nicolas.framework.encuestas.encuesta.dtos.ClienteOutputDTO;
 import nicolas.framework.encuestas.encuesta.dtos.EditarClienteInputDTO;
+import nicolas.framework.encuestas.encuesta.dtos.ReferenteDTO;
 import nicolas.framework.encuestas.encuesta.models.entities.Grupo;
 import nicolas.framework.encuestas.encuesta.models.entities.User;
 import nicolas.framework.encuestas.encuesta.models.repositories.GrupoRepository;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -21,16 +23,14 @@ public class ClienteService implements IClienteService {
 
     @Autowired
     private UserRepository clienteRepository;
-
     @Autowired
     private GrupoRepository grupoRepository;
-
+    @Autowired
+    private GrupoService grupoService;
     @Autowired
     private PasswordEncoder passwordEncoder;
-
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private BankService bankService;
 
@@ -54,8 +54,20 @@ public class ClienteService implements IClienteService {
             throw new DatabaseException("Clientes no encontrados con ids " + faltantes);
         }
 
+        List<ReferenteDTO> referentesDeGrupo = procesarReferentesDeGrupo(clientes);
+        grupoService.agregarReferentes(grupoId, referentesDeGrupo);
+
         clientes.forEach(c -> c.getGrupos().add(grupo));
         clienteRepository.saveAll(clientes);
+    }
+
+    List<ReferenteDTO> procesarReferentesDeGrupo(List<User> clientes) {
+        List<ReferenteDTO> referentes = new ArrayList<>();
+
+        for(User cliente : clientes) {
+            referentes.add(new ReferenteDTO(cliente.getNombre(), cliente.getApellido(), cliente.getUsername()));
+        }
+        return referentes;
     }
 
     @Override

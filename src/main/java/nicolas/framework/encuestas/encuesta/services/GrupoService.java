@@ -3,6 +3,7 @@ import jakarta.validation.constraints.Null;
 import nicolas.framework.encuestas.Exception.ResourceNotFoundException;
 import nicolas.framework.encuestas.encuesta.dtos.GrupoInputDTO;
 import nicolas.framework.encuestas.encuesta.dtos.GrupoOutputDTO;
+import nicolas.framework.encuestas.encuesta.dtos.ReferenteDTO;
 import nicolas.framework.encuestas.encuesta.models.entities.Grupo;
 import nicolas.framework.encuestas.encuesta.models.entities.User;
 import nicolas.framework.encuestas.encuesta.models.repositories.GrupoRepository;
@@ -17,20 +18,27 @@ public class GrupoService implements IGrupoService{
 
     @Autowired
     private GrupoRepository grupoRepository;
-
     @Autowired
-    private ClienteService clienteService;
+    private ReferenteService referenteService;
 
 
     public List<GrupoOutputDTO> convertirADTOs(List<Grupo> grupos) {
         return grupos.stream()
-                .map(grupo -> new GrupoOutputDTO(
-                        grupo.getId(),
-                        grupo.getDescripcion(),
-                        grupo.getCantidadDeColaboradores(),
-                        grupo.getNombre()
-                ))
+                .map(grupo -> {
+                    List<ReferenteDTO> referentes = grupo.getClientes().stream()
+                            .map(c -> new ReferenteDTO(c.getNombre(), c.getApellido(), c.getUsername()))
+                            .toList();
+
+                    return new GrupoOutputDTO(
+                            grupo.getId(),
+                            grupo.getDescripcion(),
+                            grupo.getCantidadDeColaboradores(),
+                            grupo.getNombre(),
+                            Optional.of(referentes)
+                    );
+                })
                 .toList();
+
     }
 
     @Override
@@ -82,8 +90,21 @@ public class GrupoService implements IGrupoService{
         }
     }
 
+    @Override
+    public GrupoOutputDTO agregarReferentes(Long grupoId, List<ReferenteDTO> referenteDTOS){
+        Optional<Grupo> grupo = grupoRepository.findById(grupoId);
+        return new GrupoOutputDTO(
+                grupo.get().getId(),
+                grupo.get().getDescripcion(),
+                grupo.get().getCantidadDeColaboradores(),
+                grupo.get().getNombre(),
+                Optional.ofNullable(referenteDTOS)
+        );
+
+    }
+
     public List<GrupoOutputDTO> gruposDeUnBanco(String banco) {
-        List<Long> referentesIds = clienteService.obtenerReferentesDeUnBanco(banco);
+        List<Long> referentesIds = referenteService.obtenerReferentesDeUnBanco(banco);
         Set<Grupo> grupos = new HashSet<>();
 
         for (Long clienteId : referentesIds) {
@@ -96,7 +117,7 @@ public class GrupoService implements IGrupoService{
 
 
     public List<GrupoOutputDTO> gruposDeUnReferente(String mail) {
-        Long cliente = clienteService.obtenerIdDeCLiente(mail);
+        Long cliente = referenteService.obtenerIdDeCLiente(mail);
         List<Grupo> grupos = grupoRepository.findGruposByCliente(cliente);
 
         return convertirADTOs(grupos);

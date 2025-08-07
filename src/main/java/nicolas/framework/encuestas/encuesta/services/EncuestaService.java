@@ -73,7 +73,6 @@ public class EncuestaService implements IEncuestaService {
                 })
                 .toList();
     }
-
     @Override
     public List<EncuestaOutputDTO> obtenerEncuestasPendientes(Long clienteId) {
         List<Encuesta> todasLasEncuestas = encuestaRepository.findDistinctByGruposClientesId(clienteId);
@@ -85,44 +84,42 @@ public class EncuestaService implements IEncuestaService {
                 continue;
             }
 
-            Grupo grupoDelCliente = encuesta.getGrupos().stream()
+            List<Grupo> gruposDelCliente = encuesta.getGrupos().stream()
                     .filter(g -> g.getClientes().stream().anyMatch(c -> c.getId().equals(clienteId)))
-                    .findFirst()
-                    .orElse(null);
+                    .toList();
 
-            if (grupoDelCliente == null) continue;
-
-            boolean respondioTodas = true;
-            for (Pregunta pregunta : encuesta.getPreguntas()) {
-                boolean existeRespuesta = respuestaRepository.existsByCliente_IdAndGrupo_IdAndPregunta_Id(
-                        clienteId, grupoDelCliente.getId(), pregunta.getId()
-                );
-                if (!existeRespuesta) {
-                    respondioTodas = false;
-                    break;
+            for (Grupo grupo : gruposDelCliente) {
+                boolean respondioTodas = true;
+                for (Pregunta pregunta : encuesta.getPreguntas()) {
+                    if (!respuestaRepository.existsByCliente_IdAndGrupo_IdAndPregunta_Id(
+                            clienteId, grupo.getId(), pregunta.getId())) {
+                        respondioTodas = false;
+                        break;
+                    }
                 }
-            }
 
-            if (!respondioTodas) {
-                List<PreguntaOutputDTO> preguntas = encuesta.getPreguntas().stream()
-                        .map(p -> new PreguntaOutputDTO(p.getId(), p.getTexto()))
-                        .toList();
+                if (!respondioTodas) {
+                    List<PreguntaOutputDTO> preguntasDTO = encuesta.getPreguntas().stream()
+                            .map(p -> new PreguntaOutputDTO(p.getId(), p.getTexto()))
+                            .toList();
 
-                EncuestaOutputDTO dto = new EncuestaOutputDTO(
-                        encuesta.getFechaInicio(),
-                        encuesta.getFechaFin(),
-                        preguntas,
-                        encuesta.getId(),
-                        null
-                );
-                dto.setGrupoDelCliente(new GrupoOutputDTO(
-                        grupoDelCliente.getId(),
-                        grupoDelCliente.getDescripcion(),
-                        grupoDelCliente.getCantidadDeColaboradores(),
-                        grupoDelCliente.getNombre()
-                ));
+                    EncuestaOutputDTO dto = new EncuestaOutputDTO(
+                            encuesta.getFechaInicio(),
+                            encuesta.getFechaFin(),
+                            preguntasDTO,
+                            encuesta.getId(),
+                            null
+                    );
 
-                encuestasPendientes.add(dto);
+                    dto.setGrupoDelCliente(new GrupoOutputDTO(
+                            grupo.getId(),
+                            grupo.getDescripcion(),
+                            grupo.getCantidadDeColaboradores(),
+                            grupo.getNombre()
+                    ));
+
+                    encuestasPendientes.add(dto);
+                }
             }
         }
 

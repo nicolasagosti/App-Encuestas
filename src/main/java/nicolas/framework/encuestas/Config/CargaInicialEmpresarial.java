@@ -13,7 +13,12 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.Base64;
 import java.util.List;
 
 import java.time.LocalDate;
@@ -60,9 +65,11 @@ public class CargaInicialEmpresarial implements CommandLineRunner {
 
         try {
             // 1. Cargar Bancos (sin logo)
-            bankService.cargarBancoDesdeCargaInicial("bbva.com", "BBVA", null);
+            String BBVA = convertirImagenABase64("C:\\Users\\nicolas.longo\\Desktop\\App-Encuestas\\front\\front\\src\\pages\\FRANCE.png");
+            String GALI = convertirImagenABase64("C:\\Users\\nicolas.longo\\Desktop\\App-Encuestas\\front\\front\\src\\pages\\galicia.png");
+            bankService.cargarBancoDesdeCargaInicial("bbva.com", "BBVA", BBVA);
             bankService.cargarBancoDesdeCargaInicial("santander.com", "Santander", null);
-            bankService.cargarBancoDesdeCargaInicial("galicia.com", "Galicia", null);
+            bankService.cargarBancoDesdeCargaInicial("galicia.com", "Galicia", GALI);
 
             // 2. Crear usuarios para cada banco
             crearUsuarioCompleto("ana@bbva.com", "Ana", "Pérez", "123456789");
@@ -120,4 +127,15 @@ public class CargaInicialEmpresarial implements CommandLineRunner {
         clienteService.asignarGruposACliente(grupoId, idsReferentes);
         return grupoId;
     }
+
+    private String convertirImagenABase64(String ruta) {
+        try {
+            Path path = Paths.get(ruta);
+            byte[] bytes = Files.readAllBytes(path);
+            return Base64.getEncoder().encodeToString(bytes);
+        } catch (IOException e) {
+            throw new RuntimeException("No se pudo leer la imagen: " + ruta, e);
+        }
+    }
+
 }

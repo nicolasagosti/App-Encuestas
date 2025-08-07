@@ -160,7 +160,7 @@ export default function EstadisticasGrupo() {
               onChange={e => setClienteSeleccionado(e.target.value)}
               className="border px-2 py-1 rounded"
             >
-              <option value="">-- Seleccionar cliente --</option>
+              <option value=""> Seleccionar referente</option>
               {clientes.map((c, idx) => (
                 <option key={idx} value={c.mail}>
                   {c.mail}

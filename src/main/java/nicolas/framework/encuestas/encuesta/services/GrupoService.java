@@ -10,8 +10,7 @@ import nicolas.framework.encuestas.encuesta.models.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class GrupoService implements IGrupoService{
@@ -85,11 +84,17 @@ public class GrupoService implements IGrupoService{
     }
 
     public List<GrupoOutputDTO> gruposDeUnBanco(String banco) {
+        List<Long> referentesIds = clienteService.obtenerReferentesDeUnBanco(banco);
+        Set<Grupo> grupos = new HashSet<>();
 
-        List<Long> referentes = clienteService.obtenerReferentesDeUnBanco(banco);
-        List<Grupo> grupos = grupoRepository.findAllById(referentes);
-        return convertirADTOs(grupos);
+        for (Long clienteId : referentesIds) {
+            List<Grupo> gruposDelCliente = grupoRepository.findGruposByCliente(clienteId);
+            grupos.addAll(gruposDelCliente);
+        }
+
+        return convertirADTOs(new ArrayList<>(grupos));
     }
+
 
     public List<GrupoOutputDTO> gruposDeUnReferente(String mail) {
         Long cliente = clienteService.obtenerIdDeCLiente(mail);

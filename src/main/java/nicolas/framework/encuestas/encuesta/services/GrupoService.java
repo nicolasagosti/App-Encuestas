@@ -57,7 +57,6 @@ public class GrupoService implements IGrupoService{
         return grupoRepository.findAllById(ids);
     }
 
-
     @Override
     public GrupoOutputDTO registrarGrupo(GrupoInputDTO dto) {
         List<Grupo> grupos = grupoRepository.findAllByDescripcionIgnoreCase(dto.getDescripcion().trim());
@@ -76,7 +75,7 @@ public class GrupoService implements IGrupoService{
                     grupoGuardado.getId(),
                     grupoGuardado.getDescripcion(),
                     grupoGuardado.getCantidadDeColaboradores(),
-                    grupoGuardado.getNombre() // asumiendo que el output DTO ahora incluye nombre
+                    grupoGuardado.getNombre()
             );
         } else {
             throw new IllegalArgumentException("Grupo ya existente");

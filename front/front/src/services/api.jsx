@@ -75,9 +75,6 @@ export function cargarCliente() {
 export function obtenerClientes() {
   return api.get('/clientes');
 }
-export function asignarGruposACliente(clienteId, idGrupos) {
-  return api.post(`/clientes/${clienteId}/grupos`, idGrupos);
-}
 
 export function obtenerIdDeCliente(mailCliente) {
   return api.post('/clientes/id', { mailCliente });

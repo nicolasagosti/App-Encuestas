@@ -6,7 +6,8 @@ import lombok.Data;
 public class GrupoInputDTO {
     private String descripcion;
     private int cantidadDeColaboradores;
-    private String nombre; // nuevo
+    private String nombre;
+
 
     public GrupoInputDTO(String descripcion, int cantidadDeColaboradores, String nombre) {
         this.descripcion = descripcion;

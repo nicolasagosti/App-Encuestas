@@ -86,18 +86,6 @@ public class CargaInicialEmpresarial implements CommandLineRunner {
                     preguntaService.crearPregunta(new PreguntaInputDTO("¿Recomendarías nuestro servicio a otros?")).getId()
             );
 
-            // 4. Crear y asignar grupos
-            Long g1 = crearYAsignarGrupo("Grupo BBVA", "Equipo BBVA", 5, List.of("ana@bbva.com", "luis@bbva.com"));
-            Long g2 = crearYAsignarGrupo("Grupo Santander", "Equipo Santander", 5, List.of("carla@santander.com", "juan@santander.com"));
-            Long g3 = crearYAsignarGrupo("Grupo Galicia", "Equipo Galicia", 5, List.of("martin@galicia.com", "florencia@galicia.com"));
-
-            // 5. Crear encuestas
-            LocalDate hoy = LocalDate.now();
-            LocalDate fin = hoy.plusDays(10);
-
-            encuestaService.crearEncuesta(new EncuestaInputDTO(List.of(g1), preguntas, hoy, fin));
-            encuestaService.crearEncuesta(new EncuestaInputDTO(List.of(g2), preguntas, hoy, fin));
-            encuestaService.crearEncuesta(new EncuestaInputDTO(List.of(g3), preguntas, hoy, fin));
 
             System.out.println("✅ Carga inicial empresarial completada.");
         } catch (Exception e) {
@@ -114,18 +102,6 @@ public class CargaInicialEmpresarial implements CommandLineRunner {
             user.setTelefono(telefono);
             userRepository.save(user);
         });
-    }
-
-    private Long crearYAsignarGrupo(String nombre, String descripcion, int colaboradores, List<String> mailsReferentes) {
-        GrupoInputDTO dto = new GrupoInputDTO(descripcion, colaboradores, nombre);
-        Long grupoId = grupoService.registrarGrupo(dto).getId();
-
-        List<Long> idsReferentes = mailsReferentes.stream()
-                .map(clienteService::obtenerIdDeCLiente)
-                .toList();
-
-        clienteService.asignarGruposACliente(grupoId, idsReferentes);
-        return grupoId;
     }
 
     private String convertirImagenABase64(String ruta) {

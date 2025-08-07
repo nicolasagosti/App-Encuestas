@@ -30,13 +30,6 @@ public class ClienteController {
         this.encuestaService = encuestaService;
     }
 
-    @PostMapping("/{clienteId}/grupos")
-    public ResponseEntity<HttpStatus> asignarGruposACliente(@PathVariable Long clienteId,
-                                                            @RequestBody List<Long> idGrupos) {
-        clienteService.asignarGruposACliente(clienteId, idGrupos);
-        return new ResponseEntity<>(HttpStatus.CREATED);
-    }
-
     @PostMapping("/{grupoId}")
     public ResponseEntity<HttpStatus> asignarClientesAGrupo(@PathVariable Long grupoId,
                                                             @RequestBody List<Long> idClientes) {

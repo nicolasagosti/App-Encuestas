@@ -59,29 +59,6 @@ public class ClienteService implements IClienteService {
     }
 
     @Override
-    public void asignarGruposACliente(Long clienteId, List<Long> ids) {
-        User cliente = clienteRepository.findById(clienteId)
-                .orElseThrow(() -> new DatabaseException("Cliente no encontrado con id " + clienteId));
-
-        List<Grupo> grupos = grupoRepository.findAllById(ids);
-        if (grupos.isEmpty()) {
-            throw new DatabaseException("No se encontraron grupos con los IDs proporcionados");
-        }
-        Set<Long> encontrados = grupos.stream()
-                .map(Grupo::getId)
-                .collect(Collectors.toSet());
-        List<Long> faltantes = ids.stream()
-                .filter(id -> !encontrados.contains(id))
-                .toList();
-        if (!faltantes.isEmpty()) {
-            throw new DatabaseException("Grupos no encontrados con ids " + faltantes);
-        }
-
-        cliente.getGrupos().addAll(grupos);
-        clienteRepository.save(cliente);
-    }
-
-    @Override
     public List<Long> obtenerReferentesDeUnGrupo(Long grupoId) {
         return userRepository.findDistinctByGrupoId(grupoId)
                 .stream()

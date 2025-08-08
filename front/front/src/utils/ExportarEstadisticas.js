@@ -82,7 +82,7 @@ export function exportarEstadisticasAGrupo(
     body: filas
   });
 
-  const archivo = generarNombreArchivo("estadisticas_grupos", titulo, fechaInicio, fechaFin);
+  const archivo = generarNombreArchivo("estadisticas_grupos", titulo);
   doc.save(archivo);
 }
 
@@ -106,6 +106,6 @@ export function exportarEstadisticasClientesPorPeriodo(
     body: filas
   });
 
-  const archivo = generarNombreArchivo("estadisticas_clientes", titulo, fechaInicio, fechaFin);
+  const archivo = generarNombreArchivo("estadisticas_clientes", titulo);
   doc.save(archivo);
 }

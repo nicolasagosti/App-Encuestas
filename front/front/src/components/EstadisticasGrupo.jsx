@@ -108,22 +108,27 @@ export default function EstadisticasGrupo() {
       <h2 className="text-2xl font-bold text-center">📊 Estadísticas de Grupos</h2>
 
       {estadisticasPeriodo.length > 0 && (
-  <div className="flex flex-wrap gap-4 justify-center">
-    <button
-      onClick={() =>
-        exportarEstadisticasAGrupo(
-          estadisticasPeriodo,
-          tituloExportacion(),
-          fechaInicio,
-          fechaFin
-        )
-      }
-      className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded"
-    >
-      Exportar PDF
-    </button>
-  </div>
-)}
+        <div className="flex flex-wrap gap-4 justify-center">
+          <button
+            onClick={() =>
+              exportarEstadisticasAGrupo(
+                estadisticasPeriodo,
+                tituloExportacion(),
+                fechaInicio,
+                fechaFin,
+                tipo,
+                clienteSeleccionado,
+                bancoSeleccionado,
+                clientes,
+                bancos
+              )
+            }
+            className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded"
+          >
+            Exportar PDF
+          </button>
+        </div>
+      )}
 
       {error && <p className="text-red-600 text-center">{error}</p>}
 

@@ -25,24 +25,61 @@ export function exportarEstadisticasAGrupo(
   estadisticas,
   titulo = "Estadísticas por Grupo",
   fechaInicio = null,
-  fechaFin = null
+  fechaFin = null,
+  tipo = "todos",
+  clienteSeleccionado = "",
+  bancoSeleccionado = "",
+  clientes = [],
+  bancos = []
 ) {
   const doc = new jsPDF();
+
+  let subTituloExtra = "";
+
+  if (tipo === "cliente" && clienteSeleccionado) {
+    const cliente = clientes.find(c => c.mail === clienteSeleccionado);
+    if (cliente) {
+      subTituloExtra = `Referente: ${cliente.nombre} ${cliente.apellido} (${cliente.mail})`;
+      titulo += ` - ${cliente.nombre} ${cliente.apellido}`;
+    } else {
+      subTituloExtra = `Referente: ${clienteSeleccionado}`;
+      titulo += ` - ${clienteSeleccionado}`;
+    }
+  }
+
+  if (tipo === "banco" && bancoSeleccionado) {
+    const banco = bancos.find(b => b.extension === bancoSeleccionado);
+    if (banco) {
+      subTituloExtra = `Banco: ${banco.extension}`;
+      titulo += ` - ${banco.extension}`;
+    } else {
+      subTituloExtra = `Banco: ${bancoSeleccionado}`;
+      titulo += ` - ${bancoSeleccionado}`;
+    }
+  }
+
   agregarTituloYFechas(doc, titulo, fechaInicio, fechaFin);
+
+  if (subTituloExtra) {
+    doc.setFontSize(11);
+    doc.setTextColor(50);
+    const y = fechaInicio && fechaFin ? 34 : 28;
+    doc.text(subTituloExtra, 14, y);
+  }
 
   const columnas = ["Grupo", "Colaboradores", "Referentes", "Respondieron", "Promedio"];
   const filas = estadisticas.map(e => [
     e.descripcion || `Grupo ${e.grupoId}`,
-    e.cantidadDeColaboradores ?? '—',
-    e.totalReferentes ?? '—',
-    e.referentesQueRespondieron ?? '—',
-    e.promedio != null ? e.promedio.toFixed(2) : '—'
+    e.cantidadDeColaboradores ?? "—",
+    e.totalReferentes ?? "—",
+    e.referentesQueRespondieron ?? "—",
+    e.promedio != null ? e.promedio.toFixed(2) : "—"
   ]);
 
   autoTable(doc, {
-    startY: fechaInicio && fechaFin ? 36 : 30,
+    startY: fechaInicio && fechaFin ? (subTituloExtra ? 42 : 36) : (subTituloExtra ? 36 : 30),
     head: [columnas],
-    body: filas,
+    body: filas
   });
 
   const archivo = generarNombreArchivo("estadisticas_grupos", titulo, fechaInicio, fechaFin);

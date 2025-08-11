@@ -17,4 +17,6 @@ public interface IGrupoService {
     public GrupoOutputDTO registrarGrupo(GrupoInputDTO grupo);
     public GrupoOutputDTO agregarReferentes(Long grupoId, List<ReferenteDTO> referenteDTOS);
     GrupoOutputDTO editarGrupo(Long id, GrupoInputDTO dto);
+    void eliminarGrupo(Long id);
+    GrupoOutputDTO restaurarGrupo(Long id);
     }

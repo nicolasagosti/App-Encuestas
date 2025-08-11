@@ -46,4 +46,27 @@ public class GrupoController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
+    // ==== BORRADO LÓGICO ====
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> eliminarGrupo(@PathVariable Long id) {
+        try {
+            grupoService.eliminarGrupo(id); // set visible=false
+            return ResponseEntity.noContent().build(); // 204
+        } catch (nicolas.framework.encuestas.Exception.ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalArgumentException e) { // por ejemplo, si tiene respuestas asociadas y no permitís eliminar
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        }
+    }
+
+    // ==== RESTAURAR ====
+    @PatchMapping("/{id}/restaurar")
+    public ResponseEntity<?> restaurarGrupo(@PathVariable Long id) {
+        try {
+            GrupoOutputDTO restaurado = grupoService.restaurarGrupo(id); // set visible=true
+            return ResponseEntity.ok(restaurado);
+        } catch (nicolas.framework.encuestas.Exception.ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
 }

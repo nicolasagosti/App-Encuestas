@@ -71,6 +71,14 @@ export function editarGrupo(id, data) {
   return api.put(`/grupos/${id}`, data);
 }
 
+export function eliminarGrupo(id) {
+  return api.delete(`/grupos/${id}`);
+}
+
+export function restaurarGrupo(id) {
+  return api.patch(`/grupos/${id}/restaurar`);
+}
+
 // Clientes
 export function cargarCliente() {
   return api.get('/clientes');

@@ -73,7 +73,7 @@ public class GrupoService implements IGrupoService {
 
     @Override
     public List<GrupoOutputDTO> todosLosGrupos() {
-        List<Grupo> grupos = grupoRepository.findAll();
+        List<Grupo> grupos = grupoRepository.findAllVisible();
         return convertirADTOs(grupos);
     }
 
@@ -173,4 +173,25 @@ public class GrupoService implements IGrupoService {
         List<Grupo> grupos = grupoRepository.findGruposByCliente(cliente);
         return convertirADTOs(grupos);
     }
+
+    @Override
+    @Transactional
+    public void eliminarGrupo(Long id) {
+        Grupo grupo = grupoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Grupo no encontrado con id " + id));
+
+        // Solo marcar como no visible
+        grupo.setVisible(false);
+        grupoRepository.save(grupo);
+    }
+
+    @Transactional
+    public GrupoOutputDTO restaurarGrupo(Long id) {
+        Grupo grupo = grupoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Grupo no encontrado con id " + id));
+        grupo.setVisible(true);
+        grupoRepository.save(grupo);
+        return mapWithReferentes(grupo);
+    }
+
 }

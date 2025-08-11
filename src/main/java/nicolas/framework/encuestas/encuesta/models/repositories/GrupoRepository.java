@@ -21,5 +21,6 @@ public interface GrupoRepository extends JpaRepository<Grupo, Long> {
     // mismos nombres, distinto id (para evitar duplicados al editar)
     List<Grupo> findAllByDescripcionIgnoreCaseAndIdNot(String descripcion, Long id);
 
-
+    @Query("SELECT g FROM Grupo g WHERE g.visible = true")
+    List<Grupo> findAllVisible();
 }

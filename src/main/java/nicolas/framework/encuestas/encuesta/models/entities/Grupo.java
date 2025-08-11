@@ -17,14 +17,17 @@ public class Grupo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
+    @Column(nullable = false)
     private String descripcion;
 
-    @Column
+    @Column(nullable = false)
     private String nombre; // agregado
 
     @Column
     private int cantidadDeColaboradores;
+
+    @Column(nullable = false)
+    private boolean visible = true; // 👈 borrado lógico (true = se muestra)
 
     @ManyToMany(mappedBy = "grupos")
     @JsonIgnore
@@ -36,11 +39,9 @@ public class Grupo {
     @OneToMany(mappedBy = "grupo")
     private List<Respuesta> respuestas;
 
-
     public Grupo(String descripcion, int cantidadDeColaboradores) {
         this.descripcion = descripcion;
         this.cantidadDeColaboradores = cantidadDeColaboradores;
+        this.visible = true;
     }
-
-
 }

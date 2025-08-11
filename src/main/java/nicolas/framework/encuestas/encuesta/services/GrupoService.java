@@ -1,5 +1,5 @@
 package nicolas.framework.encuestas.encuesta.services;
-import jakarta.validation.constraints.Null;
+
 import nicolas.framework.encuestas.Exception.ResourceNotFoundException;
 import nicolas.framework.encuestas.encuesta.dtos.GrupoInputDTO;
 import nicolas.framework.encuestas.encuesta.dtos.GrupoOutputDTO;
@@ -7,50 +7,68 @@ import nicolas.framework.encuestas.encuesta.dtos.ReferenteDTO;
 import nicolas.framework.encuestas.encuesta.models.entities.Grupo;
 import nicolas.framework.encuestas.encuesta.models.entities.User;
 import nicolas.framework.encuestas.encuesta.models.repositories.GrupoRepository;
-import nicolas.framework.encuestas.encuesta.models.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
-public class GrupoService implements IGrupoService{
+public class GrupoService implements IGrupoService {
 
     @Autowired
     private GrupoRepository grupoRepository;
+
     @Autowired
     private ReferenteService referenteService;
 
+    /* ===================== Mapeos ===================== */
+
+    private GrupoOutputDTO mapWithReferentes(Grupo grupo) {
+        List<User> clientes = Optional.ofNullable(grupo.getClientes()).orElseGet(ArrayList::new);
+
+        List<ReferenteDTO> referentes = clientes.stream()
+                .map(c -> new ReferenteDTO(c.getNombre(), c.getApellido(), c.getUsername()))
+                .collect(Collectors.toList());
+
+        return new GrupoOutputDTO(
+                grupo.getId(),
+                grupo.getDescripcion(),
+                grupo.getCantidadDeColaboradores(),
+                grupo.getNombre(),
+                Optional.of(referentes) // nunca null; si no hay, lista vacía
+        );
+    }
+
+    private GrupoOutputDTO mapBasic(Grupo grupo) {
+        List<ReferenteDTO> referentes =
+                Optional.ofNullable(grupo.getClientes())
+                        .orElseGet(java.util.Collections::emptyList)
+                        .stream()
+                        .map(u -> new ReferenteDTO(u.getNombre(), u.getApellido(), u.getUsername()))
+                        .toList(); // Si usás Java 8: .collect(java.util.stream.Collectors.toList())
+
+        return new GrupoOutputDTO(
+                grupo.getId(),
+                grupo.getDescripcion(),
+                grupo.getCantidadDeColaboradores(),
+                grupo.getNombre(),
+                Optional.of(referentes) // nunca null (lista vacía si no hay clientes)
+        );
+    }
 
     public List<GrupoOutputDTO> convertirADTOs(List<Grupo> grupos) {
-        return grupos.stream()
-                .map(grupo -> {
-                    List<ReferenteDTO> referentes = grupo.getClientes().stream()
-                            .map(c -> new ReferenteDTO(c.getNombre(), c.getApellido(), c.getUsername()))
-                            .toList();
-
-                    return new GrupoOutputDTO(
-                            grupo.getId(),
-                            grupo.getDescripcion(),
-                            grupo.getCantidadDeColaboradores(),
-                            grupo.getNombre(),
-                            Optional.of(referentes)
-                    );
-                })
-                .toList();
-
+        return grupos.stream().map(this::mapWithReferentes).toList();
     }
+
+    /* ===================== Queries ===================== */
 
     @Override
     public GrupoOutputDTO buscarGrupo(Long id) {
         Grupo grupo = grupoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Grupo no encontrado con id " + id));
-        return new GrupoOutputDTO(
-                grupo.getId(),
-                grupo.getDescripcion(),
-                grupo.getCantidadDeColaboradores(),
-                grupo.getNombre()
-        );
+        return mapWithReferentes(grupo);
     }
 
     @Override
@@ -59,48 +77,83 @@ public class GrupoService implements IGrupoService{
         return convertirADTOs(grupos);
     }
 
-
     @Override
     public List<Grupo> buscarGrupos(List<Long> ids) {
         return grupoRepository.findAllById(ids);
     }
 
+    /* ===================== Crear / Editar ===================== */
+
     @Override
+    @Transactional
     public GrupoOutputDTO registrarGrupo(GrupoInputDTO dto) {
-        List<Grupo> grupos = grupoRepository.findAllByDescripcionIgnoreCase(dto.getDescripcion().trim());
+        String desc = dto.getDescripcion() == null ? "" : dto.getDescripcion().trim();
+        if (desc.isBlank()) {
+            throw new IllegalArgumentException("La descripción es obligatoria.");
+        }
 
-        if (grupos.isEmpty()) {
-            Grupo grupo = new Grupo(dto.getDescripcion(), dto.getCantidadDeColaboradores());
-            // asignar nombre si viene, sino dejar vacío o usar la descripción como fallback
-            if (dto.getNombre() != null && !dto.getNombre().isBlank()) {
-                grupo.setNombre(dto.getNombre().trim());
-            } else {
-                grupo.setNombre(dto.getDescripcion().trim());
-            }
-
-            Grupo grupoGuardado = grupoRepository.save(grupo);
-            return new GrupoOutputDTO(
-                    grupoGuardado.getId(),
-                    grupoGuardado.getDescripcion(),
-                    grupoGuardado.getCantidadDeColaboradores(),
-                    grupoGuardado.getNombre()
-            );
-        } else {
+        List<Grupo> existentes = grupoRepository.findAllByDescripcionIgnoreCase(desc);
+        if (!existentes.isEmpty()) {
             throw new IllegalArgumentException("Grupo ya existente");
         }
+
+        Grupo grupo = new Grupo(desc, dto.getCantidadDeColaboradores());
+        if (dto.getNombre() != null && !dto.getNombre().isBlank()) {
+            grupo.setNombre(dto.getNombre().trim());
+        } else {
+            grupo.setNombre(desc);
+        }
+
+        Grupo guardado = grupoRepository.save(grupo);
+        return mapBasic(guardado);
     }
 
     @Override
-    public GrupoOutputDTO agregarReferentes(Long grupoId, List<ReferenteDTO> referenteDTOS){
-        Optional<Grupo> grupo = grupoRepository.findById(grupoId);
-        return new GrupoOutputDTO(
-                grupo.get().getId(),
-                grupo.get().getDescripcion(),
-                grupo.get().getCantidadDeColaboradores(),
-                grupo.get().getNombre(),
-                Optional.ofNullable(referenteDTOS)
-        );
+    @Transactional
+    public GrupoOutputDTO editarGrupo(Long id, GrupoInputDTO dto) {
+        Grupo grupo = grupoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Grupo no encontrado con id " + id));
 
+        if (dto.getDescripcion() != null && !dto.getDescripcion().isBlank()) {
+            String nuevaDesc = dto.getDescripcion().trim();
+            if (!nuevaDesc.equalsIgnoreCase(grupo.getDescripcion())) {
+                // Si tenés el método en repo: findAllByDescripcionIgnoreCaseAndIdNot
+                // List<Grupo> duplicados = grupoRepository.findAllByDescripcionIgnoreCaseAndIdNot(nuevaDesc, id);
+                // if (!duplicados.isEmpty()) throw new IllegalArgumentException("Ya existe un grupo con la descripción: " + nuevaDesc);
+
+                grupo.setDescripcion(nuevaDesc);
+            }
+        }
+
+        if (dto.getNombre() != null && !dto.getNombre().isBlank()) {
+            grupo.setNombre(dto.getNombre().trim());
+        }
+
+        if (dto.getCantidadDeColaboradores() > 0) {
+            grupo.setCantidadDeColaboradores(dto.getCantidadDeColaboradores());
+        }
+
+        Grupo actualizado = grupoRepository.save(grupo);
+        return mapWithReferentes(actualizado);
+    }
+
+    /* ===================== Otros usos ===================== */
+
+    @Override
+    public GrupoOutputDTO agregarReferentes(Long grupoId, List<ReferenteDTO> referenteDTOS) {
+        Grupo grupo = grupoRepository.findById(grupoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Grupo no encontrado con id " + grupoId));
+
+        List<ReferenteDTO> safe = Optional.ofNullable(referenteDTOS)
+                .orElseGet(ArrayList::new);
+
+        return new GrupoOutputDTO(
+                grupo.getId(),
+                grupo.getDescripcion(),
+                grupo.getCantidadDeColaboradores(),
+                grupo.getNombre(),
+                Optional.of(safe)
+        );
     }
 
     public List<GrupoOutputDTO> gruposDeUnBanco(String banco) {
@@ -115,12 +168,9 @@ public class GrupoService implements IGrupoService{
         return convertirADTOs(new ArrayList<>(grupos));
     }
 
-
     public List<GrupoOutputDTO> gruposDeUnReferente(String mail) {
         Long cliente = referenteService.obtenerIdDeCLiente(mail);
         List<Grupo> grupos = grupoRepository.findGruposByCliente(cliente);
-
         return convertirADTOs(grupos);
     }
-
 }

@@ -1,10 +1,7 @@
 package nicolas.framework.encuestas.encuesta.services;
 
 import nicolas.framework.encuestas.Exception.ResourceNotFoundException;
-import nicolas.framework.encuestas.encuesta.dtos.EncuestaInputDTO;
-import nicolas.framework.encuestas.encuesta.dtos.EncuestaOutputDTO;
-import nicolas.framework.encuestas.encuesta.dtos.GrupoOutputDTO;
-import nicolas.framework.encuestas.encuesta.dtos.PreguntaOutputDTO;
+import nicolas.framework.encuestas.encuesta.dtos.*;
 import nicolas.framework.encuestas.encuesta.models.entities.Encuesta;
 import nicolas.framework.encuestas.encuesta.models.entities.Grupo;
 import nicolas.framework.encuestas.encuesta.models.entities.Pregunta;
@@ -15,7 +12,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class EncuestaService implements IEncuestaService {
@@ -55,12 +54,22 @@ public class EncuestaService implements IEncuestaService {
                             .toList();
 
                     List<GrupoOutputDTO> grupos = encuesta.getGrupos().stream()
-                            .map(g -> new GrupoOutputDTO(
-                                    g.getId(),
-                                    g.getDescripcion(),
-                                    g.getCantidadDeColaboradores(),
-                                    g.getNombre()          // ahora incluye el nombre
-                            ))
+                            .map(g -> {
+                                List<ReferenteDTO> referentes =
+                                        Optional.ofNullable(g.getClientes())
+                                                .orElseGet(java.util.Collections::emptyList)
+                                                .stream()
+                                                .map(c -> new ReferenteDTO(c.getNombre(), c.getApellido(), c.getUsername()))
+                                                .toList();
+
+                                return new GrupoOutputDTO(
+                                        g.getId(),
+                                        g.getDescripcion(),
+                                        g.getCantidadDeColaboradores(),
+                                        g.getNombre(),
+                                        Optional.of(referentes) // o Optional.empty() si no querés enviarlos
+                                );
+                            })
                             .toList();
 
                     return new EncuestaOutputDTO(
@@ -73,6 +82,7 @@ public class EncuestaService implements IEncuestaService {
                 })
                 .toList();
     }
+
     @Override
     public List<EncuestaOutputDTO> obtenerEncuestasPendientes(Long clienteId) {
         List<Encuesta> todasLasEncuestas = encuestaRepository.findDistinctByGruposClientesId(clienteId);
@@ -103,6 +113,13 @@ public class EncuestaService implements IEncuestaService {
                             .map(p -> new PreguntaOutputDTO(p.getId(), p.getTexto()))
                             .toList();
 
+                    // 📌 Mapeamos los referentes desde grupo.getClientes()
+                    List<ReferenteDTO> referentes = Optional.ofNullable(grupo.getClientes())
+                            .orElseGet(Collections::emptyList)
+                            .stream()
+                            .map(c -> new ReferenteDTO(c.getNombre(), c.getApellido(), c.getUsername()))
+                            .toList();
+
                     EncuestaOutputDTO dto = new EncuestaOutputDTO(
                             encuesta.getFechaInicio(),
                             encuesta.getFechaFin(),
@@ -115,7 +132,8 @@ public class EncuestaService implements IEncuestaService {
                             grupo.getId(),
                             grupo.getDescripcion(),
                             grupo.getCantidadDeColaboradores(),
-                            grupo.getNombre()
+                            grupo.getNombre(),
+                            Optional.of(referentes)
                     ));
 
                     encuestasPendientes.add(dto);
@@ -125,6 +143,7 @@ public class EncuestaService implements IEncuestaService {
 
         return encuestasPendientes;
     }
+
 
 
     @Override

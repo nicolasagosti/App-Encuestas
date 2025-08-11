@@ -18,11 +18,5 @@ public class GrupoOutputDTO {
     private String nombre;
     private Optional<List<ReferenteDTO>> referentes;
 
-    // Constructor usado cuando no se pasa 'referentes'
-    public GrupoOutputDTO(Long id, String descripcion, int cantidadDeColaboradores, String nombre) {
-        this.id = id;
-        this.descripcion = descripcion;
-        this.cantidadDeColaboradores = cantidadDeColaboradores;
-        this.nombre = nombre;
-    }
+
 }

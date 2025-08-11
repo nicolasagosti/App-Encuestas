@@ -67,6 +67,10 @@ export function agregarGrupo(data) {
   return api.post('/grupos', data);
 }
 
+export function editarGrupo(id, data) {
+  return api.put(`/grupos/${id}`, data);
+}
+
 // Clientes
 export function cargarCliente() {
   return api.get('/clientes');

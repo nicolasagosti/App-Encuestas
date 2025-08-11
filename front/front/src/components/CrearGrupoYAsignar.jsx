@@ -3,7 +3,8 @@ import {
   cargarCliente,
   agregarGrupo,
   asignarClientesAGrupo,
-  obtenerGrupos
+  obtenerGrupos,
+  editarGrupo, // 👈 nuevo
 } from '../services/api';
 
 export default function CrearGrupoYAsignarForm({ onSave = async () => {} }) {
@@ -15,6 +16,9 @@ export default function CrearGrupoYAsignarForm({ onSave = async () => {} }) {
   const [mensaje, setMensaje] = useState('');
   const [grupos, setGrupos] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+
+  // 🆕 estado de edición
+  const [editId, setEditId] = useState(null);
 
   useEffect(() => {
     cargarCliente()
@@ -47,38 +51,52 @@ export default function CrearGrupoYAsignarForm({ onSave = async () => {} }) {
     }
   };
 
+  const resetForm = () => {
+    setDescripcion('');
+    setNombre('');
+    setColaboradores(1);
+    setClienteIdsSeleccionados([]);
+    setEditId(null);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMensaje('');
+
+    const payload = {
+      descripcion,
+      nombre,
+      cantidadDeColaboradores: colaboradores,
+    };
+
     try {
-      const payload = {
-        descripcion,
-        nombre,
-        cantidadDeColaboradores: colaboradores
-      };
-      const { data: grupoCreado } = await agregarGrupo(payload);
+      if (editId) {
+        // 👉 Modo edición
+        await editarGrupo(editId, payload);
+        setMensaje('✅ Grupo editado correctamente');
+      } else {
+        // 👉 Modo creación
+        const { data: grupoCreado } = await agregarGrupo(payload);
 
-      if (!grupoCreado || !grupoCreado.id) {
-        throw new Error('Grupo no devuelto correctamente');
+        if (!grupoCreado || !grupoCreado.id) {
+          throw new Error('Grupo no devuelto correctamente');
+        }
+
+        if (clienteIdsSeleccionados.length > 0) {
+          await asignarClientesAGrupo(grupoCreado.id, clienteIdsSeleccionados);
+        }
+        setMensaje('✅ Grupo creado correctamente');
       }
 
-      if (clienteIdsSeleccionados.length > 0) {
-        await asignarClientesAGrupo(grupoCreado.id, clienteIdsSeleccionados);
-      }
-
-      setMensaje('✅ Grupo creado correctamente');
-      setDescripcion('');
-      setNombre('');
-      setColaboradores(1);
-      setClienteIdsSeleccionados([]);
       await onSave();
       await refreshGrupos();
+      resetForm();
     } catch (err) {
-      if (err.response && err.response.status === 409) {
-        setMensaje('❌ Grupo ya existente');
+      if (err?.response?.status === 409) {
+        setMensaje('❌ Ya existe un grupo con esa descripción');
       } else {
         console.error(err);
-        setMensaje('❌ Error al crear el grupo');
+        setMensaje(editId ? '❌ Error al editar el grupo' : '❌ Error al crear el grupo');
       }
       await refreshGrupos();
     }
@@ -87,13 +105,45 @@ export default function CrearGrupoYAsignarForm({ onSave = async () => {} }) {
   // --- FILTRADO DE REFERENTES ---
   const clientesFiltrados = clientes.filter(
     c =>
-      c.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.mail.toLowerCase().includes(searchTerm.toLowerCase())
+      (c?.nombre || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (c?.mail || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // 🆕 Al tocar un grupo, cargar en el formulario para editar
+  const onClickGrupo = (g) => {
+    setEditId(g.id);
+    setNombre(g.nombre || '');
+    setDescripcion(g.descripcion || '');
+    setColaboradores(Number(g.cantidadDeColaboradores) || 1);
+    setMensaje('✏️ Editando grupo: ' + (g.nombre || g.descripcion || g.id));
+    // Nota: la asignación de clientes al grupo no la tocamos aquí
+  };
+
+  // Para mostrar referentes robustamente (lista o undefined)
+  const getReferentesLegibles = (g) => {
+    const refs = Array.isArray(g.referentes) ? g.referentes : [];
+    if (!refs.length) return null;
+    return refs.map(r => `${r.nombre} ${r.apellido} (${r.username})`).join(', ');
+  };
 
   return (
     <div className="space-y-6">
       <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-semibold">
+            {editId ? 'Editar grupo' : 'Crear grupo'}
+          </h3>
+          {editId && (
+            <button
+              type="button"
+              onClick={resetForm}
+              className="text-sm text-gray-600 hover:text-gray-800 underline"
+            >
+              Cancelar edición
+            </button>
+          )}
+        </div>
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Nombre del grupo
@@ -121,6 +171,7 @@ export default function CrearGrupoYAsignarForm({ onSave = async () => {} }) {
             required
           />
         </div>
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Cantidad de colaboradores
@@ -135,48 +186,63 @@ export default function CrearGrupoYAsignarForm({ onSave = async () => {} }) {
           />
         </div>
 
-        <div>
-          <h4 className="font-semibold text-gray-700 mb-2">Seleccioná referentes</h4>
-          <input
-            type="text"
-            className="w-full mb-2 rounded border px-2 py-1 focus:ring-2 focus:ring-indigo-400"
-            placeholder="Buscar por nombre o mail..."
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-          />
-          <div className="max-h-48 overflow-y-auto space-y-2 pr-2 border p-2 rounded">
-            {clientesFiltrados.map(c => (
-              <label
-                key={c.id}
-                className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer"
-              >
-                <input
-                  type="checkbox"
-                  checked={clienteIdsSeleccionados.includes(c.id)}
-                  onChange={() => toggleCliente(c.id)}
-                  className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                />
-                <span>
-                  {c.nombre} ({c.mail})
-                </span>
-              </label>
-            ))}
-            {!clientesFiltrados.length && (
-              <p className="text-xs text-gray-500">No hay referentes con ese filtro.</p>
-            )}
-          </div>
-        </div>
+        {!editId && (
+          <>
+            <div>
+              <h4 className="font-semibold text-gray-700 mb-2">Seleccioná referentes</h4>
+              <input
+                type="text"
+                className="w-full mb-2 rounded border px-2 py-1 focus:ring-2 focus:ring-indigo-400"
+                placeholder="Buscar por nombre o mail..."
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+              />
+              <div className="max-h-48 overflow-y-auto space-y-2 pr-2 border p-2 rounded">
+                {clientesFiltrados.map(c => (
+                  <label
+                    key={c.id}
+                    className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={clienteIdsSeleccionados.includes(c.id)}
+                      onChange={() => toggleCliente(c.id)}
+                      className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                    />
+                    <span>
+                      {c.nombre} ({c.mail})
+                    </span>
+                  </label>
+                ))}
+                {!clientesFiltrados.length && (
+                  <p className="text-xs text-gray-500">No hay referentes con ese filtro.</p>
+                )}
+              </div>
+            </div>
+          </>
+        )}
 
-        <button
-          type="submit"
-          className="w-full rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 py-2 transition"
-        >
-          Crear Grupo
-        </button>
+        <div className="flex gap-2">
+          <button
+            type="submit"
+            className="flex-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 py-2 transition"
+          >
+            {editId ? 'Guardar cambios' : 'Crear Grupo'}
+          </button>
+          {editId && (
+            <button
+              type="button"
+              onClick={resetForm}
+              className="rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium px-4 py-2 transition"
+            >
+              Cancelar
+            </button>
+          )}
+        </div>
       </form>
 
       {mensaje && (
-        <p className={`text-sm ${mensaje.startsWith('✅') ? 'text-green-600' : 'text-red-600'}`}>
+        <p className={`text-sm ${mensaje.startsWith('✅') ? 'text-green-600' : 'text-indigo-600'}`}>
           {mensaje}
         </p>
       )}
@@ -185,27 +251,30 @@ export default function CrearGrupoYAsignarForm({ onSave = async () => {} }) {
         <h2 className="text-lg font-semibold mb-3">Grupos existentes</h2>
         {grupos.length > 0 ? (
           <ul className="space-y-2">
-            {grupos.map((g) => (
-              <li
-                key={g.id}
-                className="p-3 border rounded flex flex-col"
-              >
-                <div className="font-medium">{g.nombre}</div>
-                <div className="text-sm text-gray-600 mb-1">
-                  {g.descripcion}
-                </div>
-                <div className="text-xs text-gray-500 mb-1">
-  Colaboradores: {g.cantidadDeColaboradores}
-</div>
-{g.referentes && g.referentes.length > 0 && (
-  <div className="text-xs text-gray-600">
-    Referentes:&nbsp;
-    {g.referentes.map(r => `${r.nombre} ${r.apellido} (${r.username})`).join(', ')}
-  </div>
-)}
-
-              </li>
-            ))}
+            {grupos.map((g) => {
+              const refsLegibles = getReferentesLegibles(g);
+              return (
+                <li
+                  key={g.id}
+                  className="p-3 border rounded flex flex-col hover:shadow cursor-pointer transition"
+                  onClick={() => onClickGrupo(g)} // 👈 al tocar, entra en modo edición
+                  title="Editar este grupo"
+                >
+                  <div className="font-medium">{g.nombre}</div>
+                  <div className="text-sm text-gray-600 mb-1">
+                    {g.descripcion}
+                  </div>
+                  <div className="text-xs text-gray-500 mb-1">
+                    Colaboradores: {g.cantidadDeColaboradores}
+                  </div>
+                  {refsLegibles && (
+                    <div className="text-xs text-gray-600">
+                      Referentes: {refsLegibles}
+                    </div>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         ) : (
           <p className="text-sm text-gray-500">No hay grupos cargados.</p>

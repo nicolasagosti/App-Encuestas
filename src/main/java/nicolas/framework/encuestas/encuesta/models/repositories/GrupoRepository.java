@@ -18,4 +18,8 @@ public interface GrupoRepository extends JpaRepository<Grupo, Long> {
     @Query("SELECT DISTINCT u FROM Grupo u JOIN u.clientes g WHERE g.id = :clienteId")
     List<Grupo> findGruposByCliente(@Param("clienteId") Long clienteId);
 
+    // mismos nombres, distinto id (para evitar duplicados al editar)
+    List<Grupo> findAllByDescripcionIgnoreCaseAndIdNot(String descripcion, Long id);
+
+
 }

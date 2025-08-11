@@ -1,31 +1,15 @@
 package nicolas.framework.encuestas.encuesta.dtos;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class RespuestaInputDTO {
-
     private Long preguntaId;
     private Long grupoId;
     private int puntaje;
     private String justificacion;
-
-    public RespuestaInputDTO() {
-    }
-
-    public Long getGrupoId() {
-        return grupoId;
-    }
-
-    public int getPuntaje() {
-        return puntaje;
-    }
-
-    public Long getPreguntaId() {
-        return preguntaId;
-    }
-
-    public String getJustificacion() {
-        return justificacion;
-    }
 }

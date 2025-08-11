@@ -2,9 +2,15 @@ package nicolas.framework.encuestas.encuesta.models.entities;
 
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "bank")
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
 public class Bank {
 
     @Id
@@ -22,35 +28,6 @@ public class Bank {
     )
     private String logoBase64;
 
-    public Bank() { }
 
-    public Bank(String extension, String nombre, String logoBase64) {
-        this.extension = extension;
-        this.nombre = nombre;
-        this.logoBase64 = logoBase64;
-    }
 
-    public String getExtension() {
-        return extension;
-    }
-
-    public void setExtension(String extension) {
-        this.extension = extension;
-    }
-
-    public String getLogoBase64() {
-        return logoBase64;
-    }
-
-    public void setLogoBase64(String logoBase64) {
-        this.logoBase64 = logoBase64;
-    }
-
-    public String getNombre() {
-        return nombre;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
 }

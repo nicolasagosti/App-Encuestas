@@ -3,12 +3,14 @@ package nicolas.framework.encuestas.encuesta.models.entities;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Data
+@NoArgsConstructor
 public class Grupo {
 
     @Id
@@ -39,38 +41,5 @@ public class Grupo {
         this.cantidadDeColaboradores = cantidadDeColaboradores;
     }
 
-    public Grupo() {
-    }
 
-    public Long getId() {
-        return id;
-    }
-
-    public String getDescripcion() {
-        return descripcion;
-    }
-
-    public String getNombre() {
-        return nombre;
-    }
-
-    public int getCantidadDeColaboradores() {
-        return cantidadDeColaboradores;
-    }
-
-    public List<Encuesta> getEncuestas() {
-        return encuestas;
-    }
-
-    public List<User> getClientes() {
-        return clientes;
-    }
-
-    public List<Respuesta> getRespuestas() {
-        return respuestas;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
 }

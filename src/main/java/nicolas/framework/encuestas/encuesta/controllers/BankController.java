@@ -22,13 +22,6 @@ public class BankController {
         this.bankService = bankService;
     }
 
-    /**
-     * Agrega un nuevo banco.
-     * Espera multipart/form-data con:
-     *  - extension (text)
-     *  - nombre (text)
-     *  - logo      (file)
-     */
     @PostMapping(
             path = "/agregar",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
@@ -55,10 +48,7 @@ public class BankController {
         }
     }
 
-    /**
-     * Obtiene un banco por su extensión.
-     * Devuelve JSON con extensión y logo en Base64.
-     */
+
     @GetMapping(
             path = "/obtener/{extension}",
             produces = MediaType.APPLICATION_JSON_VALUE
@@ -75,9 +65,7 @@ public class BankController {
         return ResponseEntity.ok(dto);
     }
 
-    /**
-     * Lista todos los bancos.
-     */
+
     @GetMapping(
             path = {"/todos", ""},
             produces = MediaType.APPLICATION_JSON_VALUE

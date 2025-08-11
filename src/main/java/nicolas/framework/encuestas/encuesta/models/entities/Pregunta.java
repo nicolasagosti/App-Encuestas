@@ -11,6 +11,7 @@ import java.util.List;
 @Entity
 @Table(name = "pregunta")
 @Data
+@NoArgsConstructor
 public class Pregunta {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,9 +23,6 @@ public class Pregunta {
     @Column
     private Boolean visible = true;
 
-    public Pregunta() {
-    }
-
     public Pregunta(PreguntaInputDTO dto) {
         this.texto = dto.getTexto();
     }
@@ -34,27 +32,5 @@ public class Pregunta {
         return visible;
     }
 
-    public Long getId() {
-        return id;
-    }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getTexto() {
-        return texto;
-    }
-
-    public void setTexto(String texto) {
-        this.texto = texto;
-    }
-
-    public Boolean getVisible() {
-        return visible;
-    }
-
-    public void setVisible(Boolean visible) {
-        this.visible = visible;
-    }
 }

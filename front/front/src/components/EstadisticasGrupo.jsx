@@ -140,7 +140,7 @@ export default function EstadisticasGrupo() {
 
           <select value={tipo} onChange={e => setTipo(e.target.value)} className="border px-2 py-1 rounded">
             <option value="todos">Todos</option>
-            <option value="banco">Por Banco</option>
+            <option value="banco">Por Cliente</option>
             <option value="cliente">Por Referente</option>
           </select>
 

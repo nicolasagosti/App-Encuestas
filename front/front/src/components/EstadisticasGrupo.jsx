@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import {
   obtenerEstadisticasGrupoPorPeriodo,
-  obtenerBancos,
-  obtenerClientes
+  obtenerBancos
 } from '../services/api';
 import { exportarEstadisticasAGrupo } from '../utils/ExportarEstadisticas';
+import { exportarEstadisticasAGrupoCSV } from '../utils/ExportarEstadisticasCSV';
 
 export default function EstadisticasGrupo() {
   const [estadisticasPeriodo, setEstadisticasPeriodo] = useState([]);
@@ -12,19 +12,13 @@ export default function EstadisticasGrupo() {
   const [fechaFin, setFechaFin] = useState('');
   const [tipo, setTipo] = useState('todos');
   const [bancos, setBancos] = useState([]);
-  const [clientes, setClientes] = useState([]);
   const [bancoSeleccionado, setBancoSeleccionado] = useState('');
-  const [clienteSeleccionado, setClienteSeleccionado] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {
     obtenerBancos()
       .then(res => setBancos(res.data))
       .catch(() => setError('❌ Error al cargar bancos'));
-
-    obtenerClientes()
-      .then(res => setClientes(res.data.filter(c => c.mail !== 'admin@gmail.com')))
-      .catch(() => setError('❌ Error al cargar clientes'));
   }, []);
 
   const getColor = valor => {
@@ -42,17 +36,11 @@ export default function EstadisticasGrupo() {
       setError('⚠️ Debe seleccionar un banco');
       return;
     }
-    if (tipo === 'cliente' && !clienteSeleccionado) {
-      setError('⚠️ Debe seleccionar un cliente');
-      return;
-    }
 
     setError('');
     try {
       const valorSeleccionado =
-        tipo === 'banco' ? bancoSeleccionado :
-        tipo === 'cliente' ? clienteSeleccionado :
-        null;
+        tipo === 'banco' ? bancoSeleccionado : null;
 
       const res = await obtenerEstadisticasGrupoPorPeriodo(
         fechaInicio, fechaFin, tipo, valorSeleccionado
@@ -98,7 +86,6 @@ export default function EstadisticasGrupo() {
 
   const tituloExportacion = () => {
     const base = 'Estadísticas';
-    if (tipo === 'cliente') return `${base} por referente`;
     if (tipo === 'banco') return `${base} por banco`;
     return `${base} por período`;
   };
@@ -117,15 +104,30 @@ export default function EstadisticasGrupo() {
                 fechaInicio,
                 fechaFin,
                 tipo,
-                clienteSeleccionado,
                 bancoSeleccionado,
-                clientes,
                 bancos
               )
             }
             className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded"
           >
             Exportar PDF
+          </button>
+
+          <button
+            onClick={() =>
+              exportarEstadisticasAGrupoCSV(
+                estadisticasPeriodo,
+                tituloExportacion(),
+                fechaInicio,
+                fechaFin,
+                tipo,
+                bancoSeleccionado,
+                bancos
+              )
+            }
+            className="bg-yellow-500 hover:bg-yellow-600 text-white font-medium px-4 py-2 rounded"
+          >
+            Exportar CSV
           </button>
         </div>
       )}
@@ -141,7 +143,6 @@ export default function EstadisticasGrupo() {
           <select value={tipo} onChange={e => setTipo(e.target.value)} className="border px-2 py-1 rounded">
             <option value="todos">Todos</option>
             <option value="banco">Por Cliente</option>
-            <option value="cliente">Por Referente</option>
           </select>
 
           {tipo === 'banco' && (
@@ -154,21 +155,6 @@ export default function EstadisticasGrupo() {
               {bancos.map((b, idx) => (
                 <option key={idx} value={b.extension}>
                   {b.extension.toLowerCase()}
-                </option>
-              ))}
-            </select>
-          )}
-
-          {tipo === 'cliente' && (
-            <select
-              value={clienteSeleccionado}
-              onChange={e => setClienteSeleccionado(e.target.value)}
-              className="border px-2 py-1 rounded"
-            >
-              <option value=""> Seleccionar referente</option>
-              {clientes.map((c, idx) => (
-                <option key={idx} value={c.mail}>
-                  {c.mail}
                 </option>
               ))}
             </select>

@@ -1,13 +1,14 @@
+// ExportarEstadisticas.js
 import jsPDF from "jspdf";
 import { autoTable } from 'jspdf-autotable';
 import { applyPlugin } from 'jspdf-autotable';
 
 applyPlugin(jsPDF);
 
-function generarNombreArchivo(base, titulo, fechaInicio, fechaFin) {
+function generarNombreArchivo(base, titulo, fechaInicio, fechaFin, extension = 'pdf') {
   const tipo = titulo.toLowerCase().replace(/\s+/g, '_');
   const fechas = fechaInicio && fechaFin ? `_${fechaInicio}_a_${fechaFin}` : '';
-  return `${base}_${tipo}${fechas}.pdf`;
+  return `${base}_${tipo}${fechas}.${extension}`;
 }
 
 function agregarTituloYFechas(doc, titulo, fechaInicio, fechaFin) {
@@ -23,29 +24,16 @@ function agregarTituloYFechas(doc, titulo, fechaInicio, fechaFin) {
 
 export function exportarEstadisticasAGrupo(
   estadisticas,
-  titulo = "Estadísticas por Grupo",
+  titulo = "Estadísticas por Banco",
   fechaInicio = null,
   fechaFin = null,
   tipo = "todos",
-  clienteSeleccionado = "",
   bancoSeleccionado = "",
-  clientes = [],
   bancos = []
 ) {
   const doc = new jsPDF();
 
   let subTituloExtra = "";
-
-  if (tipo === "cliente" && clienteSeleccionado) {
-    const cliente = clientes.find(c => c.mail === clienteSeleccionado);
-    if (cliente) {
-      subTituloExtra = `Referente: ${cliente.nombre} ${cliente.apellido} (${cliente.mail})`;
-      titulo += ` - ${cliente.nombre} ${cliente.apellido}`;
-    } else {
-      subTituloExtra = `Referente: ${clienteSeleccionado}`;
-      titulo += ` - ${clienteSeleccionado}`;
-    }
-  }
 
   if (tipo === "banco" && bancoSeleccionado) {
     const banco = bancos.find(b => b.extension === bancoSeleccionado);
@@ -82,30 +70,6 @@ export function exportarEstadisticasAGrupo(
     body: filas
   });
 
-  const archivo = generarNombreArchivo("estadisticas_grupos", titulo);
-  doc.save(archivo);
-}
-
-export function exportarEstadisticasClientesPorPeriodo(
-  datos,
-  titulo = 'Estadísticas por Cliente - Período',
-  fechaInicio = null,
-  fechaFin = null
-) {
-  const doc = new jsPDF();
-  agregarTituloYFechas(doc, titulo, fechaInicio, fechaFin);
-
-  const filas = datos.map(cliente => [
-    cliente.mail || `Cliente ${cliente.clienteId}`,
-    typeof cliente.promedio === 'number' ? cliente.promedio.toFixed(2) : '—'
-  ]);
-
-  autoTable(doc, {
-    startY: fechaInicio && fechaFin ? 36 : 30,
-    head: [['Cliente', 'Promedio']],
-    body: filas
-  });
-
-  const archivo = generarNombreArchivo("estadisticas_clientes", titulo);
+  const archivo = generarNombreArchivo("estadisticas_grupos", titulo, fechaInicio, fechaFin);
   doc.save(archivo);
 }

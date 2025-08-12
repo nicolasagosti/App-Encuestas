@@ -16,8 +16,15 @@ export default function EncuestaForm() {
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
   const [mensaje, setMensaje] = useState('');
+
+  // Buscador de preguntas
   const [busqueda, setBusqueda] = useState('');
   const [coincidencias, setCoincidencias] = useState([]);
+
+  // Buscador de grupos
+  const [busquedaGrupo, setBusquedaGrupo] = useState('');
+  const [coincidenciasGrupos, setCoincidenciasGrupos] = useState([]);
+
   const [encuestasExistentes, setEncuestasExistentes] = useState([]);
   const [editingEncuestaId, setEditingEncuestaId] = useState(null);
   const [formVisible, setFormVisible] = useState(false);
@@ -28,16 +35,23 @@ export default function EncuestaForm() {
     fetchEncuestas();
   }, []);
 
+  // Filtrado dinámico de preguntas
   useEffect(() => {
     const lower = busqueda.trim().toLowerCase();
-    if (lower === '') {
-      setCoincidencias([]);
-      return;
-    }
+    if (!lower) return setCoincidencias([]);
     setCoincidencias(
       preguntasDisponibles.filter(p => p.texto.toLowerCase().includes(lower))
     );
   }, [busqueda, preguntasDisponibles]);
+
+  // Filtrado dinámico de grupos
+  useEffect(() => {
+    const lower = busquedaGrupo.trim().toLowerCase();
+    if (!lower) return setCoincidenciasGrupos([]);
+    setCoincidenciasGrupos(
+      gruposDisponibles.filter(g => g.nombre.toLowerCase().includes(lower))
+    );
+  }, [busquedaGrupo, gruposDisponibles]);
 
   const fetchEncuestas = async () => {
     try {
@@ -76,6 +90,17 @@ export default function EncuestaForm() {
     setBusqueda('');
   };
 
+  const agregarGrupoDesdeInput = () => {
+    if (!busquedaGrupo.trim()) return;
+    const encontrado = gruposDisponibles.find(
+      g => g.nombre.toLowerCase() === busquedaGrupo.trim().toLowerCase()
+    );
+    if (encontrado && !grupoIdsSeleccionados.includes(encontrado.id)) {
+      setGrupoIdsSeleccionados(prev => [...prev, encontrado.id]);
+    }
+    setBusquedaGrupo('');
+  };
+
   const resetForm = () => {
     setPreguntaIdsSeleccionadas([]);
     setGrupoIdsSeleccionados([]);
@@ -83,7 +108,9 @@ export default function EncuestaForm() {
     setFechaFin('');
     setEditingEncuestaId(null);
     setBusqueda('');
+    setBusquedaGrupo('');
     setCoincidencias([]);
+    setCoincidenciasGrupos([]);
     setMensaje('');
     setFormVisible(false);
   };
@@ -136,7 +163,9 @@ export default function EncuestaForm() {
     setPreguntaIdsSeleccionadas([]);
     setGrupoIdsSeleccionados([]);
     setBusqueda('');
+    setBusquedaGrupo('');
     setCoincidencias([]);
+    setCoincidenciasGrupos([]);
     setMensaje('');
   };
 
@@ -163,7 +192,6 @@ export default function EncuestaForm() {
         )}
       </div>
 
-      {/* Formulario arriba del listado */}
       {formVisible && (
         <div className="mt-4 border rounded p-6 bg-gray-50">
           <div className="flex justify-between items-center mb-4">
@@ -183,25 +211,21 @@ export default function EncuestaForm() {
             {/* Fechas */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Fecha de inicio
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de inicio</label>
                 <input
                   type="date"
                   value={fechaInicio}
                   onChange={e => setFechaInicio(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-lg border px-4 py-2"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Fecha de fin
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de fin</label>
                 <input
                   type="date"
                   value={fechaFin}
                   onChange={e => setFechaFin(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-lg border px-4 py-2"
                 />
               </div>
             </div>
@@ -209,7 +233,44 @@ export default function EncuestaForm() {
             {/* Grupos */}
             <div>
               <h4 className="font-semibold text-gray-700 mb-2">Seleccioná grupos:</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">
+
+              <div className="flex gap-2 mb-3">
+                <input
+                  type="text"
+                  value={busquedaGrupo}
+                  onChange={e => setBusquedaGrupo(e.target.value)}
+                  className="flex-1 border px-3 py-2 rounded"
+                  placeholder="Buscar grupo por nombre..."
+                />
+                <button
+                  type="button"
+                  onClick={agregarGrupoDesdeInput}
+                  className="bg-blue-600 text-white px-4 py-2 rounded"
+                >
+                  Agregar
+                </button>
+              </div>
+
+              {coincidenciasGrupos.length > 0 && (
+                <div className="mt-1 border p-2 bg-white rounded text-sm text-gray-700">
+                  <p className="text-xs mb-1 text-gray-500">Coincidencias:</p>
+                  <ul className="space-y-1">
+                    {coincidenciasGrupos.map(g => (
+                      <li key={g.id} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          className="mr-2"
+                          checked={grupoIdsSeleccionados.includes(g.id)}
+                          onChange={() => handleCheckbox(g.id, grupoIdsSeleccionados, setGrupoIdsSeleccionados)}
+                        />
+                        {g.nombre} <span className="text-xs text-gray-500">({g.cantidadDeColaboradores})</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 mt-3">
                 {gruposDisponibles.map(g => (
                   <label key={g.id} className="flex items-center gap-2 text-sm text-gray-700">
                     <input
@@ -219,8 +280,7 @@ export default function EncuestaForm() {
                       className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
                     />
                     <span>
-                      {g.nombre}{' '}
-                      <span className="text-xs text-gray-500">({g.cantidadDeColaboradores})</span>
+                      {g.nombre} <span className="text-xs text-gray-500">({g.cantidadDeColaboradores})</span>
                     </span>
                   </label>
                 ))}
@@ -233,9 +293,7 @@ export default function EncuestaForm() {
             {/* Preguntas */}
             <div className="space-y-4">
               <div>
-                <label className="block font-semibold text-gray-700 mb-1">
-                  Buscá o escribí una pregunta
-                </label>
+                <label className="block font-semibold text-gray-700 mb-1">Buscá o escribí una pregunta</label>
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -275,9 +333,7 @@ export default function EncuestaForm() {
 
               {preguntaIdsSeleccionadas.length > 0 && (
                 <div className="mt-3 border border-indigo-200 bg-indigo-50 p-3 rounded">
-                  <h4 className="text-sm font-medium text-indigo-800 mb-2">
-                    Preguntas seleccionadas:
-                  </h4>
+                  <h4 className="text-sm font-medium text-indigo-800 mb-2">Preguntas seleccionadas:</h4>
                   <ul className="list-disc list-inside text-indigo-700 text-sm space-y-1">
                     {preguntasDisponibles
                       .filter(p => preguntaIdsSeleccionadas.includes(p.id))
@@ -289,7 +345,6 @@ export default function EncuestaForm() {
               )}
             </div>
 
-            {/* Botones de submit */}
             <div className="flex gap-2">
               <button
                 type="submit"
@@ -309,9 +364,7 @@ export default function EncuestaForm() {
             </div>
 
             {mensaje && (
-              <p className={`text-sm ${mensaje.startsWith('✅') ? 'text-green-600' : 'text-red-600'}`}>
-                {mensaje}
-              </p>
+              <p className={`text-sm ${mensaje.startsWith('✅') ? 'text-green-600' : 'text-red-600'}`}>{mensaje}</p>
             )}
           </form>
         </div>
@@ -335,26 +388,18 @@ export default function EncuestaForm() {
                     <div>
                       <strong>Grupos:</strong>{' '}
                       {Array.isArray(enc.grupos)
-                        ? enc.grupos
-                            .map(g => (typeof g === 'object' ? g.nombre || '' : g))
-                            .filter(Boolean)
-                            .join(', ')
+                        ? enc.grupos.map(g => (typeof g === 'object' ? g.nombre || '' : g)).join(', ')
                         : enc.grupos || '-'}
                     </div>
                     <div>
                       <strong>Preguntas:</strong>{' '}
                       {Array.isArray(enc.preguntas)
-                        ? enc.preguntas
-                            .map(p => (typeof p === 'object' ? p.texto || '' : p))
-                            .filter(Boolean)
-                            .join(', ')
+                        ? enc.preguntas.map(p => (typeof p === 'object' ? p.texto || '' : p)).join(', ')
                         : enc.preguntas || '-'}
                     </div>
                   </div>
                 </div>
-                <div className="text-xs text-gray-400 mt-2 sm:mt-0">
-                  (click para editar)
-                </div>
+                <div className="text-xs text-gray-400 mt-2 sm:mt-0">(click para editar)</div>
               </li>
             ))}
           </ul>

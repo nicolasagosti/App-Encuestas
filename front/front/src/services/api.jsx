@@ -88,6 +88,10 @@ export function obtenerClientes() {
   return api.get('/clientes');
 }
 
+export const eliminarClientes = (ids) => {
+  return api.delete('/clientes', { data: ids });
+};
+
 export const actualizarReferentesDeGrupo = (grupoId, agregarIds, quitarIds) =>
   api.put(`/clientes/grupos/${grupoId}/referentes`, { agregarIds, quitarIds });
 

@@ -53,6 +53,12 @@ public class ClienteController {
         return ResponseEntity.ok("Referentes actualizados correctamente");
     }
 
+    @DeleteMapping
+    public ResponseEntity<HttpStatus> eliminarReferentes(@RequestBody List<Long> ids){
+        clienteService.eliminarReferentes(ids);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
     @GetMapping("/{clienteId}/encuestas")
     public ResponseEntity<List<EncuestaOutputDTO>> obtenerEncuestasDeCliente(@PathVariable Long clienteId) {
         List<EncuestaOutputDTO> encuestas = encuestaService.obtenerEncuestasPendientes(clienteId);

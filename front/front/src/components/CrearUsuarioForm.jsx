@@ -15,7 +15,6 @@ export default function CrearUsuarioForm() {
   const [editingCliente, setEditingCliente] = useState(null);
   const [creando, setCreando] = useState(false);
 
-  // Ref para el formulario
   const formRef = useRef(null);
 
   const fetchClientes = async () => {
@@ -52,18 +51,20 @@ export default function CrearUsuarioForm() {
 
     try {
       if (editingCliente) {
+        // Edición: si password está vacío, no se envía para no modificar
         const payload = {
           username,
-          ...(password && { password }),
-          ...(nombre && { nombre }),
-          ...(apellido && { apellido }),
-          ...(telefono && { telefono })
+          ...(password ? { password } : {}),
+          ...(nombre ? { nombre } : {}),
+          ...(apellido ? { apellido } : {}),
+          ...(telefono ? { telefono } : {}),
         };
         await editarClienteParcial(editingCliente.id, payload);
         setSuccess('Cliente actualizado con éxito');
       } else if (creando) {
+        // Creación: username y password son obligatorios
         if (!username || !password) {
-          setError('Username y password son requeridos');
+          setError('Usuario (email) y contraseña son requeridos');
           setIsSubmitting(false);
           return;
         }
@@ -98,7 +99,6 @@ export default function CrearUsuarioForm() {
     setSuccess('');
     setError('');
 
-    // Scroll al propio formulario
     setTimeout(() => {
       formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
@@ -107,7 +107,6 @@ export default function CrearUsuarioForm() {
   const iniciarCreacion = () => {
     clearForm();
     setCreando(true);
-    // También scrollear al formulario
     setTimeout(() => {
       formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
@@ -142,7 +141,7 @@ export default function CrearUsuarioForm() {
       {/* Formulario */}
       {mostrarFormulario && (
         <div ref={formRef} className="flex justify-center">
-          <form onSubmit={handleSubmit} className="space-y-5 w-full mt-4">
+          <form onSubmit={handleSubmit} className="space-y-5 w-full mt-4 max-w-xl">
             <div className="flex justify-between items-center">
               <h3 className="text-xl font-semibold">
                 {editingCliente ? 'Editar usuario' : 'Crear usuario'}
@@ -282,9 +281,10 @@ export default function CrearUsuarioForm() {
               <thead>
                 <tr className="bg-gray-100 text-left">
                   <th className="px-3 py-2 border">Email</th>
-                  <th className="px-3 py-2	border">Nombre</th>
-                  <th className="px-3 py-2	border">Apellido</th>
-                  <th className="px-3 py-2	border">Teléfono</th>
+                  <th className="px-3 py-2 border">Nombre</th>
+                  <th className="px-3 py-2 border">Apellido</th>
+                  <th className="px-3 py-2 border">Teléfono</th>
+                  <th className="px-3 py-2 border">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -294,10 +294,23 @@ export default function CrearUsuarioForm() {
                     className="odd:bg-white even:bg-gray-50 cursor-pointer"
                     onClick={() => handleRowClick(cliente)}
                   >
-                    <td className="px-3 py-2	border">{cliente.mail || '-'}</td>
-                    <td className="px-3 py-2	border">{cliente.nombre || '-'}</td>
-                    <td className="px-3 py-2	border">{cliente.apellido || '-'}</td>
-                    <td className="px-3 py-2	border">{cliente.telefono || '-'}</td>
+                    <td className="px-3 py-2 border">{cliente.mail || '-'}</td>
+                    <td className="px-3 py-2 border">{cliente.nombre || '-'}</td>
+                    <td className="px-3 py-2 border">{cliente.apellido || '-'}</td>
+                    <td className="px-3 py-2 border">{cliente.telefono || '-'}</td>
+                    <td className="px-3 py-2 border">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (window.confirm(`¿Eliminar usuario ${cliente.mail}?`)) {
+                            eliminarUsuario(cliente.id);
+                          }
+                        }}
+                        className="text-red-600 hover:text-red-800 font-semibold"
+                      >
+                        Eliminar
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -309,5 +322,15 @@ export default function CrearUsuarioForm() {
       </div>
     </div>
   );
-}
 
+  async function eliminarUsuario(id) {
+    try {
+      await api.delete('/clientes', { data: [id] });
+      setSuccess('Usuario eliminado con éxito');
+      await fetchClientes();
+    } catch (error) {
+      setError('Error al eliminar usuario');
+      console.error(error);
+    }
+  }
+}

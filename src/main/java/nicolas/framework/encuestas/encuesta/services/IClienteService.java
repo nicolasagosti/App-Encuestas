@@ -12,6 +12,7 @@ public interface IClienteService {
     ClienteOutputDTO editarClienteParcial(Long clienteId, EditarClienteInputDTO input);
     public void asignarClientesAGrupo(Long grupoId, List<Long> clienteIds);
     public List<ClienteOutputDTO> obtenerTodosLosClientes();
+    public void eliminarReferentes(List<Long> clienteIds);
     boolean obtenerMustChangePassword(String mailCliente);
     Long obtenerIdDeCLiente(String mailCliente);
     List<Long> obtenerReferentesDeUnGrupo(Long grupoId);

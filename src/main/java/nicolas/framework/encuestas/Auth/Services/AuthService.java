@@ -7,6 +7,7 @@ import nicolas.framework.encuestas.Auth.dtos.RegisterRequest;
 import nicolas.framework.encuestas.encuesta.models.repositories.UserRepository;
 import nicolas.framework.encuestas.encuesta.models.entities.Role;
 import nicolas.framework.encuestas.encuesta.models.entities.User;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,22 +18,14 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class AuthService {
 
-    private final UserRepository userRepository;
-    private final JwtService jwtService;
-    private final PasswordEncoder passwordEncoder;
-    private final AuthenticationManager authenticationManager;
-
-    public AuthService(
-            UserRepository userRepository,
-            JwtService jwtService,
-            PasswordEncoder passwordEncoder,
-            AuthenticationManager authenticationManager
-    ) {
-        this.userRepository = userRepository;
-        this.jwtService = jwtService;
-        this.passwordEncoder = passwordEncoder;
-        this.authenticationManager = authenticationManager;
-    }
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private JwtService jwtService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
     public AuthResponse login(LoginRequest request) {
         // 1) Autentica credenciales

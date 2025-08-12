@@ -62,6 +62,12 @@ public class ClienteService implements IClienteService {
 
     @Override
     @Transactional
+    public void eliminarReferentes(List<Long> ids){
+        clienteRepository.deleteAllById(ids);
+    }
+
+    @Override
+    @Transactional
     public void editarReferentesDeGrupo(Long idGrupo, List<Long> agregarIds, List<Long> quitarIds) {
         Grupo grupo = grupoService.findGrupo(idGrupo);
 

@@ -59,15 +59,17 @@ public class EncuestaService implements IEncuestaService {
                                         Optional.ofNullable(g.getClientes())
                                                 .orElseGet(java.util.Collections::emptyList)
                                                 .stream()
-                                                .map(c -> new ReferenteDTO(c.getNombre(), c.getApellido(), c.getUsername()))
+                                                .map(c -> new ReferenteDTO(c.getId(), c.getNombre(), c.getApellido(), c.getUsername()))
                                                 .toList();
+
+
 
                                 return new GrupoOutputDTO(
                                         g.getId(),
                                         g.getDescripcion(),
                                         g.getCantidadDeColaboradores(),
                                         g.getNombre(),
-                                        Optional.of(referentes) // o Optional.empty() si no querés enviarlos
+                                        referentes
                                 );
                             })
                             .toList();
@@ -117,7 +119,7 @@ public class EncuestaService implements IEncuestaService {
                     List<ReferenteDTO> referentes = Optional.ofNullable(grupo.getClientes())
                             .orElseGet(Collections::emptyList)
                             .stream()
-                            .map(c -> new ReferenteDTO(c.getNombre(), c.getApellido(), c.getUsername()))
+                            .map(c -> new ReferenteDTO(c.getId(), c.getNombre(), c.getApellido(), c.getUsername()))
                             .toList();
 
                     EncuestaOutputDTO dto = new EncuestaOutputDTO(
@@ -133,7 +135,7 @@ public class EncuestaService implements IEncuestaService {
                             grupo.getDescripcion(),
                             grupo.getCantidadDeColaboradores(),
                             grupo.getNombre(),
-                            Optional.of(referentes)
+                            referentes
                     ));
 
                     encuestasPendientes.add(dto);

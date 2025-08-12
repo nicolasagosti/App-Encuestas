@@ -4,14 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class ReferenteDTO {
+@AllArgsConstructor
+public class EditarReferentesDTO {
 
-    Long id;
-    String nombre;
-    String apellido;
-    String username;
-
+    List<Long> agregarIds;
+    List<Long> quitarIds;
 }

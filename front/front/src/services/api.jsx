@@ -88,6 +88,10 @@ export function obtenerClientes() {
   return api.get('/clientes');
 }
 
+export const actualizarReferentesDeGrupo = (grupoId, agregarIds, quitarIds) =>
+  api.put(`/clientes/grupos/${grupoId}/referentes`, { agregarIds, quitarIds });
+
+
 export function obtenerIdDeCliente(mailCliente) {
   return api.post('/clientes/id', { mailCliente });
 }

@@ -23,58 +23,40 @@ public class GrupoService implements IGrupoService {
     @Autowired
     private ReferenteService referenteService;
 
-    /* ===================== Mapeos ===================== */
-
-    private GrupoOutputDTO mapWithReferentes(Grupo grupo) {
-        List<User> clientes = Optional.ofNullable(grupo.getClientes()).orElseGet(ArrayList::new);
-
-        List<ReferenteDTO> referentes = clientes.stream()
-                .map(c -> new ReferenteDTO(c.getNombre(), c.getApellido(), c.getUsername()))
-                .collect(Collectors.toList());
+    private GrupoOutputDTO mapGrupoConReferentes(Grupo grupo) {
+        List<ReferenteDTO> refs = Optional.ofNullable(grupo.getClientes())
+                .orElseGet(Collections::emptyList)
+                .stream()
+                .map(c -> new ReferenteDTO(c.getId(), c.getNombre(), c.getApellido(), c.getUsername()))
+                .toList();
 
         return new GrupoOutputDTO(
                 grupo.getId(),
                 grupo.getDescripcion(),
                 grupo.getCantidadDeColaboradores(),
                 grupo.getNombre(),
-                Optional.of(referentes) // nunca null; si no hay, lista vacía
+                refs
         );
     }
 
-    private GrupoOutputDTO mapBasic(Grupo grupo) {
-        List<ReferenteDTO> referentes =
-                Optional.ofNullable(grupo.getClientes())
-                        .orElseGet(java.util.Collections::emptyList)
-                        .stream()
-                        .map(u -> new ReferenteDTO(u.getNombre(), u.getApellido(), u.getUsername()))
-                        .toList(); // Si usás Java 8: .collect(java.util.stream.Collectors.toList())
-
-        return new GrupoOutputDTO(
-                grupo.getId(),
-                grupo.getDescripcion(),
-                grupo.getCantidadDeColaboradores(),
-                grupo.getNombre(),
-                Optional.of(referentes) // nunca null (lista vacía si no hay clientes)
-        );
-    }
 
     public List<GrupoOutputDTO> convertirADTOs(List<Grupo> grupos) {
-        return grupos.stream().map(this::mapWithReferentes).toList();
+        return grupos.stream().map(this::mapGrupoConReferentes).toList();
     }
-
-    /* ===================== Queries ===================== */
 
     @Override
     public GrupoOutputDTO buscarGrupo(Long id) {
-        Grupo grupo = grupoRepository.findById(id)
+        return mapGrupoConReferentes(findGrupo(id));
+    }
+
+    public Grupo findGrupo(Long id) {
+        return grupoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Grupo no encontrado con id " + id));
-        return mapWithReferentes(grupo);
     }
 
     @Override
     public List<GrupoOutputDTO> todosLosGrupos() {
-        List<Grupo> grupos = grupoRepository.findAllVisible();
-        return convertirADTOs(grupos);
+        return convertirADTOs(grupoRepository.findAllVisible());
     }
 
     @Override
@@ -82,47 +64,29 @@ public class GrupoService implements IGrupoService {
         return grupoRepository.findAllById(ids);
     }
 
-    /* ===================== Crear / Editar ===================== */
-
     @Override
     @Transactional
     public GrupoOutputDTO registrarGrupo(GrupoInputDTO dto) {
-        String desc = dto.getDescripcion() == null ? "" : dto.getDescripcion().trim();
-        if (desc.isBlank()) {
-            throw new IllegalArgumentException("La descripción es obligatoria.");
-        }
+        String desc = Optional.ofNullable(dto.getDescripcion()).orElse("").trim();
+        if (desc.isBlank()) throw new IllegalArgumentException("La descripción es obligatoria.");
 
-        List<Grupo> existentes = grupoRepository.findAllByDescripcionIgnoreCase(desc);
-        if (!existentes.isEmpty()) {
+        if (!grupoRepository.findAllByDescripcionIgnoreCase(desc).isEmpty()) {
             throw new IllegalArgumentException("Grupo ya existente");
         }
 
         Grupo grupo = new Grupo(desc, dto.getCantidadDeColaboradores());
-        if (dto.getNombre() != null && !dto.getNombre().isBlank()) {
-            grupo.setNombre(dto.getNombre().trim());
-        } else {
-            grupo.setNombre(desc);
-        }
+        grupo.setNombre(Optional.ofNullable(dto.getNombre()).filter(n -> !n.isBlank()).orElse(desc));
 
-        Grupo guardado = grupoRepository.save(grupo);
-        return mapBasic(guardado);
+        return mapGrupoConReferentes(grupoRepository.save(grupo));
     }
 
     @Override
     @Transactional
     public GrupoOutputDTO editarGrupo(Long id, GrupoInputDTO dto) {
-        Grupo grupo = grupoRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Grupo no encontrado con id " + id));
+        Grupo grupo = findGrupo(id);
 
         if (dto.getDescripcion() != null && !dto.getDescripcion().isBlank()) {
-            String nuevaDesc = dto.getDescripcion().trim();
-            if (!nuevaDesc.equalsIgnoreCase(grupo.getDescripcion())) {
-                // Si tenés el método en repo: findAllByDescripcionIgnoreCaseAndIdNot
-                // List<Grupo> duplicados = grupoRepository.findAllByDescripcionIgnoreCaseAndIdNot(nuevaDesc, id);
-                // if (!duplicados.isEmpty()) throw new IllegalArgumentException("Ya existe un grupo con la descripción: " + nuevaDesc);
-
-                grupo.setDescripcion(nuevaDesc);
-            }
+            grupo.setDescripcion(dto.getDescripcion().trim());
         }
 
         if (dto.getNombre() != null && !dto.getNombre().isBlank()) {
@@ -133,27 +97,7 @@ public class GrupoService implements IGrupoService {
             grupo.setCantidadDeColaboradores(dto.getCantidadDeColaboradores());
         }
 
-        Grupo actualizado = grupoRepository.save(grupo);
-        return mapWithReferentes(actualizado);
-    }
-
-    /* ===================== Otros usos ===================== */
-
-    @Override
-    public GrupoOutputDTO agregarReferentes(Long grupoId, List<ReferenteDTO> referenteDTOS) {
-        Grupo grupo = grupoRepository.findById(grupoId)
-                .orElseThrow(() -> new ResourceNotFoundException("Grupo no encontrado con id " + grupoId));
-
-        List<ReferenteDTO> safe = Optional.ofNullable(referenteDTOS)
-                .orElseGet(ArrayList::new);
-
-        return new GrupoOutputDTO(
-                grupo.getId(),
-                grupo.getDescripcion(),
-                grupo.getCantidadDeColaboradores(),
-                grupo.getNombre(),
-                Optional.of(safe)
-        );
+        return mapGrupoConReferentes(grupoRepository.save(grupo));
     }
 
     public List<GrupoOutputDTO> gruposDeUnBanco(String banco) {
@@ -169,29 +113,23 @@ public class GrupoService implements IGrupoService {
     }
 
     public List<GrupoOutputDTO> gruposDeUnReferente(String mail) {
-        Long cliente = referenteService.obtenerIdDeCLiente(mail);
-        List<Grupo> grupos = grupoRepository.findGruposByCliente(cliente);
-        return convertirADTOs(grupos);
+        Long clienteId = referenteService.obtenerIdDeCLiente(mail);
+        return convertirADTOs(grupoRepository.findGruposByCliente(clienteId));
     }
 
     @Override
     @Transactional
     public void eliminarGrupo(Long id) {
-        Grupo grupo = grupoRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Grupo no encontrado con id " + id));
-
-        // Solo marcar como no visible
+        Grupo grupo = findGrupo(id);
         grupo.setVisible(false);
         grupoRepository.save(grupo);
     }
 
     @Transactional
     public GrupoOutputDTO restaurarGrupo(Long id) {
-        Grupo grupo = grupoRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Grupo no encontrado con id " + id));
+        Grupo grupo = findGrupo(id);
         grupo.setVisible(true);
         grupoRepository.save(grupo);
-        return mapWithReferentes(grupo);
+        return mapGrupoConReferentes(grupo);
     }
-
 }

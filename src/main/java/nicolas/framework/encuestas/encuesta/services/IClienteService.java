@@ -16,4 +16,5 @@ public interface IClienteService {
     Long obtenerIdDeCLiente(String mailCliente);
     List<Long> obtenerReferentesDeUnGrupo(Long grupoId);
     List<Long> obtenerReferentesDeUnBanco(String banco);
-}
+    public void editarReferentesDeGrupo(Long idGrupo, List<Long> agregarReferentes, List<Long> quitarReferentes);
+    }

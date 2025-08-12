@@ -3,6 +3,7 @@ package nicolas.framework.encuestas.encuesta.dtos;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import nicolas.framework.encuestas.encuesta.models.entities.Grupo;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,7 +17,6 @@ public class GrupoOutputDTO {
     private String descripcion;
     private int cantidadDeColaboradores;
     private String nombre;
-    private Optional<List<ReferenteDTO>> referentes;
-
+    private List<ReferenteDTO> referentes;
 
 }

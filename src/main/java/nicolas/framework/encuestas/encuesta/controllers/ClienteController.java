@@ -1,10 +1,7 @@
 package nicolas.framework.encuestas.encuesta.controllers;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
-import nicolas.framework.encuestas.encuesta.dtos.ClienteOutputDTO;
-import nicolas.framework.encuestas.encuesta.dtos.EditarClienteInputDTO;
-import nicolas.framework.encuestas.encuesta.dtos.EncuestaOutputDTO;
-import nicolas.framework.encuestas.encuesta.dtos.MailClienteDTO;
+import nicolas.framework.encuestas.encuesta.dtos.*;
 import nicolas.framework.encuestas.encuesta.services.IClienteService;
 import nicolas.framework.encuestas.encuesta.services.IEncuestaService;
 import org.springframework.http.HttpStatus;
@@ -41,6 +38,19 @@ public class ClienteController {
     public ResponseEntity<Long> obtenerIdDeCliente(@RequestBody MailClienteDTO dto) {
         Long id = clienteService.obtenerIdDeCLiente(dto.getMailCliente());
         return ResponseEntity.ok(id);
+    }
+
+    @PutMapping("/grupos/{grupoId}/referentes")
+    public ResponseEntity<String> editarReferentes(
+            @PathVariable Long grupoId,
+            @RequestBody EditarReferentesDTO request) {
+
+        clienteService.editarReferentesDeGrupo(
+                grupoId,
+                request.getAgregarIds(),
+                request.getQuitarIds()
+        );
+        return ResponseEntity.ok("Referentes actualizados correctamente");
     }
 
     @GetMapping("/{clienteId}/encuestas")

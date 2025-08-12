@@ -1,5 +1,6 @@
 package nicolas.framework.encuestas.encuesta.services;
 
+import jakarta.transaction.Transactional;
 import nicolas.framework.encuestas.Exception.DatabaseException;
 import nicolas.framework.encuestas.encuesta.dtos.ClienteOutputDTO;
 import nicolas.framework.encuestas.encuesta.dtos.EditarClienteInputDTO;
@@ -12,32 +13,31 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.sql.Ref;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 @Service
 public class ClienteService implements IClienteService {
 
     @Autowired
     private UserRepository clienteRepository;
-    @Autowired
-    private GrupoRepository grupoRepository;
+
     @Autowired
     private GrupoService grupoService;
+
     @Autowired
     private PasswordEncoder passwordEncoder;
-    @Autowired
-    private UserRepository userRepository;
+
     @Autowired
     private BankService bankService;
 
     @Override
+    @Transactional
     public void asignarClientesAGrupo(Long grupoId, List<Long> clienteIds) {
-        Grupo grupo = grupoRepository.findById(grupoId)
-                .orElseThrow(() -> new DatabaseException("Grupo no encontrado con id " + grupoId));
+        Grupo grupo = grupoService.findGrupo(grupoId);
 
         List<User> clientes = clienteRepository.findAllById(clienteIds);
         if (clientes.isEmpty()) {
@@ -47,32 +47,40 @@ public class ClienteService implements IClienteService {
         Set<Long> encontrados = clientes.stream()
                 .map(User::getId)
                 .collect(Collectors.toSet());
+
         List<Long> faltantes = clienteIds.stream()
                 .filter(id -> !encontrados.contains(id))
                 .toList();
+
         if (!faltantes.isEmpty()) {
             throw new DatabaseException("Clientes no encontrados con ids " + faltantes);
         }
-
-        List<ReferenteDTO> referentesDeGrupo = procesarReferentesDeGrupo(clientes);
-        grupoService.agregarReferentes(grupoId, referentesDeGrupo);
 
         clientes.forEach(c -> c.getGrupos().add(grupo));
         clienteRepository.saveAll(clientes);
     }
 
-    List<ReferenteDTO> procesarReferentesDeGrupo(List<User> clientes) {
-        List<ReferenteDTO> referentes = new ArrayList<>();
+    @Override
+    @Transactional
+    public void editarReferentesDeGrupo(Long idGrupo, List<Long> agregarIds, List<Long> quitarIds) {
+        Grupo grupo = grupoService.findGrupo(idGrupo);
 
-        for(User cliente : clientes) {
-            referentes.add(new ReferenteDTO(cliente.getNombre(), cliente.getApellido(), cliente.getUsername()));
+        if (agregarIds != null && !agregarIds.isEmpty()) {
+            List<User> aAgregar = clienteRepository.findAllById(agregarIds);
+            aAgregar.forEach(c -> c.getGrupos().add(grupo));
+            clienteRepository.saveAll(aAgregar);
         }
-        return referentes;
+
+        if (quitarIds != null && !quitarIds.isEmpty()) {
+            List<User> aQuitar = clienteRepository.findAllById(quitarIds);
+            aQuitar.forEach(c -> c.getGrupos().remove(grupo));
+            clienteRepository.saveAll(aQuitar);
+        }
     }
 
     @Override
     public List<Long> obtenerReferentesDeUnGrupo(Long grupoId) {
-        return userRepository.findDistinctByGrupoId(grupoId)
+        return clienteRepository.findDistinctByGrupoId(grupoId)
                 .stream()
                 .map(User::getId)
                 .toList();
@@ -81,7 +89,7 @@ public class ClienteService implements IClienteService {
     @Override
     public List<Long> obtenerReferentesDeUnBanco(String banco) {
         String extension = bankService.obtenerExtension(banco);
-        return userRepository.findByUsernameEndingWith(extension)
+        return clienteRepository.findByUsernameEndingWith(extension)
                 .stream()
                 .map(User::getId)
                 .toList();
@@ -93,36 +101,37 @@ public class ClienteService implements IClienteService {
                 .stream()
                 .map(u -> {
                     ClienteOutputDTO dto = new ClienteOutputDTO(
-                            u.getUsername(),      // mail
+                            u.getUsername(),
                             u.getNombre(),
                             u.getApellido(),
                             u.getTelefono(),
                             u.getRole().name(),
                             u.isMustChangePassword()
                     );
-                    dto.setId(u.getId());    // <— aquí seteas el ID
+                    dto.setId(u.getId());
                     return dto;
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
     public Long obtenerIdDeCLiente(String mailCliente) {
         String normalizado = mailCliente.trim().toLowerCase();
-        User user = clienteRepository.findByUsername(normalizado)
-                .orElseThrow(() -> new DatabaseException("Cliente no encontrado con mail: " + normalizado));
-        return user.getId();
+        return clienteRepository.findByUsername(normalizado)
+                .orElseThrow(() -> new DatabaseException("Cliente no encontrado con mail: " + normalizado))
+                .getId();
     }
 
     @Override
     public boolean obtenerMustChangePassword(String mailCliente) {
         String normalizado = mailCliente.trim().toLowerCase();
-        User user = clienteRepository.findByUsername(normalizado)
-                .orElseThrow(() -> new DatabaseException("Cliente no encontrado con mail: " + normalizado));
-        return user.isMustChangePassword();
+        return clienteRepository.findByUsername(normalizado)
+                .orElseThrow(() -> new DatabaseException("Cliente no encontrado con mail: " + normalizado))
+                .isMustChangePassword();
     }
 
     @Override
+    @Transactional
     public ClienteOutputDTO editarClienteParcial(Long clienteId, EditarClienteInputDTO input) {
         User cliente = clienteRepository.findById(clienteId)
                 .orElseThrow(() -> new DatabaseException("Cliente no encontrado con id " + clienteId));

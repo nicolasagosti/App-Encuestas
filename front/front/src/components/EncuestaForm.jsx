@@ -1,3 +1,4 @@
+// src/components/EncuestaForm.jsx
 import React, { useState, useEffect } from 'react';
 import {
   obtenerPreguntas,
@@ -40,7 +41,7 @@ export default function EncuestaForm() {
     const lower = busqueda.trim().toLowerCase();
     if (!lower) return setCoincidencias([]);
     setCoincidencias(
-      preguntasDisponibles.filter(p => p.texto.toLowerCase().includes(lower))
+      preguntasDisponibles.filter(p => (p.texto || '').toLowerCase().includes(lower))
     );
   }, [busqueda, preguntasDisponibles]);
 
@@ -49,7 +50,7 @@ export default function EncuestaForm() {
     const lower = busquedaGrupo.trim().toLowerCase();
     if (!lower) return setCoincidenciasGrupos([]);
     setCoincidenciasGrupos(
-      gruposDisponibles.filter(g => g.nombre.toLowerCase().includes(lower))
+      gruposDisponibles.filter(g => (g.nombre || '').toLowerCase().includes(lower))
     );
   }, [busquedaGrupo, gruposDisponibles]);
 
@@ -71,7 +72,7 @@ export default function EncuestaForm() {
     if (!texto) return;
 
     const existente = preguntasDisponibles.find(
-      p => p.texto.toLowerCase() === texto.toLowerCase()
+      p => (p.texto || '').toLowerCase() === texto.toLowerCase()
     );
 
     if (existente) {
@@ -93,7 +94,7 @@ export default function EncuestaForm() {
   const agregarGrupoDesdeInput = () => {
     if (!busquedaGrupo.trim()) return;
     const encontrado = gruposDisponibles.find(
-      g => g.nombre.toLowerCase() === busquedaGrupo.trim().toLowerCase()
+      g => (g.nombre || '').toLowerCase() === busquedaGrupo.trim().toLowerCase()
     );
     if (encontrado && !grupoIdsSeleccionados.includes(encontrado.id)) {
       setGrupoIdsSeleccionados(prev => [...prev, encontrado.id]);
@@ -124,6 +125,7 @@ export default function EncuestaForm() {
         fechaInicio: fechaInicio || null,
         fechaFin: fechaFin || null
       };
+
       if (editingEncuestaId) {
         await editarEncuesta(editingEncuestaId, payload);
         setMensaje('✅ Encuesta actualizada correctamente');

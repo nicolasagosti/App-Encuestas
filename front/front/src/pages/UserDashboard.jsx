@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+// src/pages/UserDashboard.jsx
+import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../AuthContext';
 import {
   obtenerEncuestasDeCliente,
@@ -7,6 +8,7 @@ import {
   obtenerBanco
 } from '../services/api';
 import { CheckCircle, AlertCircle, Loader2, CopyIcon } from 'lucide-react';
+import RatingStars from '../components/RatingStars';
 import logo from './logoaccenture.png';
 
 const COLORES_GRUPO = [
@@ -22,58 +24,43 @@ const COLORES_GRUPO = [
 
 const grupoColorMap = new Map();
 let coloresUsados = new Set();
-
 function colorDeFondoPorGrupo(nombreGrupo = '') {
-  if (grupoColorMap.has(nombreGrupo)) {
-    return grupoColorMap.get(nombreGrupo);
-  }
-
+  if (grupoColorMap.has(nombreGrupo)) return grupoColorMap.get(nombreGrupo);
   const disponibles = COLORES_GRUPO.filter(c => !coloresUsados.has(c));
   const color =
     disponibles[Math.floor(Math.random() * disponibles.length)] ||
     COLORES_GRUPO[Math.floor(Math.random() * COLORES_GRUPO.length)];
-
   grupoColorMap.set(nombreGrupo, color);
   coloresUsados.add(color);
   return color;
 }
 
-// --- Utilidades para el logo ---
-const looksLikeBase64Image = (s) => {
-  if (!s || typeof s !== 'string') return false;
-  const cleaned = s.replace(/\s+/g, '');
-  return (
-    cleaned.startsWith('iVBOR') || // PNG
-    cleaned.startsWith('/9j/') || // JPEG
-    cleaned.startsWith('data:image/')
-  );
-};
-
+// --- Logo helpers ---
 const buildImageSrc = (raw) => {
   if (!raw) return null;
-  const cleaned = raw.replace(/\s+/g, '');
-  if (cleaned.startsWith('data:')) {
-    return cleaned;
-  }
-  if (cleaned.startsWith('iVBOR')) {
-    return `data:image/png;base64,${cleaned}`;
-  }
-  if (cleaned.startsWith('/9j/')) {
-    return `data:image/jpeg;base64,${cleaned}`;
-  }
+  const cleaned = String(raw).replace(/\s+/g, '');
+  if (cleaned.startsWith('data:')) return cleaned;
+  if (cleaned.startsWith('iVBOR')) return `data:image/png;base64,${cleaned}`;
+  if (cleaned.startsWith('/9j/')) return `data:image/jpeg;base64,${cleaned}`;
   return `data:image/*;base64,${cleaned}`;
 };
 
-export default function ResponderEncuestaForm() {
+export default function UserDashboard() {
+  const { userEmail } = useAuth();
   const [clienteId, setClienteId] = useState(null);
   const [encuestas, setEncuestas] = useState([]);
   const [respuestas, setRespuestas] = useState({});
   const [mensaje, setMensaje] = useState('');
   const [loading, setLoading] = useState(false);
   const [encuestasRespondidas, setEncuestasRespondidas] = useState(new Set());
-  const { userEmail } = useAuth();
   const [logoBancoBase64, setLogoBancoBase64] = useState(null);
 
+  // Refs para UX
+  const mensajeRef = useRef(null);
+  const justifRefs = useRef({}); // mapa: clave => ref de input
+  const [claveError, setClaveError] = useState(null); // clave de la primera justificación faltante
+
+  // Cargar IDs y encuestas
   useEffect(() => {
     if (!userEmail) return;
     obtenerIdDeCliente(userEmail)
@@ -83,18 +70,11 @@ export default function ResponderEncuestaForm() {
 
   useEffect(() => {
     if (!userEmail) return;
-
     const extension = userEmail.split('@')[1]?.toLowerCase();
     if (extension) {
       obtenerBanco(extension)
-        .then(res => {
-          console.log('logoBase64 que llega del backend:', res.data.nombre);
-          setLogoBancoBase64(res.data.nombre);
-        })
-        .catch(() => {
-          console.warn(`No se encontró banco para ${extension}`);
-          setLogoBancoBase64(null); // usa el logo por defecto si falla
-        });
+        .then(res => setLogoBancoBase64(res.data?.nombre))
+        .catch(() => setLogoBancoBase64(null));
     }
   }, [userEmail]);
 
@@ -104,6 +84,26 @@ export default function ResponderEncuestaForm() {
       .then(res => setEncuestas(res.data))
       .catch(() => setMensaje('❌ Error al cargar encuestas'));
   }, [clienteId]);
+
+  // Scroll al cartel cada vez que haya mensaje de error/alerta
+  useEffect(() => {
+    if (mensaje && !mensaje.startsWith('✅')) {
+      mensajeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [mensaje]);
+
+  // Focus al primer campo de justificación faltante detectado
+  useEffect(() => {
+    if (!claveError) return;
+    const ref = justifRefs.current[claveError];
+    if (ref && ref.focus) {
+      // pequeño delay para asegurar que el input esté montado
+      setTimeout(() => {
+        ref.focus();
+        ref.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
+      }, 50);
+    }
+  }, [claveError]);
 
   const handlePuntajeChange = (preguntaId, encuestaId, grupoId, puntaje) => {
     const clave = `${encuestaId}_${preguntaId}`;
@@ -124,12 +124,12 @@ export default function ResponderEncuestaForm() {
   const replicarPuntaje = (preguntaId, puntaje) => {
     const nuevasRespuestas = { ...respuestas };
     encuestas.forEach(encuesta => {
-      encuesta.preguntas.forEach(pregunta => {
-        if (pregunta.id === preguntaId) {
-          const clave = `${encuesta.id}_${pregunta.id}`;
+      (encuesta.preguntas || []).forEach(preg => {
+        if (preg.id === preguntaId) {
+          const clave = `${encuesta.id}_${preg.id}`;
           nuevasRespuestas[clave] = {
             ...nuevasRespuestas[clave],
-grupoId: encuesta.grupoDelCliente?.id || 1,
+            grupoId: encuesta.grupoDelCliente?.id || 1,
             puntaje
           };
         }
@@ -139,40 +139,44 @@ grupoId: encuesta.grupoDelCliente?.id || 1,
     setMensaje('✅ Puntaje replicado a todas las encuestas');
   };
 
-  const handleSubmit = async (encuestaId) => {
-    if (clienteId == null) {
-      setMensaje('❌ Cliente no identificado');
-      return;
-    }
-
-    const encuesta = encuestas.find(e => e.id === encuestaId);
-    if (!encuesta) return;
-
+  // Valida y devuelve la primera clave con error (o null si está todo OK)
+  const validarEncuesta = (encuesta) => {
     const preguntas = encuesta.preguntas || [];
-
-    for (const pregunta of preguntas) {
-      const clave = `${encuestaId}_${pregunta.id}`;
+    for (const p of preguntas) {
+      const clave = `${encuesta.id}_${p.id}`;
       const resp = respuestas[clave];
-
       if (!resp?.puntaje) {
-        setMensaje(`⚠️ Falta puntaje en la pregunta "${pregunta.texto}"`);
-        return;
+        setMensaje(`⚠️ Falta puntaje en la pregunta "${p.texto}"`);
+        return clave; // primera falla
       }
-
       if (resp.puntaje < 8) {
-        const justificacion = resp.justificacion?.trim() || '';
-        if (justificacion.length < 30) {
-          setMensaje(`⚠️ La justificación en la pregunta "${pregunta.texto}" debe tener al menos 30 caracteres.`);
-          return;
+        const j = (resp.justificacion || '').trim();
+        if (j.length < 30) {
+          setMensaje(`⚠️ La justificación en la pregunta "${p.texto}" debe tener al menos 30 caracteres.`);
+          return clave;
         }
       }
     }
+    return null;
+  };
 
-    const payload = preguntas.map(pregunta => {
-      const clave = `${encuestaId}_${pregunta.id}`;
+  const handleSubmit = async (encuestaId) => {
+    setClaveError(null); // resetea marcador
+    const encuesta = encuestas.find(e => e.id === encuestaId);
+    if (!encuesta) return;
+
+    // valida SIEMPRE (cada click), y si falla vuelve a scrollear al cartel
+    const claveFalla = validarEncuesta(encuesta);
+    if (claveFalla) {
+      setClaveError(claveFalla); // para enfocar justificación si corresponde
+      return; // no envía
+    }
+
+    const payload = (encuesta.preguntas || []).map(p => {
+      const clave = `${encuesta.id}_${p.id}`;
       const data = respuestas[clave];
       return {
-        preguntaId: pregunta.id,
+        preguntaId: p.id,
         grupoId: data.grupoId,
         puntaje: data.puntaje,
         justificacion: data.puntaje < 8 ? data.justificacion.trim() : ''
@@ -184,12 +188,14 @@ grupoId: encuesta.grupoDelCliente?.id || 1,
       await responderEncuesta(clienteId, encuestaId, payload);
       setMensaje('✅ Encuesta respondida correctamente');
 
+      // limpia respuestas de esa encuesta
       setRespuestas(prev => {
         const nuevas = { ...prev };
-        preguntas.forEach(p => delete nuevas[`${encuestaId}_${p.id}`]);
+        (encuesta.preguntas || []).forEach(p => delete nuevas[`${encuestaId}_${p.id}`]);
         return nuevas;
       });
 
+      // saca encuesta de la lista y marca como respondida
       setEncuestas(prev => prev.filter(e => e.id !== encuestaId));
       setEncuestasRespondidas(prev => new Set(prev).add(encuestaId));
     } catch {
@@ -199,20 +205,11 @@ grupoId: encuesta.grupoDelCliente?.id || 1,
     }
   };
 
-  // --- LOGO final para mostrar ---
   const srcLogo = buildImageSrc(logoBancoBase64);
-  console.log('srcLogo:', srcLogo);
-
-  // --- TEST MANUAL: cuadrado rojo (para debug) ---
-  const testBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH5AgUCCIzFO/fqAAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAAwSURBVBjTY2AgDQwMDP///xkZGTEx8TAwMHCwIwg3BhYGJDJEMQAIMABvIOAIdKEIQAAAAASUVORK5CYII=";
-  const srcTestLogo = buildImageSrc(testBase64);
 
   return (
     <div className="max-w-4xl mx-auto mt-12 px-4">
       <div className="bg-white rounded-2xl shadow border border-gray-100 p-8">
-        {/* DEBUG: Cuadrado rojo de prueba (si esto se ve, el src funciona) */}
-        {/* <img src={srcTestLogo} alt="Test" style={{ width: 32, height: 32 }} /> */}
-
         <img
           src={srcLogo || logo}
           alt="Logo del banco"
@@ -227,6 +224,7 @@ grupoId: encuesta.grupoDelCliente?.id || 1,
 
         {mensaje && (
           <div
+            ref={mensajeRef}
             className={`mb-6 flex items-center gap-3 rounded-md px-4 py-3 text-sm font-medium ${
               mensaje.startsWith('✅')
                 ? 'bg-green-50 border border-green-200 text-green-800'
@@ -259,47 +257,57 @@ grupoId: encuesta.grupoDelCliente?.id || 1,
                         {new Date(encuesta.fechaFin).toLocaleDateString()}
                       </p>
                       <p className="text-sm">
-  <span className="font-medium">Grupo:</span>{' '}
-  {encuesta.grupoDelCliente?.descripcion || `Grupo ${encuesta.grupoDelCliente?.id}`}
-</p>
+                        <span className="font-medium">Grupo:</span>{' '}
+                        {encuesta.grupoDelCliente?.descripcion || `Grupo ${encuesta.grupoDelCliente?.id}`}
+                      </p>
                     </div>
                   </div>
 
                   <div className="space-y-6">
-                    {encuesta.preguntas.map(pregunta => {
+                    {(encuesta.preguntas || []).map(pregunta => {
                       const clave = `${encuesta.id}_${pregunta.id}`;
                       const puntaje = respuestas[clave]?.puntaje;
+                      const valor = Number.isFinite(puntaje) ? Number(puntaje) : 0;
+
+                      // asegurar ref del input de justificación
+                      if (!justifRefs.current[clave]) justifRefs.current[clave] = null;
 
                       return (
                         <div key={pregunta.id} className="bg-white border border-gray-200 rounded-lg p-5">
                           <p className="text-sm font-medium text-gray-800 mb-2">{pregunta.texto}</p>
 
-                          <div className="flex items-center gap-4 mb-3">
-                            <select
-                              className="w-32 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              value={puntaje || ''}
-                              onChange={e =>
-                                handlePuntajeChange(
-                                  pregunta.id,
-                                  encuesta.id,
-                                  encuesta.grupoDelCliente?.id || 1,
-                                  Number(e.target.value)
-                                )
-                              }
-                            >
-                              <option value="">Puntaje</option>
-                              {[...Array(10)].map((_, i) => (
-                                <option key={i + 1} value={i + 1}>
-                                  {i + 1}
-                                </option>
-                              ))}
-                            </select>
+                          <div className="flex flex-col gap-3 mb-3">
+                            <div className="flex items-center justify-between gap-4">
+                              <RatingStars
+                                value={valor}
+                                onChange={(v) =>
+                                  handlePuntajeChange(
+                                    pregunta.id,
+                                    encuesta.id,
+                                    encuesta.grupoDelCliente?.id || 1,
+                                    Math.max(1, Math.min(10, Math.round(v)))
+                                  )
+                                }
+                                max={10}
+                                allowHalf={false}
+                                size="lg"
+                                labels={[
+                                  '1 - Muy malo','2','3','4','5 - Regular',
+                                  '6','7','8 - Bueno','9','10 - Excelente'
+                                ]}
+                                name={`puntaje_${encuesta.id}_${pregunta.id}`}
+                              />
+                              <span className="text-sm text-gray-600 min-w-[90px] text-right">
+                                {valor ? `Puntaje: ${valor}/10` : 'Sin puntaje'}
+                              </span>
+                            </div>
 
-                            {puntaje < 8 && puntaje != null && (
+                            {valor < 8 && valor > 0 && (
                               <input
                                 type="text"
                                 placeholder="Justificación (requerida)"
-                                className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                ref={(el) => (justifRefs.current[clave] = el)}
                                 onChange={e =>
                                   handleJustificacionChange(pregunta.id, encuesta.id, e.target.value)
                                 }
@@ -309,7 +317,7 @@ grupoId: encuesta.grupoDelCliente?.id || 1,
 
                           <button
                             type="button"
-                            onClick={() => replicarPuntaje(pregunta.id, puntaje)}
+                            onClick={() => replicarPuntaje(pregunta.id, valor || '')}
                             className="flex items-center gap-1 text-sm text-blue-600 hover:underline"
                           >
                             <CopyIcon className="w-4 h-4" />

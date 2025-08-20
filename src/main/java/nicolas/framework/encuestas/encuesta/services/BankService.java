@@ -25,6 +25,9 @@ public class BankService implements IBankService {
         if (!StringUtils.hasText(ext)) {
             throw new IllegalArgumentException("La extensión no puede estar vacía");
         }
+        if(bankRepository.existsByExtension(ext) || bankRepository.existsByNombre(nombre)) {
+            throw new IllegalArgumentException("Banco ya existente");
+        }
 
         byte[] logoBytes = logo.getBytes();
         String logoBase64 = Base64.getEncoder().encodeToString(logoBytes);

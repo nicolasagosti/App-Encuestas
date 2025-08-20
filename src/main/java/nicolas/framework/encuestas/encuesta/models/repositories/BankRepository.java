@@ -9,4 +9,5 @@ public interface BankRepository extends JpaRepository<Bank, String> {
 
     Bank findTopByExtension(String extension);
     boolean existsByExtension(String extension);
+    boolean existsByNombre(String name);
 }

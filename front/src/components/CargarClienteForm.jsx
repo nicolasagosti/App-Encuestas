@@ -115,40 +115,51 @@ export default function CargarClienteForm() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setMensaje('');
+  e.preventDefault();
+  setMensaje('');
 
-    if (!logoFile) {
-      setMensaje('❌ Debes subir un logo');
-      return;
-    }
-    if (!extension) {
-      setMensaje('❌ Debes ingresar la extensión de mail (ej: bbva.com)');
-      return;
-    }
-    if (!nombre || nombre.trim() === '') {
-      setMensaje('❌ Debes ingresar el nombre del banco');
-      return;
-    }
+  if (!logoFile) {
+    setMensaje('❌ Debes subir un logo');
+    return;
+  }
+  if (!extension) {
+    setMensaje('❌ Debes ingresar la extensión de mail (ej: bbva.com)');
+    return;
+  }
+  if (!nombre || nombre.trim() === '') {
+    setMensaje('❌ Debes ingresar el nombre del banco');
+    return;
+  }
 
-    const formData = new FormData();
-    formData.append('extension', extension);
-    formData.append('nombre', nombre.trim());
-    formData.append('logo', logoFile);
+  // 🚨 Validar duplicados en frontend
+  const existe = bancos.find(
+    (b) =>
+      b.nombre.toLowerCase() === nombre.trim().toLowerCase() ||
+      b.extension.toLowerCase() === extension.toLowerCase()
+  );
+  if (existe) {
+    setMensaje('❌ Ya existe un banco con ese nombre o esa extensión');
+    return;
+  }
 
-    try {
-      await cargarBanco(formData);
-      setMensaje('✅ Banco creado correctamente');
-      setLogoFile(null);
-      setExtension('');
-      setNombre('');
-      e.target.reset();
-      await fetchBancos();
-    } catch (err) {
-      console.error('Error al crear banco', err);
-      setMensaje('❌ Error al crear el banco');
-    }
-  };
+  const formData = new FormData();
+  formData.append('extension', extension);
+  formData.append('nombre', nombre.trim());
+  formData.append('logo', logoFile);
+
+  try {
+    await cargarBanco(formData);
+    setMensaje('✅ Banco creado correctamente');
+    setLogoFile(null);
+    setExtension('');
+    setNombre('');
+    e.target.reset();
+    await fetchBancos();
+  } catch (err) {
+    console.error('Error al crear banco', err);
+    setMensaje('❌ Error al crear el banco');
+  }
+};
 
   return (
     <div className="space-y-6">

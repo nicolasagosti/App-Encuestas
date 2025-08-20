@@ -65,7 +65,7 @@ export default function AdminDashboard() {
               value="usuarios"
               className="px-4 py-2 rounded-t-lg bg-white shadow-sm hover:bg-blue-50"
             >
-              👤 Usuarios
+              👤 Referentes
             </TabsTrigger>
           </TabsList>
 

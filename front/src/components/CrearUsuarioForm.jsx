@@ -127,7 +127,7 @@ export default function CrearUsuarioForm() {
     <div className="space-y-6 px-4">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-white py-3 flex justify-between items-center border-b shadow-sm">
-        <h2 className="text-lg font-semibold">Usuarios</h2>
+        <h2 className="text-lg font-semibold">Referentes</h2>
         {!mostrarFormulario && (
           <button
             onClick={iniciarCreacion}
@@ -169,7 +169,7 @@ export default function CrearUsuarioForm() {
             <div className="grid grid-cols-1 gap-4">
               <div>
                 <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                  Usuario (email)
+                  Referente (email)
                 </label>
                 <input
                   id="username"
@@ -262,7 +262,7 @@ export default function CrearUsuarioForm() {
       {/* Lista y filtro */}
       <div className="w-full">
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Buscar cliente
+          Buscar Referente
         </label>
         <input
           type="text"
@@ -274,7 +274,7 @@ export default function CrearUsuarioForm() {
       </div>
 
       <div className="w-full">
-        <h2 className="text-lg font-semibold mb-4">Lista de Usuarios</h2>
+        <h2 className="text-lg font-semibold mb-4">Lista de Referentes</h2>
         {clientesFiltrados.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full table-auto border-collapse">
@@ -317,7 +317,7 @@ export default function CrearUsuarioForm() {
             </table>
           </div>
         ) : (
-          <div className="p-2 text-gray-500">No se encontraron usuarios</div>
+          <div className="p-2 text-gray-500">No se encontraron referentes</div>
         )}
       </div>
     </div>

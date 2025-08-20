@@ -93,10 +93,10 @@ export default function CargarClienteForm() {
     try {
       const res = await obtenerBancos();
       const datos = res.data || [];
-      console.log('Bancos recibidos:', datos);
+      console.log('Clientes recibidos:', datos);
       setBancos(datos);
     } catch (err) {
-      console.error('Error al obtener bancos', err);
+      console.error('Error al obtener clientes', err);
     } finally {
       setLoadingBancos(false);
     }
@@ -127,7 +127,7 @@ export default function CargarClienteForm() {
     return;
   }
   if (!nombre || nombre.trim() === '') {
-    setMensaje('❌ Debes ingresar el nombre del banco');
+    setMensaje('❌ Debes ingresar el nombre del cliente');
     return;
   }
 
@@ -138,7 +138,7 @@ export default function CargarClienteForm() {
       b.extension.toLowerCase() === extension.toLowerCase()
   );
   if (existe) {
-    setMensaje('❌ Ya existe un banco con ese nombre o esa extensión');
+    setMensaje('❌ Ya existe un Cliente/Banco con ese nombre o esa extensión');
     return;
   }
 
@@ -149,15 +149,15 @@ export default function CargarClienteForm() {
 
   try {
     await cargarBanco(formData);
-    setMensaje('✅ Banco creado correctamente');
+    setMensaje('✅ Cliente creado correctamente');
     setLogoFile(null);
     setExtension('');
     setNombre('');
     e.target.reset();
     await fetchBancos();
   } catch (err) {
-    console.error('Error al crear banco', err);
-    setMensaje('❌ Error al crear el banco');
+    console.error('Error al crear cliente', err);
+    setMensaje('❌ Error al crear el cliente');
   }
 };
 
@@ -190,7 +190,7 @@ export default function CargarClienteForm() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Nombre del banco
+            Nombre del cliente (banco)
           </label>
           <input
             type="text"
@@ -218,17 +218,17 @@ export default function CargarClienteForm() {
           type="submit"
           className="w-full inline-flex justify-center rounded-md bg-blue-600 px-4 py-2 text-white font-semibold shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition"
         >
-          Guardar Banco
+          Guardar Cliente
         </button>
       </form>
 
       {/* Lista de bancos con logo */}
       <div>
-        <h2 className="text-lg font-semibold mb-4">Bancos existentes</h2>
+        <h2 className="text-lg font-semibold mb-4">Clientes existentes</h2>
         {loadingBancos ? (
-          <div className="text-sm text-gray-600">Cargando bancos...</div>
+          <div className="text-sm text-gray-600">Cargando clientes...</div>
         ) : bancos.length === 0 ? (
-          <div className="text-sm text-gray-500">No hay bancos cargados</div>
+          <div className="text-sm text-gray-500">No hay clientes cargados</div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
             {bancos.map((b) => (

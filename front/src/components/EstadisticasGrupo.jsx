@@ -1,3 +1,4 @@
+//estadisticasGrupo.jsx
 import { useState, useEffect } from 'react';
 import {
   obtenerEstadisticasGrupoPorPeriodo,
@@ -32,7 +33,7 @@ export default function EstadisticasGrupo() {
       setError('⚠️ Debe seleccionar ambas fechas');
       return;
     }
-    if (tipo === 'banco' && !bancoSeleccionado) {
+    if (tipo === 'cliente' && !bancoSeleccionado) {
       setError('⚠️ Debe seleccionar un cliente');
       return;
     }
@@ -40,7 +41,7 @@ export default function EstadisticasGrupo() {
     setError('');
     try {
       const valorSeleccionado =
-        tipo === 'banco' ? bancoSeleccionado : null;
+        tipo === 'cliente' ? bancoSeleccionado : null;
 
       const res = await obtenerEstadisticasGrupoPorPeriodo(
         fechaInicio, fechaFin, tipo, valorSeleccionado
@@ -86,7 +87,7 @@ export default function EstadisticasGrupo() {
 
   const tituloExportacion = () => {
     const base = 'Estadísticas';
-    if (tipo === 'banco') return `${base} por cliente`;
+    if (tipo === 'cliente') return `${base} por cliente`;
     return `${base} por período`;
   };
 
@@ -142,10 +143,10 @@ export default function EstadisticasGrupo() {
 
           <select value={tipo} onChange={e => setTipo(e.target.value)} className="border px-2 py-1 rounded">
             <option value="todos">Todos</option>
-            <option value="banco">Por Cliente</option>
+            <option value="cliente">Por Cliente</option>
           </select>
 
-          {tipo === 'banco' && (
+          {tipo === 'cliente' && (
             <select
               value={bancoSeleccionado}
               onChange={e => setBancoSeleccionado(e.target.value)}
@@ -153,8 +154,8 @@ export default function EstadisticasGrupo() {
             >
               <option value="">Seleccionar cliente</option>
               {bancos.map((b, idx) => (
-                <option key={idx} value={b.extension}>
-                  {b.extension.toLowerCase()}
+                <option key={idx} value={b.nombre}>
+                  {b.nombre}
                 </option>
               ))}
             </select>

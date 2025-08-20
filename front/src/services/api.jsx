@@ -128,16 +128,12 @@ export const obtenerPromedioGrupo = async (grupoId) => {
 
 
 export const obtenerEstadisticasGrupoPorPeriodo = (fechaInicio, fechaFin, tipo, valor) => {
-  if (tipo === 'banco') {
+  if (tipo === 'cliente') {
     return api.get('/estadisticas/grupos/periodo/por-banco', {
       params: { fechaInicio, fechaFin, banco: valor }
     });
   }
-  if (tipo === 'cliente') {
-    return api.get('/estadisticas/grupos/periodo/por-cliente', {
-      params: { fechaInicio, fechaFin, referente: valor }
-    });
-  }
+ 
   return api.get('/estadisticas/grupos/periodo', {
     params: { fechaInicio, fechaFin }
   });

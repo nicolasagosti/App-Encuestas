@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class BankService implements IBankService {
@@ -53,11 +54,11 @@ public class BankService implements IBankService {
     }
 
     public String obtenerExtension(String nombre) {
-        Bank banco = bankRepository.findTopByExtension(nombre);
-        if (banco == null) {
+        Optional<Bank> banco = bankRepository.findByNombreIgnoreCase(nombre);
+        if (banco.isEmpty()) {
             throw new IllegalArgumentException("Banco no encontrado: " + nombre);
         }
-        return banco.getExtension();
+        return banco.get().getExtension();
     }
 
 

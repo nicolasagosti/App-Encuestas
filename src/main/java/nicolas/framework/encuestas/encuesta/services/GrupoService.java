@@ -112,11 +112,6 @@ public class GrupoService implements IGrupoService {
         return convertirADTOs(new ArrayList<>(grupos));
     }
 
-    public List<GrupoOutputDTO> gruposDeUnReferente(String mail) {
-        Long clienteId = referenteService.obtenerIdDeCLiente(mail);
-        return convertirADTOs(grupoRepository.findGruposByCliente(clienteId));
-    }
-
     @Override
     @Transactional
     public void eliminarGrupo(Long id) {

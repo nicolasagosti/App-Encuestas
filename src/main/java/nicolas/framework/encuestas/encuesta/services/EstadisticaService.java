@@ -82,23 +82,6 @@ public class EstadisticaService implements IEstadisticaService {
         return calcularEstadisticas(grupos, fechaInicio, fechaFin);
     }
 
-    @Override
-    public List<GrupoPromedioOutputDTO> promediosDeGruposPorReferente(LocalDate fechaInicio, LocalDate fechaFin, String referente) {
-        List <GrupoOutputDTO> grupos = grupoService.gruposDeUnReferente(referente);
 
-        return calcularEstadisticas(grupos, fechaInicio, fechaFin);
-    }
-
-    public List<ClienteOutputDTO> sacarAdmin() {
-
-        List<ClienteOutputDTO> clientes = clienteService.obtenerTodosLosClientes();
-
-        for(int i = 0; i<clientes.size(); i++){
-            if(Objects.equals(clientes.get(i).getMail(), "admin@gmail.com")){
-                clientes.remove(i);
-            }
-        }
-        return clientes;
-    }
 
 }

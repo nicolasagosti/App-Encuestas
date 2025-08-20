@@ -35,7 +35,7 @@ export function exportarEstadisticasAGrupo(
 
   let subTituloExtra = "";
 
-  if (tipo === "banco" && bancoSeleccionado) {
+  if (tipo === "cliente" && bancoSeleccionado) {
     const banco = bancos.find(b => b.nombre === bancoSeleccionado);
     if (banco) {
       subTituloExtra = `Cliente: ${banco.nombre}`;

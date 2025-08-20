@@ -18,7 +18,7 @@ export default function EstadisticasGrupo() {
   useEffect(() => {
     obtenerBancos()
       .then(res => setBancos(res.data))
-      .catch(() => setError('❌ Error al cargar bancos'));
+      .catch(() => setError('❌ Error al cargar clientes'));
   }, []);
 
   const getColor = valor => {
@@ -33,7 +33,7 @@ export default function EstadisticasGrupo() {
       return;
     }
     if (tipo === 'banco' && !bancoSeleccionado) {
-      setError('⚠️ Debe seleccionar un banco');
+      setError('⚠️ Debe seleccionar un cliente');
       return;
     }
 
@@ -86,7 +86,7 @@ export default function EstadisticasGrupo() {
 
   const tituloExportacion = () => {
     const base = 'Estadísticas';
-    if (tipo === 'banco') return `${base} por banco`;
+    if (tipo === 'banco') return `${base} por cliente`;
     return `${base} por período`;
   };
 
@@ -151,7 +151,7 @@ export default function EstadisticasGrupo() {
               onChange={e => setBancoSeleccionado(e.target.value)}
               className="border px-2 py-1 rounded"
             >
-              <option value="">Seleccionar banco</option>
+              <option value="">Seleccionar cliente</option>
               {bancos.map((b, idx) => (
                 <option key={idx} value={b.extension}>
                   {b.extension.toLowerCase()}

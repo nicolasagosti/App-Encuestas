@@ -5,10 +5,10 @@ import { applyPlugin } from 'jspdf-autotable';
 
 applyPlugin(jsPDF);
 
-function generarNombreArchivo(base, titulo, fechaInicio, fechaFin, extension = 'pdf') {
+function generarNombreArchivo(base, titulo, fechaInicio, fechaFin, nombre = 'pdf') {
   const tipo = titulo.toLowerCase().replace(/\s+/g, '_');
   const fechas = fechaInicio && fechaFin ? `_${fechaInicio}_a_${fechaFin}` : '';
-  return `${base}_${tipo}${fechas}.${extension}`;
+  return `${base}_${tipo}${fechas}.${nombre}`;
 }
 
 function agregarTituloYFechas(doc, titulo, fechaInicio, fechaFin) {
@@ -24,7 +24,7 @@ function agregarTituloYFechas(doc, titulo, fechaInicio, fechaFin) {
 
 export function exportarEstadisticasAGrupo(
   estadisticas,
-  titulo = "Estadísticas por Banco",
+  titulo = "Estadísticas por Cliente",
   fechaInicio = null,
   fechaFin = null,
   tipo = "todos",
@@ -36,12 +36,12 @@ export function exportarEstadisticasAGrupo(
   let subTituloExtra = "";
 
   if (tipo === "banco" && bancoSeleccionado) {
-    const banco = bancos.find(b => b.extension === bancoSeleccionado);
+    const banco = bancos.find(b => b.nombre === bancoSeleccionado);
     if (banco) {
-      subTituloExtra = `Banco: ${banco.extension}`;
-      titulo += ` - ${banco.extension}`;
+      subTituloExtra = `Cliente: ${banco.nombre}`;
+      titulo += ` - ${banco.nombre}`;
     } else {
-      subTituloExtra = `Banco: ${bancoSeleccionado}`;
+      subTituloExtra = `Cliente: ${bancoSeleccionado}`;
       titulo += ` - ${bancoSeleccionado}`;
     }
   }

@@ -1,7 +1,7 @@
 // ExportarEstadisticasCSV.js
 export function exportarEstadisticasAGrupoCSV(
   estadisticas,
-  titulo = "Estadísticas por Banco",
+  titulo = "Estadísticas por Cliente",
   fechaInicio = null,
   fechaFin = null,
   tipo = "todos",
@@ -13,10 +13,10 @@ export function exportarEstadisticasAGrupoCSV(
   if (tipo === "banco" && bancoSeleccionado) {
     const banco = bancos.find(b => b.extension === bancoSeleccionado);
     if (banco) {
-      subTituloExtra = `Banco: ${banco.extension}`;
+      subTituloExtra = `Cliente: ${banco.extension}`;
       titulo += ` - ${banco.extension}`;
     } else {
-      subTituloExtra = `Banco: ${bancoSeleccionado}`;
+      subTituloExtra = `Cliente: ${bancoSeleccionado}`;
       titulo += ` - ${bancoSeleccionado}`;
     }
   }

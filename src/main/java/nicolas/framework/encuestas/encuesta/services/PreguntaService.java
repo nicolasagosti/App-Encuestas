@@ -30,8 +30,13 @@ public class PreguntaService implements IPreguntaService {
     }
 
     @Override
+    public void guardarPregunta(Pregunta pregunta){
+        preguntaRepository.save(pregunta);
+    }
+
+    @Override
     public List<Pregunta> listarPreguntas() {
-        return preguntaRepository.findAll()
+        return preguntaRepository.findDistinctByNombre()
                 .stream()
                 .filter(Pregunta::isVisible)
                 .collect(Collectors.toList());
@@ -68,12 +73,5 @@ public class PreguntaService implements IPreguntaService {
         return preguntaRepository.save(p);
     }
 
-    public List<PreguntaInputDTO> buscarPreguntasDeEncuesta(Long encuestaId){
 
-        List<Pregunta> preguntas = preguntaRepository.findPreguntasByEncuestaId(encuestaId);
-
-        return preguntas.stream().map(
-                pregunta -> {return new PreguntaInputDTO(pregunta.getTexto());}
-        ).toList();
-    }
 }

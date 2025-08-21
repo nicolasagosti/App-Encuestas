@@ -6,7 +6,8 @@ import {
   editarEncuesta,
   obtenerGrupos,
   crearPregunta,
-  obtenerEncuestas
+  obtenerEncuestas,
+  relanzarEncuesta
 } from '../services/api';
 
 export default function EncuestaForm() {
@@ -116,6 +117,35 @@ export default function EncuestaForm() {
     setFormVisible(false);
   };
 
+  const [relanzarVisible, setRelanzarVisible] = useState(false);
+const [relanzarFechaInicio, setRelanzarFechaInicio] = useState('');
+const [relanzarFechaFin, setRelanzarFechaFin] = useState('');
+const [encuestaARelanzar, setEncuestaARelanzar] = useState(null);
+
+const relanzar = (enc) => {
+  setEncuestaARelanzar(enc);
+  setRelanzarFechaInicio('');
+  setRelanzarFechaFin('');
+  setRelanzarVisible(true);
+};
+
+const handleRelanzarSubmit = async () => {
+  if (!relanzarFechaInicio || !relanzarFechaFin) return;
+  try {
+    await relanzarEncuesta(encuestaARelanzar.id, { 
+      fechaInicio: relanzarFechaInicio, 
+      fechaFin: relanzarFechaFin 
+    });
+    setMensaje("✅ Encuesta relanzada correctamente");
+    setRelanzarVisible(false);
+    fetchEncuestas();
+  } catch (err) {
+    console.error(err);
+    setMensaje("❌ Error al relanzar encuesta");
+  }
+};
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -172,13 +202,10 @@ export default function EncuestaForm() {
   };
 
   const formatDate = (d) => {
-    if (!d) return '-';
-    try {
-      return new Date(d).toLocaleDateString('es-AR');
-    } catch {
-      return d;
-    }
-  };
+  if (!d) return '-';
+  const [year, month, day] = d.split('-');
+  return `${day}/${month}/${year}`;
+};
 
   return (
     <div className="space-y-6">
@@ -377,33 +404,88 @@ export default function EncuestaForm() {
         {encuestasExistentes.length > 0 ? (
           <ul className="space-y-3">
             {encuestasExistentes.map((enc) => (
-              <li
-                key={enc.id}
-                onClick={() => selectEncuesta(enc)}
-                className="cursor-pointer border rounded p-3 bg-white shadow-sm hover:shadow-md transition flex flex-col sm:flex-row sm:justify-between gap-2"
-              >
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">
-                    Inicio: {formatDate(enc.fechaInicio)} — Fin: {formatDate(enc.fechaFin)}
-                  </div>
-                  <div className="text-sm">
-                    <div>
-                      <strong>Grupos:</strong>{' '}
-                      {Array.isArray(enc.grupos)
-                        ? enc.grupos.map(g => (typeof g === 'object' ? g.nombre || '' : g)).join(', ')
-                        : enc.grupos || '-'}
-                    </div>
-                    <div>
-                      <strong>Preguntas:</strong>{' '}
-                      {Array.isArray(enc.preguntas)
-                        ? enc.preguntas.map(p => (typeof p === 'object' ? p.texto || '' : p)).join(', ')
-                        : enc.preguntas || '-'}
-                    </div>
-                  </div>
-                </div>
-                <div className="text-xs text-gray-400 mt-2 sm:mt-0">(click para editar)</div>
-              </li>
-            ))}
+  <li
+    key={enc.id}
+    className="border rounded p-3 bg-white shadow-sm flex flex-col sm:flex-row sm:justify-between gap-2"
+  >
+    <div>
+      <div className="text-sm text-gray-600 mb-1">
+        Inicio: {formatDate(enc.fechaInicio)} — Fin: {formatDate(enc.fechaFin)}
+      </div>
+      <div className="text-sm">
+        <div>
+          <strong>Grupos:</strong>{' '}
+          {Array.isArray(enc.grupos)
+            ? enc.grupos.map(g => (typeof g === 'object' ? g.nombre || '' : g)).join(', ')
+            : enc.grupos || '-'}
+        </div>
+        <div>
+          <strong>Preguntas:</strong>{' '}
+          {Array.isArray(enc.preguntas)
+            ? enc.preguntas.map(p => (typeof p === 'object' ? p.texto || '' : p)).join(', ')
+            : enc.preguntas || '-'}
+        </div>
+      </div>
+    </div>
+    <div className="flex gap-3 items-center">
+      <button
+        onClick={() => selectEncuesta(enc)}
+        className="text-blue-600 hover:underline text-sm"
+      >
+        Editar
+      </button>
+      <button
+  onClick={() => relanzar(enc)}
+  className="text-green-600 hover:underline text-sm"
+>
+  Relanzar
+</button>
+
+{relanzarVisible && (
+  <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center">
+    <div className="bg-white p-6 rounded shadow-lg w-80">
+      <h3 className="text-lg font-semibold mb-4">Seleccioná nuevas fechas</h3>
+      <div className="grid grid-cols-1 gap-3">
+        <div>
+          <label className="block text-sm text-gray-700 mb-1">Fecha de inicio</label>
+          <input
+            type="date"
+            value={relanzarFechaInicio}
+            onChange={e => setRelanzarFechaInicio(e.target.value)}
+            className="w-full border rounded px-3 py-2"
+          />
+        </div>
+        <div>
+          <label className="block text-sm text-gray-700 mb-1">Fecha de fin</label>
+          <input
+            type="date"
+            value={relanzarFechaFin}
+            onChange={e => setRelanzarFechaFin(e.target.value)}
+            className="w-full border rounded px-3 py-2"
+          />
+        </div>
+      </div>
+      <div className="flex justify-end gap-2 mt-4">
+        <button
+          onClick={() => setRelanzarVisible(false)}
+          className="px-4 py-2 border rounded text-gray-700"
+        >
+          Cancelar
+        </button>
+        <button
+          onClick={handleRelanzarSubmit}
+          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+        >
+          Relanzar
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+    </div>
+  </li>
+))}
           </ul>
         ) : (
           <p className="text-sm text-gray-500">No hay encuestas creadas aún.</p>

@@ -113,6 +113,13 @@ export default function UserDashboard() {
     }));
   };
 
+  const parseFecha = (isoString) => {
+  if (!isoString) return '-';
+  const [year, month, day] = isoString.split('-');
+  return `${day}/${month}/${year}`; // dd/MM/yyyy
+};
+
+
   const handleJustificacionChange = (preguntaId, encuestaId, justificacion) => {
     const clave = `${encuestaId}_${preguntaId}`;
     setRespuestas(prev => ({
@@ -253,8 +260,7 @@ export default function UserDashboard() {
                       <h3 className="text-lg font-semibold">📝 Encuesta #{encuesta.id}</h3>
                       <p className="text-sm">
                         <span className="font-medium">Periodo:</span>{' '}
-                        {new Date(encuesta.fechaInicio).toLocaleDateString()} -{' '}
-                        {new Date(encuesta.fechaFin).toLocaleDateString()}
+                        {parseFecha(encuesta.fechaInicio)} - {parseFecha(encuesta.fechaFin)}
                       </p>
                       <p className="text-sm">
                         <span className="font-medium">Grupo:</span>{' '}

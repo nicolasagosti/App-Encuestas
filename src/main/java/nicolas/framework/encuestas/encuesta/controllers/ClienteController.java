@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import nicolas.framework.encuestas.encuesta.dtos.*;
 import nicolas.framework.encuestas.encuesta.services.IClienteService;
 import nicolas.framework.encuestas.encuesta.services.IEncuestaService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,14 +19,12 @@ import java.util.List;
 @RequestMapping("/clientes")
 public class ClienteController {
 
-    private final IClienteService clienteService;
-    private final IEncuestaService encuestaService;
+    @Autowired
+    private IClienteService clienteService;
+    @Autowired
+    private  IEncuestaService encuestaService;
 
-    public ClienteController(IClienteService clienteService,
-                             IEncuestaService encuestaService) {
-        this.clienteService = clienteService;
-        this.encuestaService = encuestaService;
-    }
+
 
     @PostMapping("/{grupoId}")
     public ResponseEntity<HttpStatus> asignarClientesAGrupo(@PathVariable Long grupoId,

@@ -52,6 +52,10 @@ export function eliminarPregunta(id) {
 export function crearEncuesta(data) {
   return api.post('/encuestas', data);
 }
+
+export const relanzarEncuesta = (id, data) =>
+  api.post(`/encuestas/${id}`, data);
+
 export function editarEncuesta(id, data) {
   return api.put(`/encuestas/${id}`, data);
 }

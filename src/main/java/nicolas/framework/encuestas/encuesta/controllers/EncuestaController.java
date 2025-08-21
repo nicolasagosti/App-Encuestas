@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import nicolas.framework.encuestas.encuesta.dtos.EncuestaInputDTO;
 import nicolas.framework.encuestas.encuesta.dtos.EncuestaOutputDTO;
 import nicolas.framework.encuestas.encuesta.dtos.PreguntaInputDTO;
+import nicolas.framework.encuestas.encuesta.dtos.RelanzarEncuestaDTO;
 import nicolas.framework.encuestas.encuesta.models.entities.Encuesta;
 import nicolas.framework.encuestas.encuesta.models.entities.Pregunta;
 import nicolas.framework.encuestas.encuesta.services.IEncuestaService;
@@ -16,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Tag(name = "Encuestas")
@@ -59,6 +61,12 @@ public class EncuestaController {
     @PostMapping
     public ResponseEntity<HttpStatus> agregarEncuesta(@RequestBody EncuestaInputDTO encuesta) {
         this.encuestaService.crearEncuesta(encuesta);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @PostMapping("/{id}")
+    public ResponseEntity<HttpStatus> relanzarEncuesta(@PathVariable Long id, @RequestBody RelanzarEncuestaDTO fechas) {
+        encuestaService.relanzarEncuesta(id, fechas);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 

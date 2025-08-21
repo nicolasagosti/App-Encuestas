@@ -8,6 +8,7 @@ import nicolas.framework.encuestas.encuesta.models.entities.Pregunta;
 import nicolas.framework.encuestas.encuesta.models.repositories.EncuestaRepository;
 import nicolas.framework.encuestas.encuesta.models.repositories.RespuestaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -40,49 +41,31 @@ public class EncuestaService implements IEncuestaService {
     }
 
     @Override
-    public Encuesta getEncuestaById(Long id) {
-        return encuestaRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Encuesta no encontrada con id " + id));
-    }
+    public void relanzarEncuesta(Long id, RelanzarEncuestaDTO fechas) {
+        Optional<Encuesta> encuestaOpt = encuestaRepository.findById(id);
+        if (encuestaOpt.isPresent()) {
+            Encuesta encuestaOriginal = encuestaOpt.get();
 
-    @Override
-    public List<EncuestaOutputDTO> getEncuestaOutputDTOS(List<Encuesta> encuestas) {
-        return encuestas.stream()
-                .map(encuesta -> {
-                    List<PreguntaOutputDTO> preguntas = encuesta.getPreguntas().stream()
-                            .map(p -> new PreguntaOutputDTO(p.getId(), p.getTexto()))
-                            .toList();
+            List<Grupo> grupos = new ArrayList<>(encuestaOriginal.getGrupos());
+            List<Pregunta> preguntas = new ArrayList<>();
 
-                    List<GrupoOutputDTO> grupos = encuesta.getGrupos().stream()
-                            .map(g -> {
-                                List<ReferenteDTO> referentes =
-                                        Optional.ofNullable(g.getClientes())
-                                                .orElseGet(java.util.Collections::emptyList)
-                                                .stream()
-                                                .map(c -> new ReferenteDTO(c.getId(), c.getNombre(), c.getApellido(), c.getUsername()))
-                                                .toList();
+            for (Pregunta preguntaOriginal : encuestaOriginal.getPreguntas()) {
+                Pregunta nuevaPregunta = new Pregunta();
+                nuevaPregunta.setTexto(preguntaOriginal.getTexto());
 
+                preguntas.add(nuevaPregunta);
+                preguntaService.guardarPregunta(nuevaPregunta);
+            }
 
+            Encuesta nuevaEncuesta = new Encuesta(
+                    fechas.getFechaInicio(),
+                    fechas.getFechaFin(),
+                    preguntas,
+                    grupos
+            );
 
-                                return new GrupoOutputDTO(
-                                        g.getId(),
-                                        g.getDescripcion(),
-                                        g.getCantidadDeColaboradores(),
-                                        g.getNombre(),
-                                        referentes
-                                );
-                            })
-                            .toList();
-
-                    return new EncuestaOutputDTO(
-                            encuesta.getFechaInicio(),
-                            encuesta.getFechaFin(),
-                            preguntas,
-                            encuesta.getId(),
-                            grupos
-                    );
-                })
-                .toList();
+            encuestaRepository.save(nuevaEncuesta);
+        }
     }
 
     @Override
@@ -103,8 +86,7 @@ public class EncuestaService implements IEncuestaService {
             for (Grupo grupo : gruposDelCliente) {
                 boolean respondioTodas = true;
                 for (Pregunta pregunta : encuesta.getPreguntas()) {
-                    if (!respuestaRepository.existsByCliente_IdAndGrupo_IdAndPregunta_Id(
-                            clienteId, grupo.getId(), pregunta.getId())) {
+                    if (!respuestaRepository.existsByCliente_IdAndGrupo_IdAndPregunta_Id(clienteId, grupo.getId(), pregunta.getId())) {
                         respondioTodas = false;
                         break;
                     }
@@ -146,8 +128,6 @@ public class EncuestaService implements IEncuestaService {
         return encuestasPendientes;
     }
 
-
-
     @Override
     public List<EncuestaOutputDTO> findAll() {
         List<Encuesta> encuestas = encuestaRepository.findAll();
@@ -181,6 +161,46 @@ public class EncuestaService implements IEncuestaService {
 
         Encuesta encuestaActualizada = encuestaRepository.save(encuesta);
         return getEncuestaOutputDTOS(List.of(encuestaActualizada)).get(0);
+    }
+
+    @Override
+    public List<EncuestaOutputDTO> getEncuestaOutputDTOS(List<Encuesta> encuestas) {
+        return encuestas.stream()
+                .map(encuesta -> {
+                    List<PreguntaOutputDTO> preguntas = encuesta.getPreguntas().stream()
+                            .map(p -> new PreguntaOutputDTO(p.getId(), p.getTexto()))
+                            .toList();
+
+                    List<GrupoOutputDTO> grupos = encuesta.getGrupos().stream()
+                            .map(g -> {
+                                List<ReferenteDTO> referentes =
+                                        Optional.ofNullable(g.getClientes())
+                                                .orElseGet(java.util.Collections::emptyList)
+                                                .stream()
+                                                .map(c -> new ReferenteDTO(c.getId(), c.getNombre(), c.getApellido(), c.getUsername()))
+                                                .toList();
+
+
+
+                                return new GrupoOutputDTO(
+                                        g.getId(),
+                                        g.getDescripcion(),
+                                        g.getCantidadDeColaboradores(),
+                                        g.getNombre(),
+                                        referentes
+                                );
+                            })
+                            .toList();
+
+                    return new EncuestaOutputDTO(
+                            encuesta.getFechaInicio(),
+                            encuesta.getFechaFin(),
+                            preguntas,
+                            encuesta.getId(),
+                            grupos
+                    );
+                })
+                .toList();
     }
 
 }

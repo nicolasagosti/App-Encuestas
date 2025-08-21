@@ -51,7 +51,6 @@ export default function CrearUsuarioForm() {
 
     try {
       if (editingCliente) {
-        // Edición: si password está vacío, no se envía para no modificar
         const payload = {
           username,
           ...(password ? { password } : {}),
@@ -62,7 +61,6 @@ export default function CrearUsuarioForm() {
         await editarClienteParcial(editingCliente.id, payload);
         setSuccess('Cliente actualizado con éxito');
       } else if (creando) {
-        // Creación: username y password son obligatorios
         if (!username || !password) {
           setError('Usuario (email) y contraseña son requeridos');
           setIsSubmitting(false);
@@ -75,9 +73,15 @@ export default function CrearUsuarioForm() {
       await fetchClientes();
     } catch (err) {
       if (err.response) {
+        const data = err.response.data;
+        const mensajeError =
+          typeof data === 'string'
+            ? data
+            : data.message || 'Error en los datos enviados';
+
         setError(
           err.response.status === 400
-            ? err.response.data || 'Error en los datos enviados'
+            ? mensajeError
             : `Error ${err.response.status}: ${err.response.statusText}`
         );
       } else {

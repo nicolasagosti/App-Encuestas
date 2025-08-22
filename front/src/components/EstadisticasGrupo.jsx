@@ -1,4 +1,4 @@
-//estadisticasGrupo.jsx
+// src/components/EstadisticasGrupo.jsx
 import { useState, useEffect } from 'react';
 import {
   obtenerEstadisticasGrupoPorPeriodo,
@@ -11,14 +11,13 @@ export default function EstadisticasGrupo() {
   const [estadisticasPeriodo, setEstadisticasPeriodo] = useState([]);
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
-  const [tipo, setTipo] = useState('todos');
   const [bancos, setBancos] = useState([]);
   const [bancoSeleccionado, setBancoSeleccionado] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {
     obtenerBancos()
-      .then(res => setBancos(res.data))
+      .then(res => setBancos(res.data || []))
       .catch(() => setError('❌ Error al cargar clientes'));
   }, []);
 
@@ -33,21 +32,21 @@ export default function EstadisticasGrupo() {
       setError('⚠️ Debe seleccionar ambas fechas');
       return;
     }
-    if (tipo === 'cliente' && !bancoSeleccionado) {
+    if (!bancoSeleccionado) {
       setError('⚠️ Debe seleccionar un cliente');
       return;
     }
 
     setError('');
     try {
-      const valorSeleccionado =
-        tipo === 'cliente' ? bancoSeleccionado : null;
-
       const res = await obtenerEstadisticasGrupoPorPeriodo(
-        fechaInicio, fechaFin, tipo, valorSeleccionado
+        fechaInicio,
+        fechaFin,
+        'cliente',
+        bancoSeleccionado
       );
-      setEstadisticasPeriodo(res.data);
-    } catch (err) {
+      setEstadisticasPeriodo(res.data || []);
+    } catch {
       setError('❌ Error al cargar estadísticas por período');
     }
   };
@@ -85,11 +84,9 @@ export default function EstadisticasGrupo() {
     </div>
   );
 
-  const tituloExportacion = () => {
-    const base = 'Estadísticas';
-    if (tipo === 'cliente') return `${base} por cliente`;
-    return `${base} por período`;
-  };
+  // IMPORTANTE: dejamos el título simple para que las utils agreguen banco y periodo,
+  // evitando duplicaciones en el header y en el nombre del archivo.
+  const tituloExportacion = 'Estadísticas por cliente';
 
   return (
     <div className="p-6 max-w-6xl mx-auto mt-10 bg-white shadow rounded space-y-10">
@@ -101,10 +98,10 @@ export default function EstadisticasGrupo() {
             onClick={() =>
               exportarEstadisticasAGrupo(
                 estadisticasPeriodo,
-                tituloExportacion(),
+                tituloExportacion,        // <- título simple
                 fechaInicio,
                 fechaFin,
-                tipo,
+                'cliente',
                 bancoSeleccionado,
                 bancos
               )
@@ -118,10 +115,10 @@ export default function EstadisticasGrupo() {
             onClick={() =>
               exportarEstadisticasAGrupoCSV(
                 estadisticasPeriodo,
-                tituloExportacion(),
+                tituloExportacion,        // <- título simple
                 fechaInicio,
                 fechaFin,
-                tipo,
+                'cliente',
                 bancoSeleccionado,
                 bancos
               )
@@ -138,30 +135,36 @@ export default function EstadisticasGrupo() {
       <section className="space-y-4">
         <h3 className="text-xl font-semibold text-center">🔎 Filtrar por período</h3>
         <div className="flex flex-wrap gap-4 justify-center items-center">
-          <input type="date" value={fechaInicio} onChange={e => setFechaInicio(e.target.value)} className="border px-2 py-1 rounded" />
-          <input type="date" value={fechaFin} onChange={e => setFechaFin(e.target.value)} className="border px-2 py-1 rounded" />
+          <input
+            type="date"
+            value={fechaInicio}
+            onChange={e => setFechaInicio(e.target.value)}
+            className="border px-2 py-1 rounded"
+          />
+          <input
+            type="date"
+            value={fechaFin}
+            onChange={e => setFechaFin(e.target.value)}
+            className="border px-2 py-1 rounded"
+          />
 
-          <select value={tipo} onChange={e => setTipo(e.target.value)} className="border px-2 py-1 rounded">
-            <option value="todos">Todos</option>
-            <option value="cliente">Por Cliente</option>
+          <select
+            value={bancoSeleccionado}
+            onChange={e => setBancoSeleccionado(e.target.value)}
+            className="border px-2 py-1 rounded"
+          >
+            <option value="">Seleccionar cliente</option>
+            {bancos.map((b, idx) => (
+              <option key={idx} value={b.nombre}>
+                {b.nombre}
+              </option>
+            ))}
           </select>
 
-          {tipo === 'cliente' && (
-            <select
-              value={bancoSeleccionado}
-              onChange={e => setBancoSeleccionado(e.target.value)}
-              className="border px-2 py-1 rounded"
-            >
-              <option value="">Seleccionar cliente</option>
-              {bancos.map((b, idx) => (
-                <option key={idx} value={b.nombre}>
-                  {b.nombre}
-                </option>
-              ))}
-            </select>
-          )}
-
-          <button onClick={handleBuscar} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+          <button
+            onClick={handleBuscar}
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+          >
             Buscar
           </button>
         </div>

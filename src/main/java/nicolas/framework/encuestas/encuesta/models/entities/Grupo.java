@@ -21,13 +21,13 @@ public class Grupo {
     private String descripcion;
 
     @Column(nullable = false)
-    private String nombre; // agregado
+    private String nombre;
 
     @Column
     private int cantidadDeColaboradores;
 
     @Column(nullable = false)
-    private boolean visible = true; // 👈 borrado lógico (true = se muestra)
+    private boolean visible = true;
 
     @ManyToMany(mappedBy = "grupos")
     @JsonIgnore
@@ -38,6 +38,10 @@ public class Grupo {
 
     @OneToMany(mappedBy = "grupo")
     private List<Respuesta> respuestas;
+
+    @ManyToOne
+    @JoinColumn(name = "cliente_extension", referencedColumnName = "extension")
+    private Bank cliente;
 
     public Grupo(String descripcion, int cantidadDeColaboradores) {
         this.descripcion = descripcion;

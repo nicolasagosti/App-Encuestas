@@ -11,4 +11,6 @@ public class GrupoInputDTO {
     private String descripcion;
     private int cantidadDeColaboradores;
     private String nombre;
+
+    private String clienteExtension;
 }

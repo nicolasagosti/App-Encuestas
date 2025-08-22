@@ -1,7 +1,7 @@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@radix-ui/react-tabs";
 import PreguntaForm from "../components/PreguntaForm";
-import EncuestaForm from "../components/EncuestaForm";
-import CrearGrupoYAsignar from "../components/CrearGrupoYAsignar";
+import EncuestaForm from "../components/EncuestaForm/EncuestaForm";
+import CrearGrupoYAsignar from "../components/GrupoForm/crearEditarGrupo";
 import CargarClienteForm from "../components/CargarClienteForm";
 import CrearUsuarioForm from "../components/CrearUsuarioForm";
 import { useAuth } from "../AuthContext";

@@ -4,8 +4,10 @@ import nicolas.framework.encuestas.Exception.ResourceNotFoundException;
 import nicolas.framework.encuestas.encuesta.dtos.GrupoInputDTO;
 import nicolas.framework.encuestas.encuesta.dtos.GrupoOutputDTO;
 import nicolas.framework.encuestas.encuesta.dtos.ReferenteDTO;
+import nicolas.framework.encuestas.encuesta.models.entities.Bank;
 import nicolas.framework.encuestas.encuesta.models.entities.Grupo;
 import nicolas.framework.encuestas.encuesta.models.entities.User;
+import nicolas.framework.encuestas.encuesta.models.repositories.BankRepository;
 import nicolas.framework.encuestas.encuesta.models.repositories.GrupoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class GrupoService implements IGrupoService {
+    @Autowired
+    private BankRepository bankRepository;
+
 
     @Autowired
     private GrupoRepository grupoRepository;
@@ -30,12 +35,22 @@ public class GrupoService implements IGrupoService {
                 .map(c -> new ReferenteDTO(c.getId(), c.getNombre(), c.getApellido(), c.getUsername()))
                 .toList();
 
+        String ext = null, nom = null, logo = null;
+        if (grupo.getCliente() != null) {
+            ext  = grupo.getCliente().getExtension();
+            nom  = grupo.getCliente().getNombre();
+            logo = grupo.getCliente().getLogoBase64();
+        }
+
         return new GrupoOutputDTO(
                 grupo.getId(),
                 grupo.getDescripcion(),
                 grupo.getCantidadDeColaboradores(),
                 grupo.getNombre(),
-                refs
+                refs,
+                ext,
+                nom,
+                logo
         );
     }
 
@@ -77,8 +92,16 @@ public class GrupoService implements IGrupoService {
         Grupo grupo = new Grupo(desc, dto.getCantidadDeColaboradores());
         grupo.setNombre(Optional.ofNullable(dto.getNombre()).filter(n -> !n.isBlank()).orElse(desc));
 
+        if (dto.getClienteExtension() != null && !dto.getClienteExtension().isBlank()) {
+            String ext = dto.getClienteExtension().trim().toLowerCase();
+            Bank bank = bankRepository.findById(ext)
+                    .orElseThrow(() -> new IllegalArgumentException("Banco no encontrado para extension: " + ext));
+            grupo.setCliente(bank);
+        }
+
         return mapGrupoConReferentes(grupoRepository.save(grupo));
     }
+
 
     @Override
     @Transactional
@@ -88,17 +111,28 @@ public class GrupoService implements IGrupoService {
         if (dto.getDescripcion() != null && !dto.getDescripcion().isBlank()) {
             grupo.setDescripcion(dto.getDescripcion().trim());
         }
-
         if (dto.getNombre() != null && !dto.getNombre().isBlank()) {
             grupo.setNombre(dto.getNombre().trim());
         }
-
         if (dto.getCantidadDeColaboradores() > 0) {
             grupo.setCantidadDeColaboradores(dto.getCantidadDeColaboradores());
         }
 
+        // actualizar/quitar banco
+        if (dto.getClienteExtension() != null) {
+            String ext = dto.getClienteExtension().trim().toLowerCase();
+            if (ext.isBlank()) {
+                grupo.setCliente(null); // quitar relación
+            } else {
+                Bank bank = bankRepository.findById(ext)
+                        .orElseThrow(() -> new IllegalArgumentException("Banco no encontrado para extension: " + ext));
+                grupo.setCliente(bank);
+            }
+        }
+
         return mapGrupoConReferentes(grupoRepository.save(grupo));
     }
+
 
     public List<GrupoOutputDTO> gruposDeUnBanco(String banco) {
         List<Long> referentesIds = referenteService.obtenerReferentesDeUnBanco(banco);
@@ -110,6 +144,11 @@ public class GrupoService implements IGrupoService {
         }
 
         return convertirADTOs(new ArrayList<>(grupos));
+    }
+
+    public List<GrupoOutputDTO> gruposDeUnReferente(String mail) {
+        Long clienteId = referenteService.obtenerIdDeCLiente(mail);
+        return convertirADTOs(grupoRepository.findGruposByCliente(clienteId));
     }
 
     @Override

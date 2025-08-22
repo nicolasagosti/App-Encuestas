@@ -13,10 +13,22 @@ import java.util.Optional;
 @AllArgsConstructor
 public class GrupoOutputDTO {
 
+    public GrupoOutputDTO(Long id, String descripcion, int cantidadDeColaboradores,
+                          String nombre, List<ReferenteDTO> referentes) {
+        this.id = id;
+        this.descripcion = descripcion;
+        this.cantidadDeColaboradores = cantidadDeColaboradores;
+        this.nombre = nombre;
+        this.referentes = referentes;
+    }
+
     private Long id;
     private String descripcion;
     private int cantidadDeColaboradores;
     private String nombre;
     private List<ReferenteDTO> referentes;
 
+    private String clienteExtension;
+    private String clienteNombre;
+    private String clienteLogoBase64;
 }

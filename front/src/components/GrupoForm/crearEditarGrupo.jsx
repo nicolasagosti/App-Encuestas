@@ -9,7 +9,7 @@ import {
   obtenerBancos,
 } from '../../services/api';
 
-import BancoSelector from './BancoSelector';
+import ClienteSelector from './ClienteSelector';
 import ReferentesSelector from './ReferentesSelector';
 import GruposLista from './GruposLista';
 
@@ -165,7 +165,7 @@ export default function CrearEditarGrupos({ onSave = async () => {} }) {
       <div className="space-y-6">
         <form onSubmit={handleSubmit} className="space-y-4 relative border rounded-lg p-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-semibold">{editId ? 'Editar grupo' : 'Crear grupo'}</h3>
+            <h3 className="text-base font-semibold">{editId ? 'Editar grupo' : ''}</h3>
             {editId && (
                 <button
                     type="button"
@@ -178,6 +178,12 @@ export default function CrearEditarGrupos({ onSave = async () => {} }) {
             )}
           </div>
 
+          <ClienteSelector
+              bancos={bancos}
+              clienteExtension={clienteExtension}
+              clienteNombre={clienteNombre}
+              onSelect={(ext, nom) => { setClienteExtension(ext); setClienteNombre(nom); }}
+          />
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del grupo</label>
             <input
@@ -212,12 +218,7 @@ export default function CrearEditarGrupos({ onSave = async () => {} }) {
             />
           </div>
 
-          <BancoSelector
-              bancos={bancos}
-              clienteExtension={clienteExtension}
-              clienteNombre={clienteNombre}
-              onSelect={(ext, nom) => { setClienteExtension(ext); setClienteNombre(nom); }}
-          />
+
 
           <ReferentesSelector
               clientes={clientes}

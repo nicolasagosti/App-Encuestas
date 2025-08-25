@@ -67,7 +67,7 @@ export default function CrearUsuarioForm() {
           return;
         }
         await register({ username, password, nombre, apellido, telefono });
-        setSuccess('Usuario creado con éxito');
+        setSuccess('Referente creado con éxito');
       }
       clearForm();
       await fetchClientes();
@@ -137,7 +137,7 @@ export default function CrearUsuarioForm() {
             onClick={iniciarCreacion}
             className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
           >
-            Crear usuario
+            Crear Referente
           </button>
         )}
       </div>
@@ -148,7 +148,7 @@ export default function CrearUsuarioForm() {
           <form onSubmit={handleSubmit} className="space-y-5 w-full mt-4 max-w-xl">
             <div className="flex justify-between items-center">
               <h3 className="text-xl font-semibold">
-                {editingCliente ? 'Editar usuario' : 'Crear usuario'}
+                {editingCliente ? 'Editar referente' : 'Crear referente'}
               </h3>
               <button
                 type="button"
@@ -278,7 +278,6 @@ export default function CrearUsuarioForm() {
       </div>
 
       <div className="w-full">
-        <h2 className="text-lg font-semibold mb-4">Lista de Referentes</h2>
         {clientesFiltrados.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full table-auto border-collapse">
@@ -306,7 +305,7 @@ export default function CrearUsuarioForm() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (window.confirm(`¿Eliminar usuario ${cliente.mail}?`)) {
+                          if (window.confirm(`¿Eliminar referente ${cliente.mail}?`)) {
                             eliminarUsuario(cliente.id);
                           }
                         }}
@@ -330,10 +329,10 @@ export default function CrearUsuarioForm() {
   async function eliminarUsuario(id) {
     try {
       await api.delete('/clientes', { data: [id] });
-      setSuccess('Usuario eliminado con éxito');
+      setSuccess('referente eliminado con éxito');
       await fetchClientes();
     } catch (error) {
-      setError('Error al eliminar usuario');
+      setError('Error al eliminar referente');
       console.error(error);
     }
   }

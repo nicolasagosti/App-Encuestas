@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState } from 'react';
 
-export default function BancoSelector({ bancos = [], clienteExtension, clienteNombre, onSelect }) {
+export default function ClienteSelector({ bancos = [], clienteExtension, clienteNombre, onSelect }) {
     const [bankSearch, setBankSearch] = useState('');
     const listRef = useRef(null);
 
@@ -12,13 +12,8 @@ export default function BancoSelector({ bancos = [], clienteExtension, clienteNo
         );
     }, [bancos, bankSearch]);
 
-    const handleToggle = (b) => {
-        const selected = clienteExtension === b.extension;
-        if (selected) {
-            onSelect('', '');
-        } else {
-            onSelect(b.extension, b.nombre || '');
-        }
+    const handleSelect = (b) => {
+        onSelect(b.extension, b.nombre || '');
         setBankSearch('');
         if (listRef.current) listRef.current.scrollTop = 0;
     };
@@ -42,10 +37,12 @@ export default function BancoSelector({ bancos = [], clienteExtension, clienteNo
                     return (
                         <label key={b.extension} className="flex items-center gap-2 text-sm cursor-pointer">
                             <input
-                                type="checkbox"
+                                type="radio"
+                                name="banco" // mismo name => sólo uno puede estar activo
                                 checked={selected}
-                                onChange={() => handleToggle(b)}
-                                className="h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                                onChange={() => handleSelect(b)}
+                                required // ⚡ lo vuelve obligatorio
+                                className="h-4 w-4 text-indigo-600 border-gray-300"
                             />
                             <span>{b.nombre ? `${b.nombre} (${b.extension})` : b.extension}</span>
                         </label>

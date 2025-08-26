@@ -27,6 +27,12 @@ public class Encuesta {
     @Column
     private LocalDate fechaFin;
 
+    @Column
+    private LocalDate fechaPCompletarInicio;
+
+    @Column
+    private LocalDate fechaPCompletarFin;
+
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(
             name = "encuesta_x_pregunta",
@@ -43,9 +49,11 @@ public class Encuesta {
     )
     private List<Grupo> grupos = new ArrayList<>();
 
-    public Encuesta(LocalDate fechaInicio, LocalDate fechaFin, List<Pregunta> preguntas, List<Grupo> grupos) {
+    public Encuesta(LocalDate fechaInicio, LocalDate fechaFin, LocalDate fechaPCompletarInicio, LocalDate fechaPCompletarFin, List<Pregunta> preguntas, List<Grupo> grupos) {
         this.fechaInicio = fechaInicio;
         this.fechaFin = fechaFin;
+        this.fechaPCompletarInicio = fechaPCompletarInicio;
+        this.fechaPCompletarFin = fechaPCompletarFin;
         this.preguntas = preguntas;
         this.grupos = grupos;
     }

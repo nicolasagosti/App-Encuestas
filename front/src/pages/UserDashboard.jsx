@@ -11,6 +11,7 @@ import { CheckCircle, AlertCircle, Loader2, CopyIcon } from 'lucide-react';
 import RatingStars from '../components/RatingStars';
 import logo from './logoaccenture.png';
 
+
 const COLORES_GRUPO = [
   'bg-blue-100 border-blue-300 text-blue-800',
   'bg-green-100 border-green-300 text-green-800',
@@ -21,6 +22,24 @@ const COLORES_GRUPO = [
   'bg-orange-100 border-orange-300 text-orange-800',
   'bg-rose-100 border-rose-300 text-rose-800',
 ];
+
+const formatPeriodoMeses = (inicio, fin) => {
+  if (!inicio || !fin) return '-';
+
+  // separa año-mes-día
+  const [añoIni, mesIni] = inicio.split('-').map(Number);
+  const [añoFin, mesFin] = fin.split('-').map(Number);
+
+  // opciones para mostrar solo mes y año
+  const opts = { year: 'numeric', month: 'long' };
+
+  // crea fechas "locales" respetando solo año y mes
+  const fechaIni = new Date(añoIni, mesIni - 1);
+  const fechaFin = new Date(añoFin, mesFin - 1);
+
+  return `${fechaIni.toLocaleDateString('es-AR', opts)} — ${fechaFin.toLocaleDateString('es-AR', opts)}`;
+};
+
 
 const grupoColorMap = new Map();
 let coloresUsados = new Set();
@@ -113,11 +132,7 @@ export default function UserDashboard() {
     }));
   };
 
-  const parseFecha = (isoString) => {
-  if (!isoString) return '-';
-  const [year, month, day] = isoString.split('-');
-  return `${day}/${month}/${year}`; // dd/MM/yyyy
-};
+ 
 
 
   const handleJustificacionChange = (preguntaId, encuestaId, justificacion) => {
@@ -252,21 +267,19 @@ export default function UserDashboard() {
               .map(encuesta => (
                 <div key={encuesta.id} className="bg-gray-50 border border-gray-200 rounded-xl p-6 transition-all duration-500 ease-in-out">
                   <div className="mb-4">
-                    <div
-                      className={`rounded-lg px-6 py-4 shadow-sm text-center border ${colorDeFondoPorGrupo(
-                        encuesta.grupos?.[0]?.descripcion
-                      )}`}
-                    >
-                      <h3 className="text-lg font-semibold">📝 Encuesta #{encuesta.id}</h3>
-                      <p className="text-sm">
-                        <span className="font-medium">Periodo:</span>{' '}
-                        {parseFecha(encuesta.fechaInicio)} - {parseFecha(encuesta.fechaFin)}
-                      </p>
-                      <p className="text-sm">
-                        <span className="font-medium">Grupo:</span>{' '}
-                        {encuesta.grupoDelCliente?.descripcion || `Grupo ${encuesta.grupoDelCliente?.id}`}
-                      </p>
-                    </div>
+                    <div className={`rounded-lg px-6 py-4 shadow-sm text-center border ${colorDeFondoPorGrupo(
+  encuesta.grupos?.[0]?.descripcion
+)}`}>
+  <h3 className="text-lg font-semibold">📝 Encuesta</h3>
+  <p className="text-sm">
+    <span className="font-medium">Período evaluado:</span>{' '}
+    {formatPeriodoMeses(encuesta.fechaInicio, encuesta.fechaFin)}
+  </p>
+  <p className="text-sm">
+    <span className="font-medium">Grupo:</span>{' '}
+    {encuesta.grupoDelCliente?.descripcion || `Grupo ${encuesta.grupoDelCliente?.id}`}
+  </p>
+</div>
                   </div>
 
                   <div className="space-y-6">

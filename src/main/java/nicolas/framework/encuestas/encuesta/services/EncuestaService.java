@@ -36,7 +36,7 @@ public class EncuestaService implements IEncuestaService {
     public void crearEncuesta(EncuestaInputDTO encuestaDTO) {
         List<Pregunta> preguntas = preguntaService.buscarPreguntasPorId(encuestaDTO.getPreguntas());
         List<Grupo> grupos = grupoService.buscarGrupos(encuestaDTO.getGrupos());
-        Encuesta encuesta = new Encuesta(encuestaDTO.getFechaInicio(), encuestaDTO.getFechaFin(), preguntas, grupos);
+        Encuesta encuesta = new Encuesta(encuestaDTO.getFechaInicio(), encuestaDTO.getFechaFin(), encuestaDTO.getFechaPCompletarInicio(), encuestaDTO.getFechaPCompletarFin(), preguntas, grupos);
         encuestaRepository.save(encuesta);
     }
 
@@ -60,6 +60,8 @@ public class EncuestaService implements IEncuestaService {
             Encuesta nuevaEncuesta = new Encuesta(
                     fechas.getFechaInicio(),
                     fechas.getFechaFin(),
+                    fechas.getFechaPCompletarInicio(),
+                    fechas.getFechaPCompletarFin(),
                     preguntas,
                     grupos
             );
@@ -75,7 +77,7 @@ public class EncuestaService implements IEncuestaService {
         LocalDate hoy = LocalDate.now();
 
         for (Encuesta encuesta : todasLasEncuestas) {
-            if (encuesta.getFechaInicio().isAfter(hoy) || encuesta.getFechaFin().isBefore(hoy)) {
+            if (encuesta.getFechaPCompletarInicio().isAfter(hoy) || encuesta.getFechaPCompletarFin().isBefore(hoy)) {
                 continue;
             }
 
@@ -107,8 +109,9 @@ public class EncuestaService implements IEncuestaService {
                     EncuestaOutputDTO dto = new EncuestaOutputDTO(
                             encuesta.getFechaInicio(),
                             encuesta.getFechaFin(),
+                            encuesta.getFechaPCompletarInicio(),
+                            encuesta.getFechaPCompletarFin(),
                             preguntasDTO,
-                            encuesta.getId(),
                             null
                     );
 
@@ -195,8 +198,9 @@ public class EncuestaService implements IEncuestaService {
                     return new EncuestaOutputDTO(
                             encuesta.getFechaInicio(),
                             encuesta.getFechaFin(),
+                            encuesta.getFechaPCompletarInicio(),
+                            encuesta.getFechaPCompletarFin(),
                             preguntas,
-                            encuesta.getId(),
                             grupos
                     );
                 })

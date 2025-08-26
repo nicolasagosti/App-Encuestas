@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function EncuestasLista({ encuestasExistentes, onSelectEncuesta, onRelanzar, formatDate }) {
   return (
     <div className="mt-6">
@@ -12,7 +10,8 @@ export default function EncuestasLista({ encuestasExistentes, onSelectEncuesta, 
             >
               <div>
                 <div className="text-sm text-gray-600 mb-1">
-                  Inicio: {formatDate(enc.fechaInicio)} — Fin: {formatDate(enc.fechaFin)}
+                  <div><strong>Período evaluado:</strong> {formatDate(enc.fechaInicio)} — {formatDate(enc.fechaFin)}</div>
+                  <div><strong>Plazo para responder:</strong> {formatDate(enc.fechaPCompletarInicio)} — {formatDate(enc.fechaPCompletarFin)}</div>
                 </div>
                 <div className="text-sm">
                   <div>

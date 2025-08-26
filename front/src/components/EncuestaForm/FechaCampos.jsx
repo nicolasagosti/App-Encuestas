@@ -1,4 +1,4 @@
-import React from 'react';
+//fechaCampos.jsx
 
 export default function FechaCampos({ fechaInicio, setFechaInicio, fechaFin, setFechaFin }) {
     return (

@@ -15,4 +15,6 @@ public class EncuestaInputDTO {
     private List<Long> preguntas;
     private LocalDate fechaInicio;
     private LocalDate fechaFin;
+    private LocalDate fechaPCompletarInicio;
+    private LocalDate fechaPCompletarFin;
 }

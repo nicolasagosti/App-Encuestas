@@ -4,11 +4,9 @@ import EncuestaForm from "../components/EncuestaForm/EncuestaForm";
 import CrearGrupoYAsignar from "../components/GrupoForm/crearEditarGrupo";
 import CargarClienteForm from "../components/CargarClienteForm";
 import CrearUsuarioForm from "../components/CrearUsuarioForm";
-import { useAuth } from "../AuthContext";
 import { useNavigate } from "react-router-dom";
 
 export default function AdminDashboard() {
-  const { userEmail } = useAuth();
   const navigate = useNavigate();
 
   const handleTabChange = (tabValue) => {

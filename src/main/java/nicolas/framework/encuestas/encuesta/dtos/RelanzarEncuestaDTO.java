@@ -9,4 +9,6 @@ public class RelanzarEncuestaDTO {
 
     LocalDate fechaInicio;
     LocalDate fechaFin;
+    LocalDate fechaPCompletarInicio;
+    LocalDate fechaPCompletarFin;
 }

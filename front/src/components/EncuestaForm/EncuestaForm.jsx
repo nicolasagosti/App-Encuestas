@@ -13,7 +13,26 @@ import FechaCampos from './FechaCampos';
 import GruposSelector from './GruposSelector';
 import PreguntasSelector from './PreguntasSelector';
 import EncuestasLista from './EncuestasLista';
-import { formatDate } from './utils'; // 👈 usamos este, no lo redefinimos
+
+// --- helper para formatear fechas para inputs (YYYY-MM-DD) ---
+const toInputDate = (dateStr) => {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (isNaN(d)) return '';
+  return d.toISOString().split('T')[0];
+};
+
+// --- helper para mostrar fechas legibles ---
+const formatDate = (dateStr) => {
+  if (!dateStr) return '-';
+  try {
+    const [year, month, day] = dateStr.split('-');
+    if (!year || !month || !day) return dateStr;
+    return `${day}/${month}/${year}`;
+  } catch {
+    return dateStr;
+  }
+};
 
 export default function EncuestaForm() {
   // datos base
@@ -25,6 +44,8 @@ export default function EncuestaForm() {
   const [grupoIdsSeleccionados, setGrupoIdsSeleccionados] = useState([]);
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
+  const [fechaPCompletarInicio, setFechaPCompletarInicio] = useState('');
+  const [fechaPCompletarFin, setFechaPCompletarFin] = useState('');
   const [mensaje, setMensaje] = useState('');
 
   // buscadores
@@ -166,6 +187,8 @@ export default function EncuestaForm() {
     setGrupoIdsSeleccionados([]);
     setFechaInicio('');
     setFechaFin('');
+    setFechaPCompletarInicio('');
+    setFechaPCompletarFin('');
     setEditingEncuestaId(null);
     setBusqueda('');
     setBusquedaGrupo('');
@@ -182,7 +205,9 @@ export default function EncuestaForm() {
         grupos: grupoIdsSeleccionados,
         preguntas: preguntaIdsSeleccionadas,
         fechaInicio: fechaInicio || null,
-        fechaFin: fechaFin || null
+        fechaFin: fechaFin || null,
+        fechaPCompletarInicio: fechaPCompletarInicio || null,
+        fechaPCompletarFin: fechaPCompletarFin || null,
       };
       if (editingEncuestaId) {
         await editarEncuesta(editingEncuestaId, payload);
@@ -202,8 +227,11 @@ export default function EncuestaForm() {
   const selectEncuesta = (enc) => {
     setFormVisible(true);
     setEditingEncuestaId(enc.id);
-    setFechaInicio(enc.fechaInicio || '');
-    setFechaFin(enc.fechaFin || '');
+    setFechaInicio(toInputDate(enc.fechaInicio));
+    setFechaFin(toInputDate(enc.fechaFin));
+    setFechaPCompletarInicio(toInputDate(enc.fechaPCompletarInicio));
+    setFechaPCompletarFin(toInputDate(enc.fechaPCompletarFin));
+
     const grupos = Array.isArray(enc.grupos)
       ? enc.grupos.map(g => (typeof g === 'object' ? g.id : g))
       : [];
@@ -220,6 +248,8 @@ export default function EncuestaForm() {
     setEditingEncuestaId(null);
     setFechaInicio('');
     setFechaFin('');
+    setFechaPCompletarInicio('');
+    setFechaPCompletarFin('');
     setPreguntaIdsSeleccionadas([]);
     setGrupoIdsSeleccionados([]);
     setBusqueda('');
@@ -252,6 +282,27 @@ export default function EncuestaForm() {
               fechaFin={fechaFin}
               setFechaFin={setFechaFin}
             />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Plazo de respuesta (inicio)</label>
+                <input
+                  type="date"
+                  value={fechaPCompletarInicio}
+                  onChange={e => setFechaPCompletarInicio(e.target.value)}
+                  className="mt-1 w-full border rounded p-2"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Plazo de respuesta (fin)</label>
+                <input
+                  type="date"
+                  value={fechaPCompletarFin}
+                  onChange={e => setFechaPCompletarFin(e.target.value)}
+                  className="mt-1 w-full border rounded p-2"
+                />
+              </div>
+            </div>
 
             <GruposSelector
               gruposDisponibles={gruposDisponibles}
@@ -341,7 +392,7 @@ export default function EncuestaForm() {
         encuestasExistentes={encuestasExistentes}
         onSelectEncuesta={selectEncuesta}
         onRelanzar={relanzar}
-        formatDate={formatDate} 
+        formatDate={formatDate}
       />
     </div>
   );

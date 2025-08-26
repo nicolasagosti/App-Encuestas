@@ -5,14 +5,15 @@ import {
   editarEncuesta,
   obtenerGrupos,
   crearPregunta,
-  obtenerEncuestas
+  obtenerEncuestas,
+  relanzarEncuesta
 } from '../../services/api';
 
 import FechaCampos from './FechaCampos';
 import GruposSelector from './GruposSelector';
 import PreguntasSelector from './PreguntasSelector';
 import EncuestasLista from './EncuestasLista';
-import { formatDate } from './utils';
+import { formatDate } from './utils'; // 👈 usamos este, no lo redefinimos
 
 export default function EncuestaForm() {
   // datos base
@@ -37,7 +38,13 @@ export default function EncuestaForm() {
   const [editingEncuestaId, setEditingEncuestaId] = useState(null);
   const [formVisible, setFormVisible] = useState(false);
 
-  // refs (scroll opcional en listados de coincidencias)
+  // relanzar
+  const [relanzarVisible, setRelanzarVisible] = useState(false);
+  const [relanzarFechaInicio, setRelanzarFechaInicio] = useState('');
+  const [relanzarFechaFin, setRelanzarFechaFin] = useState('');
+  const [encuestaARelanzar, setEncuestaARelanzar] = useState(null);
+
+  // refs
   const preguntasListRef = useRef(null);
   const gruposListRef = useRef(null);
 
@@ -57,12 +64,40 @@ export default function EncuestaForm() {
     }
   };
 
-  // filtros dinámicos (misma lógica que tenías)
+  // ==== RELANZAR ENCUESTA ====
+  const relanzar = (enc) => {
+    setEncuestaARelanzar(enc);
+    setRelanzarFechaInicio('');
+    setRelanzarFechaFin('');
+    setRelanzarVisible(true);
+  };
+
+  const handleRelanzarSubmit = async () => {
+    if (!relanzarFechaInicio || !relanzarFechaFin) {
+      setMensaje("⚠️ Debe seleccionar ambas fechas para relanzar");
+      return;
+    }
+    try {
+      await relanzarEncuesta(encuestaARelanzar.id, {
+        fechaInicio: relanzarFechaInicio,
+        fechaFin: relanzarFechaFin
+      });
+      setMensaje("✅ Encuesta relanzada correctamente");
+      setRelanzarVisible(false);
+      setEncuestaARelanzar(null);
+      fetchEncuestas();
+    } catch (err) {
+      console.error(err);
+      setMensaje("❌ Error al relanzar encuesta");
+    }
+  };
+
+  // filtros dinámicos
   useEffect(() => {
     const lower = busqueda.trim().toLowerCase();
     if (!lower) return setCoincidencias([]);
     setCoincidencias(
-        preguntasDisponibles.filter(p => (p.texto || '').toLowerCase().includes(lower))
+      preguntasDisponibles.filter(p => (p.texto || '').toLowerCase().includes(lower))
     );
   }, [busqueda, preguntasDisponibles]);
 
@@ -70,43 +105,33 @@ export default function EncuestaForm() {
     const lower = busquedaGrupo.trim().toLowerCase();
     if (!lower) return setCoincidenciasGrupos([]);
     setCoincidenciasGrupos(
-        gruposDisponibles.filter(g => (g.nombre || '').toLowerCase().includes(lower))
+      gruposDisponibles.filter(g => (g.nombre || '').toLowerCase().includes(lower))
     );
   }, [busquedaGrupo, gruposDisponibles]);
 
-  // util
-  const handleCheckbox = (id, list, setter) => {
-    setter(prev => (prev.includes(id) ? prev.filter(v => v !== id) : [...prev, id]));
-  };
-
-  // toggles que además limpian buscadores (como en usuarios)
+  // utils
   const handleTogglePregunta = (id) => {
     setPreguntaIdsSeleccionadas(prev =>
-        prev.includes(id) ? prev.filter(v => v !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter(v => v !== id) : [...prev, id]
     );
     setBusqueda('');
     setCoincidencias([]);
-    if (preguntasListRef.current) preguntasListRef.current.scrollTop = 0;
   };
 
   const handleToggleGrupo = (id) => {
     setGrupoIdsSeleccionados(prev =>
-        prev.includes(id) ? prev.filter(v => v !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter(v => v !== id) : [...prev, id]
     );
     setBusquedaGrupo('');
     setCoincidenciasGrupos([]);
-    if (gruposListRef.current) gruposListRef.current.scrollTop = 0;
   };
 
-  // agregar desde input
   const agregarDesdeInput = async () => {
     const texto = busqueda.trim();
     if (!texto) return;
-
     const existente = preguntasDisponibles.find(
-        p => (p.texto || '').toLowerCase() === texto.toLowerCase()
+      p => (p.texto || '').toLowerCase() === texto.toLowerCase()
     );
-
     if (existente) {
       if (!preguntaIdsSeleccionadas.includes(existente.id)) {
         setPreguntaIdsSeleccionadas(prev => [...prev, existente.id]);
@@ -122,23 +147,20 @@ export default function EncuestaForm() {
     }
     setBusqueda('');
     setCoincidencias([]);
-    if (preguntasListRef.current) preguntasListRef.current.scrollTop = 0;
   };
 
   const agregarGrupoDesdeInput = () => {
     if (!busquedaGrupo.trim()) return;
     const encontrado = gruposDisponibles.find(
-        g => (g.nombre || '').toLowerCase() === busquedaGrupo.trim().toLowerCase()
+      g => (g.nombre || '').toLowerCase() === busquedaGrupo.trim().toLowerCase()
     );
     if (encontrado && !grupoIdsSeleccionados.includes(encontrado.id)) {
       setGrupoIdsSeleccionados(prev => [...prev, encontrado.id]);
     }
     setBusquedaGrupo('');
     setCoincidenciasGrupos([]);
-    if (gruposListRef.current) gruposListRef.current.scrollTop = 0;
   };
 
-  // form
   const resetForm = () => {
     setPreguntaIdsSeleccionadas([]);
     setGrupoIdsSeleccionados([]);
@@ -162,7 +184,6 @@ export default function EncuestaForm() {
         fechaInicio: fechaInicio || null,
         fechaFin: fechaFin || null
       };
-
       if (editingEncuestaId) {
         await editarEncuesta(editingEncuestaId, payload);
         setMensaje('✅ Encuesta actualizada correctamente');
@@ -178,18 +199,17 @@ export default function EncuestaForm() {
     }
   };
 
-  // edición
   const selectEncuesta = (enc) => {
     setFormVisible(true);
     setEditingEncuestaId(enc.id);
     setFechaInicio(enc.fechaInicio || '');
     setFechaFin(enc.fechaFin || '');
     const grupos = Array.isArray(enc.grupos)
-        ? enc.grupos.map(g => (typeof g === 'object' ? g.id : g))
-        : [];
+      ? enc.grupos.map(g => (typeof g === 'object' ? g.id : g))
+      : [];
     const preguntas = Array.isArray(enc.preguntas)
-        ? enc.preguntas.map(p => (typeof p === 'object' ? p.id : p))
-        : [];
+      ? enc.preguntas.map(p => (typeof p === 'object' ? p.id : p))
+      : [];
     setGrupoIdsSeleccionados(grupos);
     setPreguntaIdsSeleccionadas(preguntas);
     setMensaje('');
@@ -210,96 +230,119 @@ export default function EncuestaForm() {
   };
 
   return (
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-gray-800">Encuestas</h2>
-          {!formVisible && (
-              <button
-                  onClick={iniciarCrear}
-                  className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-              >
-                Agregar encuesta
-              </button>
-          )}
-        </div>
-
-        {formVisible && (
-            <div className="mt-4 border rounded p-6 bg-gray-50">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-semibold">
-                  {editingEncuestaId ? 'Editar encuesta' : 'Crear encuesta'}
-                </h3>
-                <button
-                    onClick={resetForm}
-                    className="text-sm text-gray-600 hover:underline"
-                    type="button"
-                >
-                  Cancelar
-                </button>
-              </div>
-
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <FechaCampos
-                    fechaInicio={fechaInicio}
-                    setFechaInicio={setFechaInicio}
-                    fechaFin={fechaFin}
-                    setFechaFin={setFechaFin}
-                />
-
-                <GruposSelector
-                    gruposDisponibles={gruposDisponibles}
-                    grupoIdsSeleccionados={grupoIdsSeleccionados}
-                    onToggleGrupo={handleToggleGrupo}
-                    busquedaGrupo={busquedaGrupo}
-                    setBusquedaGrupo={setBusquedaGrupo}
-                    coincidenciasGrupos={coincidenciasGrupos}
-                    gruposListRef={gruposListRef}
-                    onAgregarDesdeInput={agregarGrupoDesdeInput}
-                />
-
-                <PreguntasSelector
-                    preguntasDisponibles={preguntasDisponibles}
-                    preguntaIdsSeleccionadas={preguntaIdsSeleccionadas}
-                    onTogglePregunta={handleTogglePregunta}
-                    busqueda={busqueda}
-                    setBusqueda={setBusqueda}
-                    coincidencias={coincidencias}
-                    preguntasListRef={preguntasListRef}
-                    onAgregarDesdeInput={agregarDesdeInput}
-                />
-
-                <div className="flex gap-2">
-                  <button
-                      type="submit"
-                      className="flex-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 py-2 transition"
-                  >
-                    {editingEncuestaId ? 'Guardar cambios' : 'Crear encuesta'}
-                  </button>
-                  {editingEncuestaId && (
-                      <button
-                          type="button"
-                          onClick={resetForm}
-                          className="rounded-lg border border-gray-300 px-6 py-2 text-gray-700"
-                      >
-                        Cancelar edición
-                      </button>
-                  )}
-                </div>
-
-                {mensaje && (
-                    <p className={`text-sm ${mensaje.startsWith('✅') ? 'text-green-600' : 'text-red-600'}`}>
-                      {mensaje}
-                    </p>
-                )}
-              </form>
-            </div>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-gray-800">Encuestas</h2>
+        {!formVisible && (
+          <button
+            onClick={iniciarCrear}
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+          >
+            Agregar encuesta
+          </button>
         )}
-
-        <EncuestasLista
-            encuestasExistentes={encuestasExistentes}
-            onSelectEncuesta={selectEncuesta}
-            formatDate={formatDate}
-        />
       </div>
+
+      {formVisible && (
+        <div className="mt-4 border rounded p-6 bg-gray-50">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <FechaCampos
+              fechaInicio={fechaInicio}
+              setFechaInicio={setFechaInicio}
+              fechaFin={fechaFin}
+              setFechaFin={setFechaFin}
+            />
+
+            <GruposSelector
+              gruposDisponibles={gruposDisponibles}
+              grupoIdsSeleccionados={grupoIdsSeleccionados}
+              onToggleGrupo={handleToggleGrupo}
+              busquedaGrupo={busquedaGrupo}
+              setBusquedaGrupo={setBusquedaGrupo}
+              coincidenciasGrupos={coincidenciasGrupos}
+              gruposListRef={gruposListRef}
+              onAgregarDesdeInput={agregarGrupoDesdeInput}
+            />
+
+            <PreguntasSelector
+              preguntasDisponibles={preguntasDisponibles}
+              preguntaIdsSeleccionadas={preguntaIdsSeleccionadas}
+              onTogglePregunta={handleTogglePregunta}
+              busqueda={busqueda}
+              setBusqueda={setBusqueda}
+              coincidencias={coincidencias}
+              preguntasListRef={preguntasListRef}
+              onAgregarDesdeInput={agregarDesdeInput}
+            />
+
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                className="flex-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 py-2 transition"
+              >
+                {editingEncuestaId ? 'Guardar cambios' : 'Crear encuesta'}
+              </button>
+              {editingEncuestaId && (
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="rounded-lg border border-gray-300 px-6 py-2 text-gray-700"
+                >
+                  Cancelar edición
+                </button>
+              )}
+            </div>
+
+            {mensaje && (
+              <p className={`text-sm ${mensaje.startsWith('✅') ? 'text-green-600' : 'text-red-600'}`}>
+                {mensaje}
+              </p>
+            )}
+          </form>
+        </div>
+      )}
+
+      {/* MODAL RELANZAR */}
+      {relanzarVisible && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+          <div className="bg-white p-6 rounded shadow-md w-96">
+            <h3 className="text-lg font-bold mb-4">Relanzar Encuesta</h3>
+            <input
+              type="date"
+              value={relanzarFechaInicio}
+              onChange={e => setRelanzarFechaInicio(e.target.value)}
+              className="w-full border p-2 rounded mb-3"
+            />
+            <input
+              type="date"
+              value={relanzarFechaFin}
+              onChange={e => setRelanzarFechaFin(e.target.value)}
+              className="w-full border p-2 rounded mb-4"
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setRelanzarVisible(false)}
+                className="px-4 py-2 border rounded"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleRelanzarSubmit}
+                className="px-4 py-2 bg-indigo-600 text-white rounded"
+              >
+                Relanzar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <EncuestasLista
+        encuestasExistentes={encuestasExistentes}
+        onSelectEncuesta={selectEncuesta}
+        onRelanzar={relanzar}
+        formatDate={formatDate} 
+      />
+    </div>
   );
 }

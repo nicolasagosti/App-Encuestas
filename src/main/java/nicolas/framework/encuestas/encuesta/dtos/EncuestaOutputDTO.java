@@ -11,6 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor // incluye grupoDelCliente
 public class EncuestaOutputDTO {
+    private Long id;
     private LocalDate fechaInicio;
     private LocalDate fechaFin;
     private LocalDate fechaPCompletarInicio;
@@ -26,6 +27,22 @@ public class EncuestaOutputDTO {
                              LocalDate fechaPCompletarFin,
                              List<PreguntaOutputDTO> preguntas,
                              List<GrupoOutputDTO> grupos) {
+        this.fechaInicio = fechaInicio;
+        this.fechaFin = fechaFin;
+        this.fechaPCompletarInicio = fechaPCompletarInicio;
+        this.fechaPCompletarFin = fechaPCompletarFin;
+        this.preguntas = preguntas;
+        this.grupos = grupos;
+        this.grupoDelCliente = null;
+    }
+
+    public EncuestaOutputDTO(Long id, LocalDate fechaInicio,
+                             LocalDate fechaFin,
+                             LocalDate fechaPCompletarInicio,
+                             LocalDate fechaPCompletarFin,
+                             List<PreguntaOutputDTO> preguntas,
+                             List<GrupoOutputDTO> grupos) {
+        this.id = id;
         this.fechaInicio = fechaInicio;
         this.fechaFin = fechaFin;
         this.fechaPCompletarInicio = fechaPCompletarInicio;

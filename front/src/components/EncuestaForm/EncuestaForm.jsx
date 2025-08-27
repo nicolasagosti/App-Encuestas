@@ -63,6 +63,8 @@ export default function EncuestaForm() {
   const [relanzarVisible, setRelanzarVisible] = useState(false);
   const [relanzarFechaInicio, setRelanzarFechaInicio] = useState('');
   const [relanzarFechaFin, setRelanzarFechaFin] = useState('');
+  const [relanzarPCompletarInicio, setRelanzarPCompletarInicio] = useState('');
+  const [relanzarPCompletarFin, setRelanzarPCompletarFin] = useState('');
   const [encuestaARelanzar, setEncuestaARelanzar] = useState(null);
 
   // refs
@@ -90,18 +92,22 @@ export default function EncuestaForm() {
     setEncuestaARelanzar(enc);
     setRelanzarFechaInicio('');
     setRelanzarFechaFin('');
+    setRelanzarPCompletarInicio('');
+    setRelanzarPCompletarFin('');
     setRelanzarVisible(true);
   };
 
   const handleRelanzarSubmit = async () => {
-    if (!relanzarFechaInicio || !relanzarFechaFin) {
-      setMensaje("⚠️ Debe seleccionar ambas fechas para relanzar");
+    if (!relanzarFechaInicio || !relanzarFechaFin || !relanzarPCompletarInicio || !relanzarPCompletarFin) {
+      setMensaje("⚠️ Debe seleccionar todas las fechas para relanzar");
       return;
     }
     try {
       await relanzarEncuesta(encuestaARelanzar.id, {
         fechaInicio: relanzarFechaInicio,
-        fechaFin: relanzarFechaFin
+        fechaFin: relanzarFechaFin,
+        fechaPCompletarInicio: relanzarPCompletarInicio,
+        fechaPCompletarFin: relanzarPCompletarFin
       });
       setMensaje("✅ Encuesta relanzada correctamente");
       setRelanzarVisible(false);
@@ -333,6 +339,7 @@ export default function EncuestaForm() {
               >
                 {editingEncuestaId ? 'Guardar cambios' : 'Crear encuesta'}
               </button>
+
               {editingEncuestaId && (
                 <button
                   type="button"
@@ -358,18 +365,37 @@ export default function EncuestaForm() {
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
           <div className="bg-white p-6 rounded shadow-md w-96">
             <h3 className="text-lg font-bold mb-4">Relanzar Encuesta</h3>
+            
+            <label className="block text-sm font-medium">Nuevo período (inicio)</label>
             <input
               type="date"
               value={relanzarFechaInicio}
               onChange={e => setRelanzarFechaInicio(e.target.value)}
               className="w-full border p-2 rounded mb-3"
             />
+            <label className="block text-sm font-medium">Nuevo período (fin)</label>
             <input
               type="date"
               value={relanzarFechaFin}
               onChange={e => setRelanzarFechaFin(e.target.value)}
               className="w-full border p-2 rounded mb-4"
             />
+
+            <label className="block text-sm font-medium">Nuevo plazo de respuesta (inicio)</label>
+            <input
+              type="date"
+              value={relanzarPCompletarInicio}
+              onChange={e => setRelanzarPCompletarInicio(e.target.value)}
+              className="w-full border p-2 rounded mb-3"
+            />
+            <label className="block text-sm font-medium">Nuevo plazo de respuesta (fin)</label>
+            <input
+              type="date"
+              value={relanzarPCompletarFin}
+              onChange={e => setRelanzarPCompletarFin(e.target.value)}
+              className="w-full border p-2 rounded mb-4"
+            />
+
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => setRelanzarVisible(false)}

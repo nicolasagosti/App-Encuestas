@@ -82,19 +82,14 @@ export default function AdminDashboard() {
             value="encuestas"
             className="bg-white p-6 rounded-xl shadow"
           >
-            <h2 className="text-xl font-semibold mb-2">Crear Encuesta</h2>
-            <p className="text-gray-500 mb-4">
-              Seleccioná preguntas, grupos y fechas para la encuesta.
-            </p>
             <EncuestaForm />
           </TabsContent>
 
           <TabsContent value="grupos" className="bg-white p-6 rounded-xl shadow">
-            <h2 className="text-xl font-semibold mb-2">
-              Cargar Grupo
-            </h2>
+            <h2 className="text-xl font-semibold mb-2">Cargar Grupo</h2>
             <p className="text-gray-500 mb-4">
-              Dá de alta grupos o colaboradores y asignales uno o muchos clientes.
+              Dá de alta grupos o colaboradores y asignales uno o muchos
+              clientes.
             </p>
             <CrearGrupoYAsignar />
           </TabsContent>

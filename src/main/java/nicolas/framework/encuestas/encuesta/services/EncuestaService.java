@@ -107,6 +107,7 @@ public class EncuestaService implements IEncuestaService {
                             .toList();
 
                     EncuestaOutputDTO dto = new EncuestaOutputDTO(
+                            encuesta.getId(),
                             encuesta.getFechaInicio(),
                             encuesta.getFechaFin(),
                             encuesta.getFechaPCompletarInicio(),
@@ -196,6 +197,7 @@ public class EncuestaService implements IEncuestaService {
                             .toList();
 
                     return new EncuestaOutputDTO(
+                            encuesta.getId(),
                             encuesta.getFechaInicio(),
                             encuesta.getFechaFin(),
                             encuesta.getFechaPCompletarInicio(),

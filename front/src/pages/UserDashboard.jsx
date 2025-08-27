@@ -88,14 +88,15 @@ export default function UserDashboard() {
   }, [userEmail]);
 
   useEffect(() => {
-    if (!userEmail) return;
-    const extension = userEmail.split('@')[1]?.toLowerCase();
-    if (extension) {
-      obtenerBanco(extension)
-        .then(res => setLogoBancoBase64(res.data?.nombre))
-        .catch(() => setLogoBancoBase64(null));
-    }
-  }, [userEmail]);
+  if (!userEmail) return;
+  const extension = userEmail.split('@')[1]?.toLowerCase();
+  if (extension) {
+    obtenerBanco(extension)
+      .then(res => setLogoBancoBase64(res.data?.logoBase64))  // ✅ ahora usa el campo correcto
+      .catch(() => setLogoBancoBase64(null));
+  }
+}, [userEmail]);
+
 
   useEffect(() => {
     if (clienteId == null) return;

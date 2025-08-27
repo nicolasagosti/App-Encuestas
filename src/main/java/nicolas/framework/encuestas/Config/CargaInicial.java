@@ -48,12 +48,12 @@ public class CargaInicial implements CommandLineRunner {
         }
 
         try {
-            // 1. Cargar Bancos (sin logo)
-            //String BBVA = convertirImagenABase64("C:\\Users\\nicolas.longo\\Desktop\\App-Encuestas\\front\\front\\src\\pages\\FRANCE.png");
-            //String GALI = convertirImagenABase64("C:\\Users\\nicolas.longo\\Desktop\\App-Encuestas\\front\\front\\src\\pages\\galicia.png");
-            bankService.cargarBancoDesdeCargaInicial("bbva.com", "BBVA", null);
+            // 1. Cargar Bancos
+            String BBVA = convertirImagenABase64("C:\\Users\\nicolas.longo\\Desktop\\App-Encuestas\\front\\src\\pages\\FRANCE.png");
+            String GALI = convertirImagenABase64("C:\\Users\\nicolas.longo\\Desktop\\App-Encuestas\\front\\src\\pages\\galicia.png");
+            bankService.cargarBancoDesdeCargaInicial("bbva.com", "BBVA", BBVA);
             bankService.cargarBancoDesdeCargaInicial("santander.com", "Santander", null);
-            bankService.cargarBancoDesdeCargaInicial("galicia.com", "Galicia", null);
+            bankService.cargarBancoDesdeCargaInicial("galicia.com", "Galicia", GALI);
 
             // 2. Crear usuarios para cada banco
             crearUsuarioCompleto("ana@bbva.com", "Ana", "Pérez", "123456789");

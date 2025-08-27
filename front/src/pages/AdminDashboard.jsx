@@ -35,6 +35,24 @@ export default function AdminDashboard() {
           onValueChange={handleTabChange}
         >
           <TabsList className="flex gap-2 border-b pb-2">
+             <TabsTrigger
+              value="clientes"
+              className="px-4 py-2 rounded-t-lg bg-white shadow-sm hover:bg-blue-50"
+            >
+              👤 Clientes
+            </TabsTrigger>
+            <TabsTrigger
+              value="usuarios"
+              className="px-4 py-2 rounded-t-lg bg-white shadow-sm hover:bg-blue-50"
+            >
+              👤 Referentes
+            </TabsTrigger>
+            <TabsTrigger
+              value="grupos"
+              className="px-4 py-2 rounded-t-lg bg-white shadow-sm hover:bg-blue-50"
+            >
+              👥 Grupos
+            </TabsTrigger>
             <TabsTrigger
               value="preguntas"
               className="px-4 py-2 rounded-t-lg bg-white shadow-sm hover:bg-blue-50"
@@ -47,24 +65,8 @@ export default function AdminDashboard() {
             >
               📝 Encuestas
             </TabsTrigger>
-            <TabsTrigger
-              value="grupos"
-              className="px-4 py-2 rounded-t-lg bg-white shadow-sm hover:bg-blue-50"
-            >
-              👥 Grupos
-            </TabsTrigger>
-            <TabsTrigger
-              value="clientes"
-              className="px-4 py-2 rounded-t-lg bg-white shadow-sm hover:bg-blue-50"
-            >
-              👤 Clientes
-            </TabsTrigger>
-            <TabsTrigger
-              value="usuarios"
-              className="px-4 py-2 rounded-t-lg bg-white shadow-sm hover:bg-blue-50"
-            >
-              👤 Referentes
-            </TabsTrigger>
+            
+           
           </TabsList>
 
           <TabsContent

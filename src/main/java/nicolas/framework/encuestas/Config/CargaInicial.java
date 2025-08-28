@@ -35,6 +35,8 @@ public class CargaInicial implements CommandLineRunner {
     @Autowired
     private BankService bankService;
     @Autowired
+    private GrupoService grupoService;
+    @Autowired
     private BankRepository bankRepository;
     @Autowired
     private UserRepository userRepository;
@@ -70,6 +72,9 @@ public class CargaInicial implements CommandLineRunner {
                     preguntaService.crearPregunta(new PreguntaInputDTO("¿Recomendarías nuestro servicio a otros?")).getId()
             );
 
+            //4. Grupo
+            GrupoInputDTO grupoInputDTO = new GrupoInputDTO("BBVA", 5, "BBVA", "bbva.com");
+            grupoService.registrarGrupo(grupoInputDTO);
 
             System.out.println("✅ Carga inicial empresarial completada.");
         } catch (Exception e) {

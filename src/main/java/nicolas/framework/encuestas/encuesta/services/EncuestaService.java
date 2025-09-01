@@ -111,11 +111,13 @@ public class EncuestaService implements IEncuestaService {
                                     r.getCliente() != null ? r.getCliente().getId() : null,
                                     r.getGrupo() != null ? r.getGrupo().getId() : null,
                                     r.getPregunta() != null ? r.getPregunta().getId() : null,
+                                    r.getEncuesta() != null ? r.getEncuesta().getId() : null, // ✅ faltaba esto
                                     r.getPuntaje(),
                                     r.getJustificacion(),
                                     r.getFechaRespuesta()
                             ))
                             .toList();
+
 
                     // 📌 Referentes del grupo
                     List<ReferenteDTO> referentes = Optional.ofNullable(grupo.getClientes())
@@ -233,11 +235,13 @@ public class EncuestaService implements IEncuestaService {
                                     r.getCliente() != null ? r.getCliente().getId() : null,
                                     r.getGrupo() != null ? r.getGrupo().getId() : null,
                                     r.getPregunta() != null ? r.getPregunta().getId() : null,
+                                    r.getEncuesta() != null ? r.getEncuesta().getId() : null, // ✅ faltaba este
                                     r.getPuntaje(),
                                     r.getJustificacion(),
                                     r.getFechaRespuesta()
                             ))
                             .toList();
+
 
                     return new EncuestaOutputDTO(
                             encuesta.getId(),

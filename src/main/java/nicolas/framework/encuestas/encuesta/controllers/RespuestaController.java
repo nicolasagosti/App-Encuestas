@@ -2,6 +2,7 @@ package nicolas.framework.encuestas.encuesta.controllers;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import nicolas.framework.encuestas.encuesta.dtos.RespuestaInputDTO;
+import nicolas.framework.encuestas.encuesta.dtos.RespuestaOutputDTO;
 import nicolas.framework.encuestas.encuesta.models.entities.Respuesta;
 import nicolas.framework.encuestas.encuesta.services.IRespuestaService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,5 +28,16 @@ public class RespuestaController {
         respuestaService.guardarRespuestas(clienteId, encuestaId, respuestas);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+
+    @GetMapping
+    public ResponseEntity<List<RespuestaOutputDTO>> obtenerRespuestas(@PathVariable Long clienteId,
+                                                                      @PathVariable Long encuestaId) {
+        List<RespuestaOutputDTO> respuestas = respuestaService.obtenerRespuestas(clienteId, encuestaId);
+        if (respuestas.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(respuestas);
+    }
+
 
 }

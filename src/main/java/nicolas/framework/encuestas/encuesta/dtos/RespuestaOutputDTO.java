@@ -14,6 +14,7 @@ public class RespuestaOutputDTO {
     private Long clienteId;
     private Long grupoId;
     private Long preguntaId;
+    private Long encuestaId;
     private int puntaje;
     private String justificacion;
     private LocalDate fechaRespuesta;

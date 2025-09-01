@@ -1,6 +1,7 @@
 package nicolas.framework.encuestas.encuesta.services;
 
 import nicolas.framework.encuestas.encuesta.dtos.RespuestaInputDTO;
+import nicolas.framework.encuestas.encuesta.dtos.RespuestaOutputDTO;
 import nicolas.framework.encuestas.encuesta.models.entities.Encuesta;
 import nicolas.framework.encuestas.encuesta.models.entities.Respuesta;
 import nicolas.framework.encuestas.encuesta.models.entities.User;
@@ -47,4 +48,24 @@ public class RespuestaService implements IRespuestaService {
             respuestaRepository.save(r);
         }
     }
+
+    @Override
+    public List<RespuestaOutputDTO> obtenerRespuestas(Long clienteId, Long encuestaId) {
+        return respuestaRepository.findAll().stream()
+                .filter(r -> r.getCliente().getId().equals(clienteId)
+                        && r.getEncuesta().getId().equals(encuestaId))
+                .map(r -> new RespuestaOutputDTO(
+                        r.getId(),
+                        r.getCliente().getId(),
+                        r.getGrupo().getId(),
+                        r.getPregunta().getId(),
+                        r.getEncuesta().getId(),
+                        r.getPuntaje(),
+                        r.getJustificacion(),
+                        r.getFechaRespuesta()
+                ))
+                .toList();
+    }
+
+
 }

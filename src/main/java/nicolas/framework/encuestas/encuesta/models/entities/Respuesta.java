@@ -10,6 +10,7 @@ import java.time.LocalDate;
 @Entity
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class Respuesta {
 
     @Id
@@ -25,6 +26,10 @@ public class Respuesta {
     @ManyToOne
     private Pregunta pregunta;
 
+    @ManyToOne
+    @JoinColumn(name = "encuesta_id", nullable = false)
+    private Encuesta encuesta;
+
     @Column
     private int puntaje;
 
@@ -33,5 +38,4 @@ public class Respuesta {
 
     @Column
     private LocalDate fechaRespuesta;
-
 }

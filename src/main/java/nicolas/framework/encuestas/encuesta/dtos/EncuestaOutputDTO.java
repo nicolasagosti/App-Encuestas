@@ -3,6 +3,7 @@ package nicolas.framework.encuestas.encuesta.dtos;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import nicolas.framework.encuestas.encuesta.models.entities.Respuesta;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -17,16 +18,17 @@ public class EncuestaOutputDTO {
     private LocalDate fechaPCompletarInicio;
     private LocalDate fechaPCompletarFin;
     private List<PreguntaOutputDTO> preguntas;
+    private List<RespuestaOutputDTO> respuestas;
     private List<GrupoOutputDTO> grupos;
     private GrupoOutputDTO grupoDelCliente;
 
-    //sin grupoDelCliente
     public EncuestaOutputDTO(LocalDate fechaInicio,
                              LocalDate fechaFin,
                              LocalDate fechaPCompletarInicio,
                              LocalDate fechaPCompletarFin,
                              List<PreguntaOutputDTO> preguntas,
-                             List<GrupoOutputDTO> grupos) {
+                             List<GrupoOutputDTO> grupos,
+                             List<RespuestaOutputDTO> respuestas) {
         this.fechaInicio = fechaInicio;
         this.fechaFin = fechaFin;
         this.fechaPCompletarInicio = fechaPCompletarInicio;
@@ -34,6 +36,7 @@ public class EncuestaOutputDTO {
         this.preguntas = preguntas;
         this.grupos = grupos;
         this.grupoDelCliente = null;
+        this.respuestas = respuestas;
     }
 
     public EncuestaOutputDTO(Long id, LocalDate fechaInicio,
@@ -41,7 +44,8 @@ public class EncuestaOutputDTO {
                              LocalDate fechaPCompletarInicio,
                              LocalDate fechaPCompletarFin,
                              List<PreguntaOutputDTO> preguntas,
-                             List<GrupoOutputDTO> grupos) {
+                             List<GrupoOutputDTO> grupos,
+                             List<RespuestaOutputDTO> respuestas) {
         this.id = id;
         this.fechaInicio = fechaInicio;
         this.fechaFin = fechaFin;
@@ -50,5 +54,6 @@ public class EncuestaOutputDTO {
         this.preguntas = preguntas;
         this.grupos = grupos;
         this.grupoDelCliente = null;
+        this.respuestas = respuestas;
     }
 }

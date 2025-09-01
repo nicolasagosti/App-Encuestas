@@ -41,6 +41,9 @@ public class Encuesta {
     )
     private List<Pregunta> preguntas = new ArrayList<>();
 
+    @OneToMany(mappedBy = "encuesta", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Respuesta> respuestas = new ArrayList<>();
+
     @ManyToMany(cascade = CascadeType.MERGE)
     @JoinTable(
             name = "grupo_x_encuesta",

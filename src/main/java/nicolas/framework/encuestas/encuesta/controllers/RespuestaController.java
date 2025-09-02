@@ -39,5 +39,14 @@ public class RespuestaController {
         return ResponseEntity.ok(respuestas);
     }
 
+    @PutMapping
+    public ResponseEntity<Void> editarRespuestas(@PathVariable Long clienteId,
+                                                 @PathVariable Long encuestaId,
+                                                 @RequestBody List<RespuestaInputDTO> respuestas) {
+        respuestaService.editarRespuestas(clienteId, encuestaId, respuestas);
+        return ResponseEntity.ok().build();
+    }
+
+
 
 }

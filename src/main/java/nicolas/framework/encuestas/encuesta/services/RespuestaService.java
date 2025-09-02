@@ -67,5 +67,39 @@ public class RespuestaService implements IRespuestaService {
                 .toList();
     }
 
+    @Override
+    public void editarRespuestas(Long clienteId, Long encuestaId, List<RespuestaInputDTO> dtos) {
+        User cliente = clienteRepository.getReferenceById(clienteId);
+        Encuesta encuesta = encuestaRepository.findById(encuestaId)
+                .orElseThrow(() -> new RuntimeException("Encuesta no encontrada con id " + encuestaId));
+
+        for (RespuestaInputDTO dto : dtos) {
+            // Buscar si ya existe la respuesta para esa pregunta, cliente y encuesta
+            Respuesta respuestaExistente = respuestaRepository.findByClienteIdAndEncuestaIdAndPreguntaId(
+                    clienteId, encuestaId, dto.getPreguntaId()
+            ).orElse(null);
+
+            if (respuestaExistente != null) {
+                // 🔄 Actualizar la respuesta existente
+                respuestaExistente.setPuntaje(dto.getPuntaje());
+                respuestaExistente.setJustificacion(dto.getJustificacion());
+                respuestaExistente.setFechaRespuesta(LocalDate.now());
+                respuestaRepository.save(respuestaExistente);
+            } else {
+                // ➕ Crear nueva respuesta (respuesta parcial)
+                Respuesta nueva = new Respuesta();
+                nueva.setCliente(cliente);
+                nueva.setGrupo(grupoRepository.getReferenceById(dto.getGrupoId()));
+                nueva.setPregunta(preguntaRepository.getReferenceById(dto.getPreguntaId()));
+                nueva.setEncuesta(encuesta);
+                nueva.setPuntaje(dto.getPuntaje());
+                nueva.setJustificacion(dto.getJustificacion());
+                nueva.setFechaRespuesta(LocalDate.now());
+                respuestaRepository.save(nueva);
+            }
+        }
+    }
+
+
 
 }

@@ -10,4 +10,5 @@ public interface IRespuestaService {
 
     public void guardarRespuestas(Long clienteId, Long encuestaId, List<RespuestaInputDTO> respuestas);
     public List<RespuestaOutputDTO> obtenerRespuestas(Long clienteId, Long encuestaId);
+    public void editarRespuestas(Long clienteId, Long encuestaId, List<RespuestaInputDTO> dtos);
 }

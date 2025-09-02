@@ -20,11 +20,10 @@ public class RespuestaController {
     @Autowired
     public IRespuestaService respuestaService;
 
-
     @PostMapping
     public ResponseEntity<List<Respuesta>> responderEncuesta(@PathVariable Long clienteId,
                                                              @PathVariable Long encuestaId,
-                                                             @RequestBody List<RespuestaInputDTO> respuestas){
+                                                             @RequestBody List<RespuestaInputDTO> respuestas) {
         respuestaService.guardarRespuestas(clienteId, encuestaId, respuestas);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
@@ -39,6 +38,7 @@ public class RespuestaController {
         return ResponseEntity.ok(respuestas);
     }
 
+    // ✅ Nuevo endpoint para editar respuestas parciales
     @PutMapping
     public ResponseEntity<Void> editarRespuestas(@PathVariable Long clienteId,
                                                  @PathVariable Long encuestaId,
@@ -46,7 +46,4 @@ public class RespuestaController {
         respuestaService.editarRespuestas(clienteId, encuestaId, respuestas);
         return ResponseEntity.ok().build();
     }
-
-
-
 }

@@ -3,6 +3,7 @@ package nicolas.framework.encuestas.encuesta.services;
 import nicolas.framework.encuestas.encuesta.dtos.RespuestaInputDTO;
 import nicolas.framework.encuestas.encuesta.dtos.RespuestaOutputDTO;
 import nicolas.framework.encuestas.encuesta.models.entities.Encuesta;
+import nicolas.framework.encuestas.encuesta.models.entities.Grupo;
 import nicolas.framework.encuestas.encuesta.models.entities.Respuesta;
 import nicolas.framework.encuestas.encuesta.models.entities.User;
 import nicolas.framework.encuestas.encuesta.models.repositories.*;
@@ -14,6 +15,7 @@ import java.util.List;
 
 @Service
 public class RespuestaService implements IRespuestaService {
+
     @Autowired
     private RespuestaRepository respuestaRepository;
 
@@ -27,11 +29,10 @@ public class RespuestaService implements IRespuestaService {
     private PreguntaRepository preguntaRepository;
 
     @Autowired
-    private EncuestaRepository encuestaRepository; // 🔑 agregar este repo
+    private EncuestaRepository encuestaRepository;
 
     @Override
     public void guardarRespuestas(Long clienteId, Long encuestaId, List<RespuestaInputDTO> dtos) {
-
         User cliente = clienteRepository.getReferenceById(clienteId);
         Encuesta encuesta = encuestaRepository.findById(encuestaId)
                 .orElseThrow(() -> new RuntimeException("Encuesta no encontrada con id " + encuestaId));
@@ -39,9 +40,13 @@ public class RespuestaService implements IRespuestaService {
         for (RespuestaInputDTO dto : dtos) {
             Respuesta r = new Respuesta();
             r.setCliente(cliente);
-            r.setGrupo(grupoRepository.getReferenceById(dto.getGrupoId()));
+            if (dto.getGrupoId() != null) {
+                r.setGrupo(grupoRepository.getReferenceById(dto.getGrupoId()));
+            } else {
+                r.setGrupo(encuesta.getGrupoDelCliente()); // ✅ fallback
+            }
             r.setPregunta(preguntaRepository.getReferenceById(dto.getPreguntaId()));
-            r.setEncuesta(encuesta);  // ✅ ahora sí se setea
+            r.setEncuesta(encuesta);
             r.setPuntaje(dto.getPuntaje());
             r.setJustificacion(dto.getJustificacion());
             r.setFechaRespuesta(LocalDate.now());
@@ -74,24 +79,36 @@ public class RespuestaService implements IRespuestaService {
                 .orElseThrow(() -> new RuntimeException("Encuesta no encontrada con id " + encuestaId));
 
         for (RespuestaInputDTO dto : dtos) {
-            // Buscar si ya existe la respuesta para esa pregunta, cliente y encuesta
             Respuesta respuestaExistente = respuestaRepository.findByClienteIdAndEncuestaIdAndPreguntaId(
                     clienteId, encuestaId, dto.getPreguntaId()
             ).orElse(null);
 
             if (respuestaExistente != null) {
-                // 🔄 Actualizar la respuesta existente
+                // 🔄 Editar respuesta existente
                 respuestaExistente.setPuntaje(dto.getPuntaje());
-                respuestaExistente.setJustificacion(dto.getJustificacion());
+                if (dto.getJustificacion() != null) {
+                    respuestaExistente.setJustificacion(dto.getJustificacion());
+                }
                 respuestaExistente.setFechaRespuesta(LocalDate.now());
                 respuestaRepository.save(respuestaExistente);
             } else {
-                // ➕ Crear nueva respuesta (respuesta parcial)
+                // ➕ Crear nueva respuesta
                 Respuesta nueva = new Respuesta();
                 nueva.setCliente(cliente);
-                nueva.setGrupo(grupoRepository.getReferenceById(dto.getGrupoId()));
-                nueva.setPregunta(preguntaRepository.getReferenceById(dto.getPreguntaId()));
                 nueva.setEncuesta(encuesta);
+                nueva.setPregunta(preguntaRepository.getReferenceById(dto.getPreguntaId()));
+
+                // ✅ asegurar grupo válido
+                if (dto.getGrupoId() != null) {
+                    nueva.setGrupo(grupoRepository.getReferenceById(dto.getGrupoId()));
+                } else {
+                    Grupo grupo = encuesta.getGrupoDelCliente();
+                    if (grupo == null) {
+                        throw new RuntimeException("No se pudo determinar el grupo del cliente");
+                    }
+                    nueva.setGrupo(grupo);
+                }
+
                 nueva.setPuntaje(dto.getPuntaje());
                 nueva.setJustificacion(dto.getJustificacion());
                 nueva.setFechaRespuesta(LocalDate.now());
@@ -99,7 +116,5 @@ public class RespuestaService implements IRespuestaService {
             }
         }
     }
-
-
 
 }

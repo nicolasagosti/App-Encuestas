@@ -6,21 +6,21 @@ const api = axios.create({
 
 // Añade token a todas las peticiones excepto al login y registro
 api.interceptors.request.use(
-  (config) => {
-    if (
-      config.url?.endsWith('/auth/login') ||
-      config.url?.endsWith('/auth/register')
-    ) {
+    (config) => {
+      if (
+          config.url?.endsWith('/auth/login') ||
+          config.url?.endsWith('/auth/register')
+      ) {
+        return config;
+      }
+      const token = localStorage.getItem('token');
+      if (token) {
+        config.headers = config.headers || {};
+        config.headers.Authorization = `Bearer ${token}`;
+      }
       return config;
-    }
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers = config.headers || {};
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
+    },
+    (error) => Promise.reject(error)
 );
 
 // Auth
@@ -54,7 +54,7 @@ export function crearEncuesta(data) {
 }
 
 export const relanzarEncuesta = (id, data) =>
-  api.post(`/encuestas/${id}`, data);
+    api.post(`/encuestas/${id}`, data);
 
 export function editarEncuesta(id, data) {
   return api.put(`/encuestas/${id}`, data);
@@ -97,8 +97,7 @@ export const eliminarClientes = (ids) => {
 };
 
 export const actualizarReferentesDeGrupo = (grupoId, agregarIds, quitarIds) =>
-  api.put(`/clientes/grupos/${grupoId}/referentes`, { agregarIds, quitarIds });
-
+    api.put(`/clientes/grupos/${grupoId}/referentes`, { agregarIds, quitarIds });
 
 export function obtenerIdDeCliente(mailCliente) {
   return api.post('/clientes/id', { mailCliente });
@@ -112,12 +111,25 @@ export function asignarClientesAGrupo(grupoId, idClientes) {
 export function obtenerEncuestasDeCliente(clienteId) {
   return api.get(`/clientes/${clienteId}/encuestas`);
 }
+
 export function responderEncuesta(clienteId, encuestaId, respuestas) {
   return api.post(
-    `/clientes/${clienteId}/encuestas/${encuestaId}/respuestas`,
-    respuestas
+      `/clientes/${clienteId}/encuestas/${encuestaId}/respuestas`,
+      respuestas
   );
 }
+
+export function obtenerRespuestas(clienteId, encuestaId) {
+  return api.get(`/clientes/${clienteId}/encuestas/${encuestaId}/respuestas`);
+}
+
+export function editarRespuesta(clienteId, encuestaId, respuestas) {
+  return api.put(
+      `/clientes/${clienteId}/encuestas/${encuestaId}/respuestas`,
+      respuestas
+  );
+}
+
 export function debeCambiarPassword(email) {
   return api.get('/clientes/must-change-password', {
     params: { email: email.trim().toLowerCase() },
@@ -125,11 +137,9 @@ export function debeCambiarPassword(email) {
 }
 
 //Estadisticas
-
 export const obtenerPromedioGrupo = async (grupoId) => {
   return api.get(`/estadisticas/${grupoId}`);
 };
-
 
 export const obtenerEstadisticasGrupoPorPeriodo = (fechaInicio, fechaFin, tipo, valor) => {
   if (tipo === 'cliente') {
@@ -137,20 +147,18 @@ export const obtenerEstadisticasGrupoPorPeriodo = (fechaInicio, fechaFin, tipo, 
       params: { fechaInicio, fechaFin, banco: valor }
     });
   }
- 
+
   return api.get('/estadisticas/grupos/periodo', {
     params: { fechaInicio, fechaFin }
   });
 };
 
-
-
 // Clientes Bancos
 export function cargarBanco(formData) {
   return api.post(
-    '/api/banco/agregar',
-    formData,
-    { headers: { 'Content-Type': 'multipart/form-data' } }
+      '/api/banco/agregar',
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
   );
 }
 

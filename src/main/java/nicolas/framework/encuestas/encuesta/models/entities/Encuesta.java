@@ -62,4 +62,11 @@ public class Encuesta {
     }
 
 
+    public Grupo getGrupoDelCliente() {
+        if (this.grupos != null && !this.grupos.isEmpty()) {
+            return this.grupos.get(0); // ✅ devuelve el primer grupo asociado
+        }
+        return null; // si no tiene grupos asociados
+    }
+
 }

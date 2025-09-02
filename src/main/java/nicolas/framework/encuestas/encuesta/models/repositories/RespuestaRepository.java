@@ -25,6 +25,7 @@ public interface RespuestaRepository extends JpaRepository<Respuesta, Long> {
                                                      @Param("grupoId") Long grupoId);
 
     Optional<Respuesta> findByClienteIdAndEncuestaIdAndPreguntaId(Long clienteId, Long encuestaId, Long preguntaId);
+    Optional <Respuesta> findByClienteIdAndGrupoIdAndPreguntaId(Long clienteId, Long grupoId, Long preguntaId);
 
 
 

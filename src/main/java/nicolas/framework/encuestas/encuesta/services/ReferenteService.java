@@ -25,11 +25,5 @@ public class ReferenteService {
                 .toList();
     }
 
-    public Long obtenerIdDeCLiente(String mailCliente) {
-        String normalizado = mailCliente.trim().toLowerCase();
-        User user = userRepository.findByUsername(normalizado)
-                .orElseThrow(() -> new DatabaseException("Cliente no encontrado con mail: " + normalizado));
-        return user.getId();
-    }
 
 }

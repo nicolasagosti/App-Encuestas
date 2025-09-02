@@ -5,6 +5,7 @@ import nicolas.framework.encuestas.encuesta.dtos.*;
 import nicolas.framework.encuestas.encuesta.models.entities.Encuesta;
 import nicolas.framework.encuestas.encuesta.models.entities.Grupo;
 import nicolas.framework.encuestas.encuesta.models.entities.Pregunta;
+import nicolas.framework.encuestas.encuesta.models.entities.Respuesta;
 import nicolas.framework.encuestas.encuesta.models.repositories.EncuestaRepository;
 import nicolas.framework.encuestas.encuesta.models.repositories.RespuestaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,21 +89,29 @@ public class EncuestaService implements IEncuestaService {
 
             for (Grupo grupo : gruposDelCliente) {
                 boolean respondioTodas = true;
+
                 for (Pregunta pregunta : encuesta.getPreguntas()) {
-                    if (!respuestaRepository.existsByCliente_IdAndGrupo_IdAndPregunta_Id(
-                            clienteId, grupo.getId(), pregunta.getId())) {
+                    Optional<Respuesta> respuestaOpt =
+                            respuestaRepository.findByClienteIdAndGrupoIdAndPreguntaId(
+                                    clienteId, grupo.getId(), pregunta.getId());
+
+                    if (respuestaOpt.isEmpty()) {
+                        respondioTodas = false;
+                        break;
+                    }
+
+                    Respuesta r = respuestaOpt.get();
+                    if (r.getPuntaje() < 8 && (r.getJustificacion() == null || r.getJustificacion().isBlank())) {
                         respondioTodas = false;
                         break;
                     }
                 }
 
                 if (!respondioTodas) {
-                    // 📌 Preguntas DTO
                     List<PreguntaOutputDTO> preguntasDTO = encuesta.getPreguntas().stream()
                             .map(p -> new PreguntaOutputDTO(p.getId(), p.getTexto()))
                             .toList();
 
-                    // 📌 Respuestas DTO (mapeadas limpias)
                     List<RespuestaOutputDTO> respuestasDTO = Optional.ofNullable(encuesta.getRespuestas())
                             .orElseGet(Collections::emptyList)
                             .stream()
@@ -111,13 +120,12 @@ public class EncuestaService implements IEncuestaService {
                                     r.getCliente() != null ? r.getCliente().getId() : null,
                                     r.getGrupo() != null ? r.getGrupo().getId() : null,
                                     r.getPregunta() != null ? r.getPregunta().getId() : null,
-                                    r.getEncuesta() != null ? r.getEncuesta().getId() : null, // ✅ faltaba esto
+                                    r.getEncuesta() != null ? r.getEncuesta().getId() : null,
                                     r.getPuntaje(),
                                     r.getJustificacion(),
                                     r.getFechaRespuesta()
                             ))
                             .toList();
-
 
                     // 📌 Referentes del grupo
                     List<ReferenteDTO> referentes = Optional.ofNullable(grupo.getClientes())

@@ -4,6 +4,7 @@ import nicolas.framework.encuestas.Auth.Services.AuthService;
 import nicolas.framework.encuestas.Auth.dtos.RegisterRequest;
 import nicolas.framework.encuestas.encuesta.dtos.EncuestaInputDTO;
 import nicolas.framework.encuestas.encuesta.dtos.GrupoInputDTO;
+import nicolas.framework.encuestas.encuesta.dtos.GrupoOutputDTO;
 import nicolas.framework.encuestas.encuesta.dtos.PreguntaInputDTO;
 import nicolas.framework.encuestas.encuesta.models.entities.User;
 import nicolas.framework.encuestas.encuesta.models.repositories.BankRepository;
@@ -19,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
@@ -36,6 +38,8 @@ public class CargaInicial implements CommandLineRunner {
     private BankService bankService;
     @Autowired
     private GrupoService grupoService;
+    @Autowired
+    private ClienteService clienteService;
     @Autowired
     private BankRepository bankRepository;
     @Autowired
@@ -72,9 +76,23 @@ public class CargaInicial implements CommandLineRunner {
                     preguntaService.crearPregunta(new PreguntaInputDTO("¿Recomendarías nuestro servicio a otros?")).getId()
             );
 
-            //4. Grupo
-            GrupoInputDTO grupoInputDTO = new GrupoInputDTO("BBVA", 5, "BBVA", "bbva.com");
-            grupoService.registrarGrupo(grupoInputDTO);
+            //4.
+            List<Long> usuario = new ArrayList<>();
+            Long id = clienteService.obtenerIdDeCLiente("ana@bbva.com");
+            usuario.add(id);
+
+            GrupoInputDTO grupoInputDTO1 = new GrupoInputDTO("BBVA", 5, "BBVA", "bbva.com");
+            GrupoInputDTO grupoInputDTO2 = new GrupoInputDTO("BBVA2", 5, "BBVA2", "bbva.com");
+            GrupoInputDTO grupoInputDTO3 = new GrupoInputDTO("BBVA3", 5, "BBVA3", "bbva.com");
+            List<GrupoOutputDTO> grupos = new ArrayList<>();
+            GrupoOutputDTO grupoCreado1 = grupoService.registrarGrupo(grupoInputDTO1);
+            GrupoOutputDTO grupoCreado2 = grupoService.registrarGrupo(grupoInputDTO2);
+            GrupoOutputDTO grupoCreado3 = grupoService.registrarGrupo(grupoInputDTO3);
+            grupos.add(grupoCreado1); grupos.add(grupoCreado2); grupos.add(grupoCreado3);
+
+            for(GrupoOutputDTO grupo : grupos){
+                clienteService.asignarClientesAGrupo(grupo.getId(), usuario);
+            }
 
             System.out.println("✅ Carga inicial empresarial completada.");
         } catch (Exception e) {

@@ -1,3 +1,4 @@
+// src/pages/UserDashboard.jsx
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../AuthContext';
 import {
@@ -5,7 +6,6 @@ import {
   responderEncuesta,
   obtenerIdDeCliente,
   obtenerBanco,
-  editarRespuesta,
   obtenerRespuestas
 } from '../services/api';
 import { CheckCircle, AlertCircle, Loader2, CopyIcon } from 'lucide-react';
@@ -55,6 +55,80 @@ const buildImageSrc = (raw) => {
   return `data:image/*;base64,${cleaned}`;
 };
 
+/* =========================
+   🧠 Helpers de borradores
+   Estructura en localStorage:
+   draftsKey(clienteId) -> {
+     [encuestaId]: {
+       [preguntaId]: { puntaje, justificacion, grupoId }
+     }
+   }
+========================= */
+const DRAFT_NS = 'encuesta_drafts_v2';
+const draftsKey = (clienteId) => `${DRAFT_NS}:${clienteId}`;
+
+const loadDrafts = (clienteId) => {
+  try {
+    const raw = localStorage.getItem(draftsKey(clienteId));
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+};
+
+const saveDrafts = (clienteId, data) => {
+  try {
+    localStorage.setItem(draftsKey(clienteId), JSON.stringify(data || {}));
+  } catch { /* ignore quota errors */ }
+};
+
+const upsertDraft = (clienteId, encuestaId, preguntaId, partial) => {
+  if (clienteId == null) return;
+  const drafts = loadDrafts(clienteId);
+  drafts[encuestaId] = drafts[encuestaId] || {};
+  drafts[encuestaId][preguntaId] = {
+    ...(drafts[encuestaId][preguntaId] || {}),
+    ...partial
+  };
+  saveDrafts(clienteId, drafts);
+};
+
+const upsertManyDrafts = (clienteId, encuestaId, mapPreguntaIdToData) => {
+  if (clienteId == null) return;
+  const drafts = loadDrafts(clienteId);
+  drafts[encuestaId] = { ...(drafts[encuestaId] || {}), ...mapPreguntaIdToData };
+  saveDrafts(clienteId, drafts);
+};
+
+const clearDraftForEncuesta = (clienteId, encuestaId) => {
+  if (clienteId == null) return;
+  const drafts = loadDrafts(clienteId);
+  if (drafts[encuestaId]) {
+    delete drafts[encuestaId];
+    saveDrafts(clienteId, drafts);
+  }
+};
+
+/* Aplica los borradores al estado `respuestas` (sobre-escribe lo que no esté en BD).
+   Claves en estado: `${encuestaId}_${preguntaId}` */
+const applyDraftsToState = (clienteId, encuestas, setRespuestas) => {
+  const drafts = loadDrafts(clienteId);
+  if (!drafts || !encuestas?.length) return;
+
+  setRespuestas(prev => {
+    const merged = { ...prev };
+    encuestas.forEach(encuesta => {
+      const d = drafts[encuesta.id];
+      if (!d) return;
+      Object.entries(d).forEach(([preguntaId, obj]) => {
+        const clave = `${encuesta.id}_${preguntaId}`;
+        merged[clave] = { ...(merged[clave] || {}), ...obj };
+      });
+    });
+    return merged;
+  });
+};
+
 export default function UserDashboard() {
   const { userEmail } = useAuth();
   const [clienteId, setClienteId] = useState(null);
@@ -96,26 +170,38 @@ export default function UserDashboard() {
       .catch(() => setMensaje('❌ Error al cargar encuestas'));
   }, [clienteId]);
 
-  // Cargar respuestas guardadas en BD
+  // Cargar respuestas guardadas en BD + aplicar drafts
   useEffect(() => {
-    if (clienteId == null || encuestas.length === 0) return;
-    encuestas.forEach(encuesta => {
-      obtenerRespuestas(clienteId, encuesta.id)
-        .then(res => {
-          (res.data || []).forEach(r => {
-            const clave = `${encuesta.id}_${r.preguntaId}`;
-            setRespuestas(prev => ({
-              ...prev,
-              [clave]: {
+    if (clienteId == null || encuestas.length === 0) {
+      return;
+    }
+
+    // Primero cargo de BD
+    (async () => {
+      for (const encuesta of encuestas) {
+        try {
+          const res = await obtenerRespuestas(clienteId, encuesta.id);
+          const list = res.data || [];
+          setRespuestas(prev => {
+            const next = { ...prev };
+            list.forEach(r => {
+              const clave = `${encuesta.id}_${r.preguntaId}`;
+              next[clave] = {
                 puntaje: r.puntaje,
                 justificacion: r.justificacion,
                 grupoId: r.grupoId
-              }
-            }));
+              };
+            });
+            return next;
           });
-        })
-        .catch(() => console.warn("❌ No se pudieron cargar respuestas de encuesta", encuesta.id));
-    });
+        } catch {
+          console.warn("❌ No se pudieron cargar respuestas de encuesta", encuesta.id);
+        }
+      }
+
+      // Luego piso con borradores locales (si los hay)
+      applyDraftsToState(clienteId, encuestas, setRespuestas);
+    })();
   }, [clienteId, encuestas]);
 
   // UX: mostrar mensajes de error
@@ -137,22 +223,41 @@ export default function UserDashboard() {
     }
   }, [claveError]);
 
-  // ✅ Guardar automáticamente al elegir puntaje
-  const handlePuntajeChange = async (preguntaId, encuestaId, grupoId, puntaje) => {
+  // Enviar encuesta (persistencia definitiva)
+  const enviarEncuesta = async (encuesta) => {
+    const payload = (encuesta.preguntas || []).map(p => {
+      const clave = `${encuesta.id}_${p.id}`;
+      return {
+        preguntaId: p.id,
+        puntaje: respuestas[clave]?.puntaje ?? null,
+        justificacion: respuestas[clave]?.justificacion ?? null,
+        grupoId: encuesta.grupoDelCliente?.id ?? null
+      };
+    });
+
+    try {
+      setLoading(true);
+      await responderEncuesta(clienteId, encuesta.id, payload);
+      setMensaje('✅ Encuesta enviada correctamente');
+      setEncuestasRespondidas(prev => new Set([...prev, encuesta.id]));
+      clearDraftForEncuesta(clienteId, encuesta.id); // 🧹 limpiar borrador local
+    } catch (err) {
+      console.error("Error enviando encuesta:", err);
+      setMensaje('❌ Error al enviar encuesta');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Cambios locales + persistencia en draft
+  const handlePuntajeChange = (preguntaId, encuestaId, grupoId, puntaje) => {
     const clave = `${encuestaId}_${preguntaId}`;
     setRespuestas(prev => ({
       ...prev,
       [clave]: { ...prev[clave], grupoId, puntaje }
     }));
-
-    try {
-      await editarRespuesta(clienteId, encuestaId, [
-        { preguntaId, puntaje }
-      ]);
-      setMensaje('✅ Puntaje guardado automáticamente');
-    } catch {
-      setMensaje('❌ Error al guardar puntaje');
-    }
+    // 🧠 guardar draft
+    upsertDraft(clienteId, encuestaId, String(preguntaId), { grupoId, puntaje });
   };
 
   const handleJustificacionChange = (preguntaId, encuestaId, justificacion) => {
@@ -161,82 +266,99 @@ export default function UserDashboard() {
       ...prev,
       [clave]: { ...prev[clave], justificacion }
     }));
+    // 🧠 guardar draft
+    upsertDraft(clienteId, encuestaId, String(preguntaId), { justificacion });
   };
 
+  // Replicar puntaje a todas las encuestas (solo local + draft)
   const replicarPuntaje = (preguntaId, puntaje) => {
     const nuevasRespuestas = { ...respuestas };
+    const draftsBatch = {}; // { [encuestaId]: { [preguntaId]: data } }
+
     encuestas.forEach(encuesta => {
       (encuesta.preguntas || []).forEach(preg => {
         if (preg.id === preguntaId) {
           const clave = `${encuesta.id}_${preg.id}`;
+          const grupoId = encuesta.grupoDelCliente?.id || 1;
           nuevasRespuestas[clave] = {
             ...nuevasRespuestas[clave],
-            grupoId: encuesta.grupoDelCliente?.id || 1,
+            grupoId,
+            puntaje
+          };
+          draftsBatch[encuesta.id] = draftsBatch[encuesta.id] || {};
+          draftsBatch[encuesta.id][String(preg.id)] = {
+            ...(draftsBatch[encuesta.id][String(preg.id)] || {}),
+            grupoId,
             puntaje
           };
         }
       });
     });
+
     setRespuestas(nuevasRespuestas);
-    setMensaje('✅ Puntaje replicado a todas las encuestas');
+    // 🧠 guardar drafts en lote
+    Object.entries(draftsBatch).forEach(([encuestaId, data]) =>
+      upsertManyDrafts(clienteId, encuestaId, data)
+    );
+    setMensaje('✅ Puntaje replicado en frontend (se enviará al confirmar)');
   };
 
-  // 🔥 Nuevo: replicar todas las respuestas de una encuesta a encuestas equivalentes
-const replicarRespuestasEncuesta = async (encuesta) => {
-  if (!encuesta?.preguntas?.length) return;
+  // Replicar todas las respuestas de una encuesta a encuestas equivalentes (solo local + draft)
+  const replicarRespuestasEncuesta = (encuesta) => {
+    if (!encuesta?.preguntas?.length) return;
 
-  const nuevasRespuestas = { ...respuestas };
-  const mapaTextoAPuntaje = {};
+    const nuevasRespuestas = { ...respuestas };
+    const mapaTextoAPuntaje = {};
+    const draftsBatchPorEncuesta = {}; // { [encuestaId]: { [preguntaId]: data } }
 
-  encuesta.preguntas.forEach((preg) => {
-    const clave = `${encuesta.id}_${preg.id}`;
-    const puntaje = respuestas[clave]?.puntaje;
-    if (puntaje) {
-      mapaTextoAPuntaje[preg.texto.trim().toLowerCase()] = puntaje;
-    }
-  });
+    // Mapeo pregunta texto -> puntaje de la encuesta base
+    encuesta.preguntas.forEach((preg) => {
+      const clave = `${encuesta.id}_${preg.id}`;
+      const puntaje = respuestas[clave]?.puntaje;
+      if (puntaje) {
+        mapaTextoAPuntaje[preg.texto.trim().toLowerCase()] = {
+          puntaje,
+          grupoId: encuesta.grupoDelCliente?.id || 1
+        };
+      }
+    });
 
-  try {
-    for (const otraEncuesta of encuestas) {
-      if (otraEncuesta.id === encuesta.id) continue;
+    // Aplico a otras encuestas "equivalentes"
+    encuestas.forEach((otraEncuesta) => {
+      if (otraEncuesta.id === encuesta.id) return;
 
-      const textosOtra = (otraEncuesta.preguntas || []).map((p) =>
-        p.texto.trim().toLowerCase()
-      );
-      const tieneTodas = Object.keys(mapaTextoAPuntaje).every((txt) =>
-        textosOtra.includes(txt)
-      );
-      if (!tieneTodas) continue;
+      const textosOtra = (otraEncuesta.preguntas || []).map(p => p.texto.trim().toLowerCase());
+      const tieneTodas = Object.keys(mapaTextoAPuntaje).every(txt => textosOtra.includes(txt));
+      if (!tieneTodas) return;
 
-      // Construyo payload de respuestas para esta encuesta
-      const payload = [];
-      otraEncuesta.preguntas.forEach((preg) => {
+      (otraEncuesta.preguntas || []).forEach((preg) => {
         const txt = preg.texto.trim().toLowerCase();
-        if (mapaTextoAPuntaje[txt]) {
+        const match = mapaTextoAPuntaje[txt];
+        if (match) {
           const clave = `${otraEncuesta.id}_${preg.id}`;
           nuevasRespuestas[clave] = {
             ...nuevasRespuestas[clave],
             grupoId: otraEncuesta.grupoDelCliente?.id || 1,
-            puntaje: mapaTextoAPuntaje[txt]
+            puntaje: match.puntaje
           };
-          payload.push({ preguntaId: preg.id, puntaje: mapaTextoAPuntaje[txt] });
+
+          draftsBatchPorEncuesta[otraEncuesta.id] = draftsBatchPorEncuesta[otraEncuesta.id] || {};
+          draftsBatchPorEncuesta[otraEncuesta.id][String(preg.id)] = {
+            grupoId: otraEncuesta.grupoDelCliente?.id || 1,
+            puntaje: match.puntaje
+          };
         }
       });
-
-      // ✅ Guardo en backend de una sola vez
-      if (payload.length > 0) {
-        await editarRespuesta(clienteId, otraEncuesta.id, payload);
-      }
-    }
+    });
 
     setRespuestas(nuevasRespuestas);
-    setMensaje('✅ Respuestas replicadas y guardadas en encuestas equivalentes');
-  } catch (err) {
-    console.error("Error replicando respuestas:", err);
-    setMensaje('❌ Error al replicar respuestas');
-  }
-};
+    // 🧠 guardar drafts en lote
+    Object.entries(draftsBatchPorEncuesta).forEach(([encuestaId, data]) =>
+      upsertManyDrafts(clienteId, encuestaId, data)
+    );
 
+    setMensaje('✅ Respuestas replicadas en frontend (se enviarán al confirmar)');
+  };
 
   const srcLogo = buildImageSrc(logoBancoBase64);
 
@@ -356,13 +478,29 @@ const replicarRespuestasEncuesta = async (encuesta) => {
                     })}
                   </div>
 
-                  {/* 🔥 Nuevo botón de replicar todas las respuestas */}
+                  {/* Replicar todas las respuestas (solo local + draft) */}
                   <button
                     type="button"
                     onClick={() => replicarRespuestasEncuesta(encuesta)}
                     className="mt-4 w-full rounded-md bg-indigo-600 text-white px-5 py-2 text-sm font-semibold shadow hover:bg-indigo-700 transition"
                   >
                     Replicar respuestas a encuestas equivalentes
+                  </button>
+
+                  {/* Enviar (persistir definitivo en BD + limpiar draft local) */}
+                  <button
+                    type="button"
+                    onClick={() => enviarEncuesta(encuesta)}
+                    className="mt-6 w-full rounded-md bg-green-600 text-white px-5 py-2 text-sm font-semibold shadow hover:bg-green-700 transition"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <Loader2 className="animate-spin w-4 h-4" /> Enviando...
+                      </span>
+                    ) : (
+                      'Enviar encuesta'
+                    )}
                   </button>
                 </div>
               ))}

@@ -6,7 +6,7 @@ import {
   obtenerIdDeCliente,
   obtenerBanco,
   editarRespuesta,
-  obtenerRespuestas   // ✅ import nuevo
+  obtenerRespuestas
 } from '../services/api';
 import { CheckCircle, AlertCircle, Loader2, CopyIcon } from 'lucide-react';
 import RatingStars from '../components/RatingStars';
@@ -39,8 +39,8 @@ function colorDeFondoPorGrupo(nombreGrupo = '') {
   if (grupoColorMap.has(nombreGrupo)) return grupoColorMap.get(nombreGrupo);
   const disponibles = COLORES_GRUPO.filter(c => !coloresUsados.has(c));
   const color =
-      disponibles[Math.floor(Math.random() * disponibles.length)] ||
-      COLORES_GRUPO[Math.floor(Math.random() * COLORES_GRUPO.length)];
+    disponibles[Math.floor(Math.random() * disponibles.length)] ||
+    COLORES_GRUPO[Math.floor(Math.random() * COLORES_GRUPO.length)];
   grupoColorMap.set(nombreGrupo, color);
   coloresUsados.add(color);
   return color;
@@ -73,8 +73,8 @@ export default function UserDashboard() {
   useEffect(() => {
     if (!userEmail) return;
     obtenerIdDeCliente(userEmail)
-        .then(res => setClienteId(res.data))
-        .catch(() => setMensaje('❌ No se pudo obtener el ID de cliente'));
+      .then(res => setClienteId(res.data))
+      .catch(() => setMensaje('❌ No se pudo obtener el ID de cliente'));
   }, [userEmail]);
 
   // Cargar logo banco
@@ -83,8 +83,8 @@ export default function UserDashboard() {
     const extension = userEmail.split('@')[1]?.toLowerCase();
     if (extension) {
       obtenerBanco(extension)
-          .then(res => setLogoBancoBase64(res.data?.logoBase64))
-          .catch(() => setLogoBancoBase64(null));
+        .then(res => setLogoBancoBase64(res.data?.logoBase64))
+        .catch(() => setLogoBancoBase64(null));
     }
   }, [userEmail]);
 
@@ -92,8 +92,8 @@ export default function UserDashboard() {
   useEffect(() => {
     if (clienteId == null) return;
     obtenerEncuestasDeCliente(clienteId)
-        .then(res => setEncuestas(res.data))
-        .catch(() => setMensaje('❌ Error al cargar encuestas'));
+      .then(res => setEncuestas(res.data))
+      .catch(() => setMensaje('❌ Error al cargar encuestas'));
   }, [clienteId]);
 
   // Cargar respuestas guardadas en BD
@@ -101,20 +101,20 @@ export default function UserDashboard() {
     if (clienteId == null || encuestas.length === 0) return;
     encuestas.forEach(encuesta => {
       obtenerRespuestas(clienteId, encuesta.id)
-          .then(res => {
-            (res.data || []).forEach(r => {
-              const clave = `${encuesta.id}_${r.preguntaId}`;
-              setRespuestas(prev => ({
-                ...prev,
-                [clave]: {
-                  puntaje: r.puntaje,
-                  justificacion: r.justificacion,
-                  grupoId: r.grupoId
-                }
-              }));
-            });
-          })
-          .catch(() => console.warn("❌ No se pudieron cargar respuestas de encuesta", encuesta.id));
+        .then(res => {
+          (res.data || []).forEach(r => {
+            const clave = `${encuesta.id}_${r.preguntaId}`;
+            setRespuestas(prev => ({
+              ...prev,
+              [clave]: {
+                puntaje: r.puntaje,
+                justificacion: r.justificacion,
+                grupoId: r.grupoId
+              }
+            }));
+          });
+        })
+        .catch(() => console.warn("❌ No se pudieron cargar respuestas de encuesta", encuesta.id));
     });
   }, [clienteId, encuestas]);
 
@@ -181,128 +181,179 @@ export default function UserDashboard() {
     setMensaje('✅ Puntaje replicado a todas las encuestas');
   };
 
+  // 🔥 Nuevo: replicar todas las respuestas de una encuesta a encuestas equivalentes
+  const replicarRespuestasEncuesta = (encuesta) => {
+    if (!encuesta?.preguntas?.length) return;
+
+    const nuevasRespuestas = { ...respuestas };
+    const mapaTextoAPuntaje = {};
+
+    encuesta.preguntas.forEach((preg) => {
+      const clave = `${encuesta.id}_${preg.id}`;
+      const puntaje = respuestas[clave]?.puntaje;
+      if (puntaje) {
+        mapaTextoAPuntaje[preg.texto.trim().toLowerCase()] = puntaje;
+      }
+    });
+
+    encuestas.forEach((otraEncuesta) => {
+      if (otraEncuesta.id === encuesta.id) return;
+      const textosOtra = (otraEncuesta.preguntas || []).map((p) =>
+        p.texto.trim().toLowerCase()
+      );
+      const tieneTodas = Object.keys(mapaTextoAPuntaje).every((txt) =>
+        textosOtra.includes(txt)
+      );
+      if (!tieneTodas) return;
+
+      otraEncuesta.preguntas.forEach((preg) => {
+        const txt = preg.texto.trim().toLowerCase();
+        if (mapaTextoAPuntaje[txt]) {
+          const clave = `${otraEncuesta.id}_${preg.id}`;
+          nuevasRespuestas[clave] = {
+            ...nuevasRespuestas[clave],
+            grupoId: otraEncuesta.grupoDelCliente?.id || 1,
+            puntaje: mapaTextoAPuntaje[txt]
+          };
+        }
+      });
+    });
+
+    setRespuestas(nuevasRespuestas);
+    setMensaje('✅ Respuestas replicadas en encuestas equivalentes');
+  };
+
   const srcLogo = buildImageSrc(logoBancoBase64);
 
   return (
-      <div className="max-w-4xl mx-auto mt-12 px-4">
-        <div className="bg-white rounded-2xl shadow border border-gray-100 p-8">
-          <img
-              src={srcLogo || logo}
-              alt="Logo del banco"
-              className="mx-auto h-20 mb-6"
-              onError={e => { e.target.onerror = null; e.target.src = logo; }}
-          />
+    <div className="max-w-4xl mx-auto mt-12 px-4">
+      <div className="bg-white rounded-2xl shadow border border-gray-100 p-8">
+        <img
+          src={srcLogo || logo}
+          alt="Logo del banco"
+          className="mx-auto h-20 mb-6"
+          onError={e => { e.target.onerror = null; e.target.src = logo; }}
+        />
 
-          <h2 className="text-3xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-            <CheckCircle className="text-blue-600 w-6 h-6" />
-            Responder Encuestas
-          </h2>
+        <h2 className="text-3xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+          <CheckCircle className="text-blue-600 w-6 h-6" />
+          Responder Encuestas
+        </h2>
 
-          {mensaje && (
-              <div
-                  ref={mensajeRef}
-                  className={`mb-6 flex items-center gap-3 rounded-md px-4 py-3 text-sm font-medium ${
-                      mensaje.startsWith('✅')
-                          ? 'bg-green-50 border border-green-200 text-green-800'
-                          : 'bg-red-50 border border-red-200 text-red-800'
-                  }`}
-              >
-                {mensaje.startsWith('✅') ? <CheckCircle className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
-                {mensaje}
-              </div>
-          )}
+        {mensaje && (
+          <div
+            ref={mensajeRef}
+            className={`mb-6 flex items-center gap-3 rounded-md px-4 py-3 text-sm font-medium ${
+              mensaje.startsWith('✅')
+                ? 'bg-green-50 border border-green-200 text-green-800'
+                : 'bg-red-50 border border-red-200 text-red-800'
+            }`}
+          >
+            {mensaje.startsWith('✅') ? <CheckCircle className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
+            {mensaje}
+          </div>
+        )}
 
-          {encuestas.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">No hay encuestas disponibles.</p>
-          ) : (
-              <div className="space-y-10">
-                {encuestas
-                    .filter(encuesta => !encuestasRespondidas.has(encuesta.id))
-                    .map(encuesta => (
-                        <div key={encuesta.id} className="bg-gray-50 border border-gray-200 rounded-xl p-6">
-                          <div className={`rounded-lg px-6 py-4 text-center border ${colorDeFondoPorGrupo(
-                              encuesta.grupos?.[0]?.descripcion
-                          )}`}>
-                            <h3 className="text-lg font-semibold">📝 Encuesta</h3>
-                            <p className="text-sm">
-                              <span className="font-medium">Período evaluado:</span>{' '}
-                              {formatPeriodoMeses(encuesta.fechaInicio, encuesta.fechaFin)}
-                            </p>
-                            <p className="text-sm">
-                              <span className="font-medium">Grupo:</span>{' '}
-                              {encuesta.grupoDelCliente?.descripcion || `Grupo ${encuesta.grupoDelCliente?.id}`}
-                            </p>
-                          </div>
+        {encuestas.length === 0 ? (
+          <p className="text-gray-500 text-center py-8">No hay encuestas disponibles.</p>
+        ) : (
+          <div className="space-y-10">
+            {encuestas
+              .filter(encuesta => !encuestasRespondidas.has(encuesta.id))
+              .map(encuesta => (
+                <div key={encuesta.id} className="bg-gray-50 border border-gray-200 rounded-xl p-6">
+                  <div className={`rounded-lg px-6 py-4 text-center border ${colorDeFondoPorGrupo(
+                    encuesta.grupos?.[0]?.descripcion
+                  )}`}>
+                    <h3 className="text-lg font-semibold">📝 Encuesta</h3>
+                    <p className="text-sm">
+                      <span className="font-medium">Período evaluado:</span>{' '}
+                      {formatPeriodoMeses(encuesta.fechaInicio, encuesta.fechaFin)}
+                    </p>
+                    <p className="text-sm">
+                      <span className="font-medium">Grupo:</span>{' '}
+                      {encuesta.grupoDelCliente?.descripcion || `Grupo ${encuesta.grupoDelCliente?.id}`}
+                    </p>
+                  </div>
 
-                          <div className="space-y-6 mt-6">
-                            {(encuesta.preguntas || []).map(pregunta => {
-                              const clave = `${encuesta.id}_${pregunta.id}`;
-                              const puntaje = respuestas[clave]?.puntaje;
-                              const valor = Number.isFinite(puntaje) ? Number(puntaje) : 0;
+                  <div className="space-y-6 mt-6">
+                    {(encuesta.preguntas || []).map(pregunta => {
+                      const clave = `${encuesta.id}_${pregunta.id}`;
+                      const puntaje = respuestas[clave]?.puntaje;
+                      const valor = Number.isFinite(puntaje) ? Number(puntaje) : 0;
 
-                              if (!justifRefs.current[clave]) justifRefs.current[clave] = null;
+                      if (!justifRefs.current[clave]) justifRefs.current[clave] = null;
 
-                              return (
-                                  <div key={pregunta.id} className="bg-white border border-gray-200 rounded-lg p-5">
-                                    <p className="text-sm font-medium text-gray-800 mb-2">{pregunta.texto}</p>
+                      return (
+                        <div key={pregunta.id} className="bg-white border border-gray-200 rounded-lg p-5">
+                          <p className="text-sm font-medium text-gray-800 mb-2">{pregunta.texto}</p>
 
-                                    <div className="flex flex-col gap-3 mb-3">
-                                      <div className="flex items-center justify-between gap-4">
-                                        <RatingStars
-                                            value={valor}
-                                            onChange={(v) =>
-                                                handlePuntajeChange(
-                                                    pregunta.id,
-                                                    encuesta.id,
-                                                    encuesta.grupoDelCliente?.id || 1,
-                                                    Math.max(1, Math.min(10, Math.round(v)))
-                                                )
-                                            }
-                                            max={10}
-                                            allowHalf={false}
-                                            size="lg"
-                                            labels={[
-                                              '1 - Muy malo','2','3','4','5 - Regular',
-                                              '6','7','8 - Bueno','9','10 - Excelente'
-                                            ]}
-                                            name={`puntaje_${encuesta.id}_${pregunta.id}`}
-                                        />
-                                        <span className="text-sm text-gray-600 min-w-[90px] text-right">
+                          <div className="flex flex-col gap-3 mb-3">
+                            <div className="flex items-center justify-between gap-4">
+                              <RatingStars
+                                value={valor}
+                                onChange={(v) =>
+                                  handlePuntajeChange(
+                                    pregunta.id,
+                                    encuesta.id,
+                                    encuesta.grupoDelCliente?.id || 1,
+                                    Math.max(1, Math.min(10, Math.round(v)))
+                                  )
+                                }
+                                max={10}
+                                allowHalf={false}
+                                size="lg"
+                                labels={[
+                                  '1 - Muy malo','2','3','4','5 - Regular',
+                                  '6','7','8 - Bueno','9','10 - Excelente'
+                                ]}
+                                name={`puntaje_${encuesta.id}_${pregunta.id}`}
+                              />
+                              <span className="text-sm text-gray-600 min-w-[90px] text-right">
                                 {valor ? `Puntaje: ${valor}/10` : 'Sin puntaje'}
                               </span>
-                                      </div>
+                            </div>
 
-                                      {valor < 8 && valor > 0 && (
-                                          <input
-                                              type="text"
-                                              placeholder="Justificación (requerida)"
-                                              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                              ref={(el) => (justifRefs.current[clave] = el)}
-                                              value={respuestas[clave]?.justificacion || ''}
-                                              onChange={e =>
-                                                  handleJustificacionChange(pregunta.id, encuesta.id, e.target.value)
-                                              }
-                                          />
-                                      )}
-                                    </div>
-
-                                    <button
-                                        type="button"
-                                        onClick={() => replicarPuntaje(pregunta.id, valor || '')}
-                                        className="flex items-center gap-1 text-sm text-blue-600 hover:underline"
-                                    >
-                                      <CopyIcon className="w-4 h-4" />
-                                      Aplicar puntaje a todas las encuestas
-                                    </button>
-                                  </div>
-                              );
-                            })}
+                            {valor < 8 && valor > 0 && (
+                              <input
+                                type="text"
+                                placeholder="Justificación (requerida)"
+                                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                ref={(el) => (justifRefs.current[clave] = el)}
+                                value={respuestas[clave]?.justificacion || ''}
+                                onChange={e =>
+                                  handleJustificacionChange(pregunta.id, encuesta.id, e.target.value)
+                                }
+                              />
+                            )}
                           </div>
+
+                          <button
+                            type="button"
+                            onClick={() => replicarPuntaje(pregunta.id, valor || '')}
+                            className="flex items-center gap-1 text-sm text-blue-600 hover:underline"
+                          >
+                            <CopyIcon className="w-4 h-4" />
+                            Aplicar puntaje a todas las encuestas
+                          </button>
                         </div>
-                    ))}
-              </div>
-          )}
-        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* 🔥 Nuevo botón de replicar todas las respuestas */}
+                  <button
+                    type="button"
+                    onClick={() => replicarRespuestasEncuesta(encuesta)}
+                    className="mt-4 w-full rounded-md bg-indigo-600 text-white px-5 py-2 text-sm font-semibold shadow hover:bg-indigo-700 transition"
+                  >
+                    Replicar respuestas a encuestas equivalentes
+                  </button>
+                </div>
+              ))}
+          </div>
+        )}
       </div>
+    </div>
   );
 }

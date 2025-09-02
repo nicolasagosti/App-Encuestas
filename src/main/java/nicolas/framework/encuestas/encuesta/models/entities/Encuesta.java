@@ -41,6 +41,9 @@ public class Encuesta {
     )
     private List<Pregunta> preguntas = new ArrayList<>();
 
+    @OneToMany(mappedBy = "encuesta", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Respuesta> respuestas = new ArrayList<>();
+
     @ManyToMany(cascade = CascadeType.MERGE)
     @JoinTable(
             name = "grupo_x_encuesta",
@@ -58,5 +61,12 @@ public class Encuesta {
         this.grupos = grupos;
     }
 
+
+    public Grupo getGrupoDelCliente() {
+        if (this.grupos != null && !this.grupos.isEmpty()) {
+            return this.grupos.get(0); // ✅ devuelve el primer grupo asociado
+        }
+        return null; // si no tiene grupos asociados
+    }
 
 }

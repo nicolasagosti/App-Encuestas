@@ -77,6 +77,7 @@ public class EncuestaService implements IEncuestaService {
         LocalDate hoy = LocalDate.now();
 
         for (Encuesta encuesta : todasLasEncuestas) {
+            // 📌 Filtramos por rango de fechas de participación
             if (encuesta.getFechaPCompletarInicio().isAfter(hoy) || encuesta.getFechaPCompletarFin().isBefore(hoy)) {
                 continue;
             }
@@ -88,24 +89,49 @@ public class EncuestaService implements IEncuestaService {
             for (Grupo grupo : gruposDelCliente) {
                 boolean respondioTodas = true;
                 for (Pregunta pregunta : encuesta.getPreguntas()) {
-                    if (!respuestaRepository.existsByCliente_IdAndGrupo_IdAndPregunta_Id(clienteId, grupo.getId(), pregunta.getId())) {
+                    if (!respuestaRepository.existsByCliente_IdAndGrupo_IdAndPregunta_Id(
+                            clienteId, grupo.getId(), pregunta.getId())) {
                         respondioTodas = false;
                         break;
                     }
                 }
 
                 if (!respondioTodas) {
+                    // 📌 Preguntas DTO
                     List<PreguntaOutputDTO> preguntasDTO = encuesta.getPreguntas().stream()
                             .map(p -> new PreguntaOutputDTO(p.getId(), p.getTexto()))
                             .toList();
 
-                    // 📌 Mapeamos los referentes desde grupo.getClientes()
+                    // 📌 Respuestas DTO (mapeadas limpias)
+                    List<RespuestaOutputDTO> respuestasDTO = Optional.ofNullable(encuesta.getRespuestas())
+                            .orElseGet(Collections::emptyList)
+                            .stream()
+                            .map(r -> new RespuestaOutputDTO(
+                                    r.getId(),
+                                    r.getCliente() != null ? r.getCliente().getId() : null,
+                                    r.getGrupo() != null ? r.getGrupo().getId() : null,
+                                    r.getPregunta() != null ? r.getPregunta().getId() : null,
+                                    r.getEncuesta() != null ? r.getEncuesta().getId() : null, // ✅ faltaba esto
+                                    r.getPuntaje(),
+                                    r.getJustificacion(),
+                                    r.getFechaRespuesta()
+                            ))
+                            .toList();
+
+
+                    // 📌 Referentes del grupo
                     List<ReferenteDTO> referentes = Optional.ofNullable(grupo.getClientes())
                             .orElseGet(Collections::emptyList)
                             .stream()
-                            .map(c -> new ReferenteDTO(c.getId(), c.getNombre(), c.getApellido(), c.getUsername()))
+                            .map(c -> new ReferenteDTO(
+                                    c.getId(),
+                                    c.getNombre(),
+                                    c.getApellido(),
+                                    c.getUsername()
+                            ))
                             .toList();
 
+                    // 📌 Construimos DTO de encuesta pendiente
                     EncuestaOutputDTO dto = new EncuestaOutputDTO(
                             encuesta.getId(),
                             encuesta.getFechaInicio(),
@@ -113,6 +139,8 @@ public class EncuestaService implements IEncuestaService {
                             encuesta.getFechaPCompletarInicio(),
                             encuesta.getFechaPCompletarFin(),
                             preguntasDTO,
+                            respuestasDTO,
+                            null,
                             null
                     );
 
@@ -131,6 +159,7 @@ public class EncuestaService implements IEncuestaService {
 
         return encuestasPendientes;
     }
+
 
     @Override
     public List<EncuestaOutputDTO> findAll() {
@@ -179,12 +208,14 @@ public class EncuestaService implements IEncuestaService {
                             .map(g -> {
                                 List<ReferenteDTO> referentes =
                                         Optional.ofNullable(g.getClientes())
-                                                .orElseGet(java.util.Collections::emptyList)
+                                                .orElseGet(Collections::emptyList)
                                                 .stream()
-                                                .map(c -> new ReferenteDTO(c.getId(), c.getNombre(), c.getApellido(), c.getUsername()))
+                                                .map(c -> new ReferenteDTO(
+                                                        c.getId(),
+                                                        c.getNombre(),
+                                                        c.getApellido(),
+                                                        c.getUsername()))
                                                 .toList();
-
-
 
                                 return new GrupoOutputDTO(
                                         g.getId(),
@@ -196,6 +227,22 @@ public class EncuestaService implements IEncuestaService {
                             })
                             .toList();
 
+                    List<RespuestaOutputDTO> respuestas = Optional.ofNullable(encuesta.getRespuestas())
+                            .orElseGet(Collections::emptyList)
+                            .stream()
+                            .map(r -> new RespuestaOutputDTO(
+                                    r.getId(),
+                                    r.getCliente() != null ? r.getCliente().getId() : null,
+                                    r.getGrupo() != null ? r.getGrupo().getId() : null,
+                                    r.getPregunta() != null ? r.getPregunta().getId() : null,
+                                    r.getEncuesta() != null ? r.getEncuesta().getId() : null, // ✅ faltaba este
+                                    r.getPuntaje(),
+                                    r.getJustificacion(),
+                                    r.getFechaRespuesta()
+                            ))
+                            .toList();
+
+
                     return new EncuestaOutputDTO(
                             encuesta.getId(),
                             encuesta.getFechaInicio(),
@@ -203,7 +250,9 @@ public class EncuestaService implements IEncuestaService {
                             encuesta.getFechaPCompletarInicio(),
                             encuesta.getFechaPCompletarFin(),
                             preguntas,
-                            grupos
+                            respuestas,
+                            grupos,
+                            null
                     );
                 })
                 .toList();

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface RespuestaRepository extends JpaRepository<Respuesta, Long> {
@@ -22,6 +23,9 @@ public interface RespuestaRepository extends JpaRepository<Respuesta, Long> {
     List<Respuesta> encontrarRespuestasPorGrupoYFecha(@Param("startDate") LocalDate startDate,
                                                      @Param("endDate") LocalDate endDate,
                                                      @Param("grupoId") Long grupoId);
+
+    Optional<Respuesta> findByClienteIdAndEncuestaIdAndPreguntaId(Long clienteId, Long encuestaId, Long preguntaId);
+
 
 
 

@@ -182,30 +182,34 @@ export default function UserDashboard() {
   };
 
   // 🔥 Nuevo: replicar todas las respuestas de una encuesta a encuestas equivalentes
-  const replicarRespuestasEncuesta = (encuesta) => {
-    if (!encuesta?.preguntas?.length) return;
+const replicarRespuestasEncuesta = async (encuesta) => {
+  if (!encuesta?.preguntas?.length) return;
 
-    const nuevasRespuestas = { ...respuestas };
-    const mapaTextoAPuntaje = {};
+  const nuevasRespuestas = { ...respuestas };
+  const mapaTextoAPuntaje = {};
 
-    encuesta.preguntas.forEach((preg) => {
-      const clave = `${encuesta.id}_${preg.id}`;
-      const puntaje = respuestas[clave]?.puntaje;
-      if (puntaje) {
-        mapaTextoAPuntaje[preg.texto.trim().toLowerCase()] = puntaje;
-      }
-    });
+  encuesta.preguntas.forEach((preg) => {
+    const clave = `${encuesta.id}_${preg.id}`;
+    const puntaje = respuestas[clave]?.puntaje;
+    if (puntaje) {
+      mapaTextoAPuntaje[preg.texto.trim().toLowerCase()] = puntaje;
+    }
+  });
 
-    encuestas.forEach((otraEncuesta) => {
-      if (otraEncuesta.id === encuesta.id) return;
+  try {
+    for (const otraEncuesta of encuestas) {
+      if (otraEncuesta.id === encuesta.id) continue;
+
       const textosOtra = (otraEncuesta.preguntas || []).map((p) =>
         p.texto.trim().toLowerCase()
       );
       const tieneTodas = Object.keys(mapaTextoAPuntaje).every((txt) =>
         textosOtra.includes(txt)
       );
-      if (!tieneTodas) return;
+      if (!tieneTodas) continue;
 
+      // Construyo payload de respuestas para esta encuesta
+      const payload = [];
       otraEncuesta.preguntas.forEach((preg) => {
         const txt = preg.texto.trim().toLowerCase();
         if (mapaTextoAPuntaje[txt]) {
@@ -215,13 +219,24 @@ export default function UserDashboard() {
             grupoId: otraEncuesta.grupoDelCliente?.id || 1,
             puntaje: mapaTextoAPuntaje[txt]
           };
+          payload.push({ preguntaId: preg.id, puntaje: mapaTextoAPuntaje[txt] });
         }
       });
-    });
+
+      // ✅ Guardo en backend de una sola vez
+      if (payload.length > 0) {
+        await editarRespuesta(clienteId, otraEncuesta.id, payload);
+      }
+    }
 
     setRespuestas(nuevasRespuestas);
-    setMensaje('✅ Respuestas replicadas en encuestas equivalentes');
-  };
+    setMensaje('✅ Respuestas replicadas y guardadas en encuestas equivalentes');
+  } catch (err) {
+    console.error("Error replicando respuestas:", err);
+    setMensaje('❌ Error al replicar respuestas');
+  }
+};
+
 
   const srcLogo = buildImageSrc(logoBancoBase64);
 

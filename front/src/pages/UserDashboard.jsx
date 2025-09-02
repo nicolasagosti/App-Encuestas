@@ -1,4 +1,3 @@
-// src/pages/UserDashboard.jsx
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../AuthContext';
 import {
@@ -10,7 +9,6 @@ import {
 import { CheckCircle, AlertCircle, Loader2, CopyIcon } from 'lucide-react';
 import RatingStars from '../components/RatingStars';
 import logo from './logoaccenture.png';
-
 
 const COLORES_GRUPO = [
   'bg-blue-100 border-blue-300 text-blue-800',
@@ -25,21 +23,13 @@ const COLORES_GRUPO = [
 
 const formatPeriodoMeses = (inicio, fin) => {
   if (!inicio || !fin) return '-';
-
-  // separa año-mes-día
   const [añoIni, mesIni] = inicio.split('-').map(Number);
   const [añoFin, mesFin] = fin.split('-').map(Number);
-
-  // opciones para mostrar solo mes y año
   const opts = { year: 'numeric', month: 'long' };
-
-  // crea fechas "locales" respetando solo año y mes
   const fechaIni = new Date(añoIni, mesIni - 1);
   const fechaFin = new Date(añoFin, mesFin - 1);
-
   return `${fechaIni.toLocaleDateString('es-AR', opts)} — ${fechaFin.toLocaleDateString('es-AR', opts)}`;
 };
-
 
 const grupoColorMap = new Map();
 let coloresUsados = new Set();
@@ -76,8 +66,8 @@ export default function UserDashboard() {
 
   // Refs para UX
   const mensajeRef = useRef(null);
-  const justifRefs = useRef({}); // mapa: clave => ref de input
-  const [claveError, setClaveError] = useState(null); // clave de la primera justificación faltante
+  const justifRefs = useRef({});
+  const [claveError, setClaveError] = useState(null);
 
   // Cargar IDs y encuestas
   useEffect(() => {
@@ -88,15 +78,14 @@ export default function UserDashboard() {
   }, [userEmail]);
 
   useEffect(() => {
-  if (!userEmail) return;
-  const extension = userEmail.split('@')[1]?.toLowerCase();
-  if (extension) {
-    obtenerBanco(extension)
-      .then(res => setLogoBancoBase64(res.data?.logoBase64))  // ✅ ahora usa el campo correcto
-      .catch(() => setLogoBancoBase64(null));
-  }
-}, [userEmail]);
-
+    if (!userEmail) return;
+    const extension = userEmail.split('@')[1]?.toLowerCase();
+    if (extension) {
+      obtenerBanco(extension)
+        .then(res => setLogoBancoBase64(res.data?.logoBase64))
+        .catch(() => setLogoBancoBase64(null));
+    }
+  }, [userEmail]);
 
   useEffect(() => {
     if (clienteId == null) return;
@@ -105,19 +94,16 @@ export default function UserDashboard() {
       .catch(() => setMensaje('❌ Error al cargar encuestas'));
   }, [clienteId]);
 
-  // Scroll al cartel cada vez que haya mensaje de error/alerta
   useEffect(() => {
     if (mensaje && !mensaje.startsWith('✅')) {
       mensajeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   }, [mensaje]);
 
-  // Focus al primer campo de justificación faltante detectado
   useEffect(() => {
     if (!claveError) return;
     const ref = justifRefs.current[claveError];
     if (ref && ref.focus) {
-      // pequeño delay para asegurar que el input esté montado
       setTimeout(() => {
         ref.focus();
         ref.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
@@ -132,9 +118,6 @@ export default function UserDashboard() {
       [clave]: { ...prev[clave], grupoId, puntaje }
     }));
   };
-
- 
-
 
   const handleJustificacionChange = (preguntaId, encuestaId, justificacion) => {
     const clave = `${encuestaId}_${preguntaId}`;
@@ -162,7 +145,48 @@ export default function UserDashboard() {
     setMensaje('✅ Puntaje replicado a todas las encuestas');
   };
 
-  // Valida y devuelve la primera clave con error (o null si está todo OK)
+  // 🔥 NUEVO: replicar todas las respuestas de una encuesta
+  const replicarRespuestasEncuesta = (encuesta) => {
+    if (!encuesta?.preguntas?.length) return;
+
+    const nuevasRespuestas = { ...respuestas };
+    const mapaTextoAPuntaje = {};
+
+    encuesta.preguntas.forEach((preg) => {
+      const clave = `${encuesta.id}_${preg.id}`;
+      const puntaje = respuestas[clave]?.puntaje;
+      if (puntaje) {
+        mapaTextoAPuntaje[preg.texto.trim().toLowerCase()] = puntaje;
+      }
+    });
+
+    encuestas.forEach((otraEncuesta) => {
+      if (otraEncuesta.id === encuesta.id) return;
+      const textosOtra = (otraEncuesta.preguntas || []).map((p) =>
+        p.texto.trim().toLowerCase()
+      );
+      const tieneTodas = Object.keys(mapaTextoAPuntaje).every((txt) =>
+        textosOtra.includes(txt)
+      );
+      if (!tieneTodas) return;
+
+      otraEncuesta.preguntas.forEach((preg) => {
+        const txt = preg.texto.trim().toLowerCase();
+        if (mapaTextoAPuntaje[txt]) {
+          const clave = `${otraEncuesta.id}_${preg.id}`;
+          nuevasRespuestas[clave] = {
+            ...nuevasRespuestas[clave],
+            grupoId: otraEncuesta.grupoDelCliente?.id || 1,
+            puntaje: mapaTextoAPuntaje[txt]
+          };
+        }
+      });
+    });
+
+    setRespuestas(nuevasRespuestas);
+    setMensaje('✅ Respuestas replicadas en encuestas equivalentes');
+  };
+
   const validarEncuesta = (encuesta) => {
     const preguntas = encuesta.preguntas || [];
     for (const p of preguntas) {
@@ -170,7 +194,7 @@ export default function UserDashboard() {
       const resp = respuestas[clave];
       if (!resp?.puntaje) {
         setMensaje(`⚠️ Falta puntaje en la pregunta "${p.texto}"`);
-        return clave; // primera falla
+        return clave;
       }
       if (resp.puntaje < 8) {
         const j = (resp.justificacion || '').trim();
@@ -184,15 +208,14 @@ export default function UserDashboard() {
   };
 
   const handleSubmit = async (encuestaId) => {
-    setClaveError(null); // resetea marcador
+    setClaveError(null);
     const encuesta = encuestas.find(e => e.id === encuestaId);
     if (!encuesta) return;
 
-    // valida SIEMPRE (cada click), y si falla vuelve a scrollear al cartel
     const claveFalla = validarEncuesta(encuesta);
     if (claveFalla) {
-      setClaveError(claveFalla); // para enfocar justificación si corresponde
-      return; // no envía
+      setClaveError(claveFalla);
+      return;
     }
 
     const payload = (encuesta.preguntas || []).map(p => {
@@ -210,15 +233,11 @@ export default function UserDashboard() {
       setLoading(true);
       await responderEncuesta(clienteId, encuestaId, payload);
       setMensaje('✅ Encuesta respondida correctamente');
-
-      // limpia respuestas de esa encuesta
       setRespuestas(prev => {
         const nuevas = { ...prev };
         (encuesta.preguntas || []).forEach(p => delete nuevas[`${encuestaId}_${p.id}`]);
         return nuevas;
       });
-
-      // saca encuesta de la lista y marca como respondida
       setEncuestas(prev => prev.filter(e => e.id !== encuestaId));
       setEncuestasRespondidas(prev => new Set(prev).add(encuestaId));
     } catch {
@@ -266,21 +285,21 @@ export default function UserDashboard() {
             {encuestas
               .filter(encuesta => !encuestasRespondidas.has(encuesta.id))
               .map(encuesta => (
-                <div key={encuesta.id} className="bg-gray-50 border border-gray-200 rounded-xl p-6 transition-all duration-500 ease-in-out">
+                <div key={encuesta.id} className="bg-gray-50 border border-gray-200 rounded-xl p-6">
                   <div className="mb-4">
                     <div className={`rounded-lg px-6 py-4 shadow-sm text-center border ${colorDeFondoPorGrupo(
-  encuesta.grupos?.[0]?.descripcion
-)}`}>
-  <h3 className="text-lg font-semibold">📝 Encuesta</h3>
-  <p className="text-sm">
-    <span className="font-medium">Período evaluado:</span>{' '}
-    {formatPeriodoMeses(encuesta.fechaInicio, encuesta.fechaFin)}
-  </p>
-  <p className="text-sm">
-    <span className="font-medium">Grupo:</span>{' '}
-    {encuesta.grupoDelCliente?.descripcion || `Grupo ${encuesta.grupoDelCliente?.id}`}
-  </p>
-</div>
+                      encuesta.grupos?.[0]?.descripcion
+                    )}`}>
+                      <h3 className="text-lg font-semibold">📝 Encuesta</h3>
+                      <p className="text-sm">
+                        <span className="font-medium">Período evaluado:</span>{' '}
+                        {formatPeriodoMeses(encuesta.fechaInicio, encuesta.fechaFin)}
+                      </p>
+                      <p className="text-sm">
+                        <span className="font-medium">Grupo:</span>{' '}
+                        {encuesta.grupoDelCliente?.descripcion || `Grupo ${encuesta.grupoDelCliente?.id}`}
+                      </p>
+                    </div>
                   </div>
 
                   <div className="space-y-6">
@@ -288,8 +307,6 @@ export default function UserDashboard() {
                       const clave = `${encuesta.id}_${pregunta.id}`;
                       const puntaje = respuestas[clave]?.puntaje;
                       const valor = Number.isFinite(puntaje) ? Number(puntaje) : 0;
-
-                      // asegurar ref del input de justificación
                       if (!justifRefs.current[clave]) justifRefs.current[clave] = null;
 
                       return (
@@ -347,6 +364,15 @@ export default function UserDashboard() {
                       );
                     })}
                   </div>
+
+                  {/* 🔥 Nuevo botón de replicar respuestas de encuesta completa */}
+                  <button
+                    type="button"
+                    onClick={() => replicarRespuestasEncuesta(encuesta)}
+                    className="mt-4 w-full rounded-md bg-indigo-600 text-white px-5 py-2 text-sm font-semibold shadow hover:bg-indigo-700 transition"
+                  >
+                    Replicar respuestas a encuestas equivalentes
+                  </button>
 
                   <button
                     onClick={() => handleSubmit(encuesta.id)}

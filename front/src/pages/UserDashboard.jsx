@@ -141,6 +141,45 @@ export default function UserDashboard() {
     }
   }, [claveError]);
 
+  const replicarRespuestasDeEncuesta = (encuestaId) => {
+  const encuestaOrigen = encuestas.find(e => e.id === encuestaId);
+  if (!encuestaOrigen) return;
+
+  const nuevasRespuestas = { ...respuestas };
+
+  // Iteramos por todas las encuestas del usuario
+  encuestas.forEach(encuestaDestino => {
+    if (encuestaDestino.id === encuestaId) return; // saltamos la encuesta origen
+
+    // Mapeamos preguntas por texto para poder replicar
+    const preguntasDestinoMap = {};
+    (encuestaDestino.preguntas || []).forEach(p => {
+      preguntasDestinoMap[p.texto] = p;
+    });
+
+    (encuestaOrigen.preguntas || []).forEach(preguntaOrigen => {
+      const claveOrigen = `${encuestaId}_${preguntaOrigen.id}`;
+      const puntaje = respuestas[claveOrigen]?.puntaje;
+
+      if (puntaje != null && preguntasDestinoMap[preguntaOrigen.texto]) {
+        const pDestino = preguntasDestinoMap[preguntaOrigen.texto];
+        const claveDestino = `${encuestaDestino.id}_${pDestino.id}`;
+        nuevasRespuestas[claveDestino] = {
+          ...nuevasRespuestas[claveDestino],
+          puntaje,
+          grupoId: encuestaDestino.grupoDelCliente?.id || 1
+        };
+      }
+    });
+  });
+
+  setRespuestas(nuevasRespuestas);
+  // también guardamos en localStorage para persistencia
+  localStorage.setItem('respuestasEncuesta', JSON.stringify(nuevasRespuestas));
+  setMensaje('✅ Puntajes replicados a encuestas con preguntas coincidentes');
+};
+
+
  
   const guardarRespuestasEnStorage = (resps) => {
   localStorage.setItem('respuestasEncuesta', JSON.stringify(resps));
@@ -383,6 +422,14 @@ const handleJustificacionChange = (preguntaId, encuestaId, justificacion) => {
                       'Enviar respuestas'
                     )}
                   </button>
+                  <button
+  type="button"
+  onClick={() => replicarRespuestasDeEncuesta(encuesta.id)}
+  className="mt-4 w-full rounded-md bg-green-600 text-white px-5 py-2.5 text-sm font-semibold shadow hover:bg-green-700 transition"
+>
+  📋 Replicar respuestas a otras encuestas
+</button>
+
                 </div>
               ))}
           </div>

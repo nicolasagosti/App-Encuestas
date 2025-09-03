@@ -1,11 +1,28 @@
+//EncuestasLista
 export default function EncuestasLista({ encuestasExistentes, onSelectEncuesta, onRelanzar, formatDate }) {
+
+  // Agrupar encuestas por conjunto de preguntas y fechas
+  const encuestasAgrupadas = Object.values(
+    encuestasExistentes.reduce((acc, enc) => {
+      const key = [
+        formatDate(enc.fechaInicio),
+        formatDate(enc.fechaFin),
+        (enc.preguntas || []).map(p => (typeof p === 'object' ? p.texto : p)).join('|')
+      ].join('_');
+
+      if (!acc[key]) acc[key] = { ...enc, grupos: [] };
+      acc[key].grupos.push(enc.grupos?.[0] || 'Sin grupo'); // agregamos grupo
+      return acc;
+    }, {})
+  );
+
   return (
     <div className="mt-6">
-      {encuestasExistentes.length > 0 ? (
+      {encuestasAgrupadas.length > 0 ? (
         <ul className="space-y-3">
-          {encuestasExistentes.map((enc) => (
+          {encuestasAgrupadas.map((enc, idx) => (
             <li
-              key={enc.id}
+              key={idx}
               className="border rounded p-3 bg-white shadow-sm hover:shadow-md transition flex flex-col sm:flex-row sm:justify-between gap-2"
             >
               <div>
@@ -16,9 +33,7 @@ export default function EncuestasLista({ encuestasExistentes, onSelectEncuesta, 
                 <div className="text-sm">
                   <div>
                     <strong>Grupos:</strong>{' '}
-                    {Array.isArray(enc.grupos)
-                      ? enc.grupos.map(g => (typeof g === 'object' ? g.nombre || '' : g)).join(', ')
-                      : enc.grupos || '-'}
+                    {enc.grupos.map(g => (typeof g === 'object' ? g.nombre || '' : g)).join(', ')}
                   </div>
                   <div>
                     <strong>Preguntas:</strong>{' '}
@@ -55,3 +70,4 @@ export default function EncuestasLista({ encuestasExistentes, onSelectEncuesta, 
     </div>
   );
 }
+

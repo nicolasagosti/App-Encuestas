@@ -384,16 +384,23 @@ const handleJustificacionChange = (preguntaId, encuestaId, justificacion) => {
                             </div>
 
                             {valor < 8 && valor > 0 && (
-                              <input
-                                type="text"
-                                placeholder="Justificación (requerida)"
-                                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                ref={(el) => (justifRefs.current[clave] = el)}
-                                onChange={e =>
-                                  handleJustificacionChange(pregunta.id, encuesta.id, e.target.value)
-                                }
-                              />
-                            )}
+  <div className="relative">
+    <input
+      type="text"
+      placeholder="Justificación (requerida)"
+      className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+      ref={(el) => (justifRefs.current[clave] = el)}
+      value={respuestas[clave]?.justificacion || ''}
+      onChange={e =>
+        handleJustificacionChange(pregunta.id, encuesta.id, e.target.value)
+      }
+    />
+    <span className="absolute bottom-1 right-2 text-xs text-gray-400">
+      { (respuestas[clave]?.justificacion || '').length } / 200
+    </span>
+  </div>
+)}
+
                           </div>
 
                           <button

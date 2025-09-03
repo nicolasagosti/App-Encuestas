@@ -23,6 +23,8 @@ const COLORES_GRUPO = [
   'bg-rose-100 border-rose-300 text-rose-800',
 ];
 
+
+
 const formatPeriodoMeses = (inicio, fin) => {
   if (!inicio || !fin) return '-';
 
@@ -87,6 +89,20 @@ export default function UserDashboard() {
       .catch(() => setMensaje('❌ No se pudo obtener el ID de cliente'));
   }, [userEmail]);
 
+
+  useEffect(() => {
+  const guardadas = localStorage.getItem('respuestasEncuesta');
+  if (guardadas) {
+    try {
+      setRespuestas(JSON.parse(guardadas));
+    } catch (err) {
+      console.error('Error parseando respuestas guardadas', err);
+      localStorage.removeItem('respuestasEncuesta'); // limpiamos si está corrupto
+    }
+  }
+}, []);
+
+
   useEffect(() => {
   if (!userEmail) return;
   const extension = userEmail.split('@')[1]?.toLowerCase();
@@ -125,24 +141,29 @@ export default function UserDashboard() {
     }
   }, [claveError]);
 
-  const handlePuntajeChange = (preguntaId, encuestaId, grupoId, puntaje) => {
-    const clave = `${encuestaId}_${preguntaId}`;
-    setRespuestas(prev => ({
-      ...prev,
-      [clave]: { ...prev[clave], grupoId, puntaje }
-    }));
-  };
-
  
+  const guardarRespuestasEnStorage = (resps) => {
+  localStorage.setItem('respuestasEncuesta', JSON.stringify(resps));
+};
 
+const handlePuntajeChange = (preguntaId, encuestaId, grupoId, puntaje) => {
+  const clave = `${encuestaId}_${preguntaId}`;
+  setRespuestas(prev => {
+    const nuevas = { ...prev, [clave]: { ...prev[clave], grupoId, puntaje } };
+    guardarRespuestasEnStorage(nuevas); // guardamos en storage
+    return nuevas;
+  });
+};
 
-  const handleJustificacionChange = (preguntaId, encuestaId, justificacion) => {
-    const clave = `${encuestaId}_${preguntaId}`;
-    setRespuestas(prev => ({
-      ...prev,
-      [clave]: { ...prev[clave], justificacion }
-    }));
-  };
+const handleJustificacionChange = (preguntaId, encuestaId, justificacion) => {
+  const clave = `${encuestaId}_${preguntaId}`;
+  setRespuestas(prev => {
+    const nuevas = { ...prev, [clave]: { ...prev[clave], justificacion } };
+    guardarRespuestasEnStorage(nuevas);
+    return nuevas;
+  });
+};
+
 
   const replicarPuntaje = (preguntaId, puntaje) => {
     const nuevasRespuestas = { ...respuestas };
@@ -211,12 +232,13 @@ export default function UserDashboard() {
       await responderEncuesta(clienteId, encuestaId, payload);
       setMensaje('✅ Encuesta respondida correctamente');
 
-      // limpia respuestas de esa encuesta
       setRespuestas(prev => {
-        const nuevas = { ...prev };
-        (encuesta.preguntas || []).forEach(p => delete nuevas[`${encuestaId}_${p.id}`]);
-        return nuevas;
-      });
+  const nuevas = { ...prev };
+  (encuesta.preguntas || []).forEach(p => delete nuevas[`${encuestaId}_${p.id}`]);
+  // Actualizamos storage también
+  localStorage.setItem('respuestasEncuesta', JSON.stringify(nuevas));
+  return nuevas;
+});
 
       // saca encuesta de la lista y marca como respondida
       setEncuestas(prev => prev.filter(e => e.id !== encuestaId));

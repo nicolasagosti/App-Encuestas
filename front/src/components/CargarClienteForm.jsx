@@ -138,7 +138,7 @@ export default function CargarClienteForm() {
       b.extension.toLowerCase() === extension.toLowerCase()
   );
   if (existe) {
-    setMensaje('❌ Ya existe un Cliente/Banco con ese nombre o esa extensión');
+    setMensaje('❌ Ya existe un Cliente con ese nombre o esa extensión');
     return;
   }
 

@@ -1,3 +1,5 @@
+//clienteSelector.jsx
+
 import React, { useMemo, useRef, useState } from 'react';
 
 export default function ClienteSelector({ bancos = [], clienteExtension, clienteNombre, onSelect }) {

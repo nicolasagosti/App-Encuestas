@@ -1,3 +1,5 @@
+//crearEditarGrupo.jsx
+
 import React, { useEffect, useState } from 'react';
 import {
   cargarCliente,
@@ -221,10 +223,16 @@ export default function CrearEditarGrupos({ onSave = async () => {} }) {
 
 
           <ReferentesSelector
-              clientes={clientes}
-              seleccionados={clienteIdsSeleccionados}
-              setSeleccionados={setClienteIdsSeleccionados}
-          />
+  clientes={
+    clienteExtension
+      ? clientes.filter(c =>
+          (c.mail || c.username || '').toLowerCase().endsWith(clienteExtension.toLowerCase())
+        )
+      : []
+  }
+  seleccionados={clienteIdsSeleccionados}
+  setSeleccionados={setClienteIdsSeleccionados}
+/>
 
           <div className="flex gap-2 mt-3">
             <button

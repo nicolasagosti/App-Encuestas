@@ -1,4 +1,4 @@
-import React from 'react';
+//GruposLista.jsx
 
 export default function GruposLista({ grupos = [], onClickGrupo = () => {} }) {
     return (

@@ -178,6 +178,14 @@ public class EncuestaService implements IEncuestaService {
             encuesta.setFechaFin(dto.getFechaFin());
         }
 
+        if(dto.getFechaPCompletarInicio() != null){
+            encuesta.setFechaPCompletarInicio(dto.getFechaPCompletarInicio());
+        }
+
+        if(dto.getFechaPCompletarFin() != null){
+            encuesta.setFechaPCompletarFin(dto.getFechaPCompletarFin());
+        }
+
         Encuesta encuestaActualizada = encuestaRepository.save(encuesta);
         return getEncuestaOutputDTOS(List.of(encuestaActualizada)).get(0);
     }

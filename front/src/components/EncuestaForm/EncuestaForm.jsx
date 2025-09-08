@@ -291,26 +291,31 @@ export default function EncuestaForm() {
               setFechaFin={setFechaFin}
             />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Plazo de respuesta (inicio)</label>
-                <input
-                  type="date"
-                  value={fechaPCompletarInicio}
-                  onChange={e => setFechaPCompletarInicio(e.target.value)}
-                  className="mt-1 w-full border rounded p-2"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Plazo de respuesta (fin)</label>
-                <input
-                  type="date"
-                  value={fechaPCompletarFin}
-                  onChange={e => setFechaPCompletarFin(e.target.value)}
-                  className="mt-1 w-full border rounded p-2"
-                />
-              </div>
-            </div>
+            <div>
+  <label className="block text-sm font-semibold text-gray-700 mb-2">
+    PLAZO PARA RESPONDER LA ENCUESTA
+  </label>
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div>
+      <span className="block text-xs text-gray-500 mb-1">Desde</span>
+      <input
+        type="date"
+        value={fechaPCompletarInicio}
+        onChange={e => setFechaPCompletarInicio(e.target.value)}
+        className="w-full rounded-lg border px-4 py-2"
+      />
+    </div>
+    <div>
+      <span className="block text-xs text-gray-500 mb-1">Hasta</span>
+      <input
+        type="date"
+        value={fechaPCompletarFin}
+        onChange={e => setFechaPCompletarFin(e.target.value)}
+        className="w-full rounded-lg border px-4 py-2"
+      />
+    </div>
+  </div>
+</div>
 
             <GruposSelector
               gruposDisponibles={gruposDisponibles}

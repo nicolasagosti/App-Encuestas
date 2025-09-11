@@ -92,9 +92,18 @@ public class EncuestaService implements IEncuestaService {
         LocalDate hoy = LocalDate.now();
 
         for (Encuesta encuesta : todasLasEncuestas) {
-            if (encuesta.getFechaPCompletarInicio().isAfter(hoy) || encuesta.getFechaPCompletarFin().isBefore(hoy)) {
+
+            LocalDate inicio = encuesta.getFechaPCompletarInicio();
+            LocalDate fin = encuesta.getFechaPCompletarFin();
+
+            if (inicio == null || fin == null) {
                 continue;
             }
+
+            if (inicio.isAfter(hoy) || fin.isBefore(hoy)) {
+                continue;
+            }
+
 
             List<Grupo> gruposDelCliente = encuesta.getGrupos().stream()
                     .filter(g -> g.getClientes().stream().anyMatch(c -> c.getId().equals(clienteId)))

@@ -200,6 +200,11 @@ public class EncuestaService implements IEncuestaService {
     }
 
     @Override
+    public void eliminarEncuesta(Long id) {
+        encuestaRepository.deleteById(id);
+    }
+
+    @Override
     public List<EncuestaOutputDTO> getEncuestaOutputDTOS(List<Encuesta> encuestas) {
         return encuestas.stream()
                 .map(encuesta -> {

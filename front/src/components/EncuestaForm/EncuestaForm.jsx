@@ -8,7 +8,8 @@ import {
   obtenerGrupos,
   crearPregunta,
   obtenerEncuestas,
-  relanzarEncuesta
+  relanzarEncuesta,
+  eliminarEncuesta
 } from '../../services/api';
 
 import FechaCampos from './FechaCampos';
@@ -88,6 +89,19 @@ export default function EncuestaForm() {
       console.error('Error al obtener encuestas', err);
     }
   };
+
+  const handleEliminarEncuesta = async (id) => {
+  if (!window.confirm("¿Seguro que deseas eliminar esta encuesta?")) return;
+  try {
+    await eliminarEncuesta(id);
+    setMensaje("✅ Encuesta eliminada correctamente");
+    await fetchEncuestas();
+  } catch (err) {
+    console.error(err);
+    setMensaje("❌ Error al eliminar encuesta");
+  }
+};
+
 
   // ==== RELANZAR ENCUESTA ====
   const relanzar = (enc) => {
@@ -450,6 +464,7 @@ export default function EncuestaForm() {
         encuestasExistentes={encuestasExistentes}
         onSelectEncuesta={selectEncuesta}
         onRelanzar={relanzar}
+          onEliminar={handleEliminarEncuesta}  
         formatDate={formatDate}
       />
     </div>

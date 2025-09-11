@@ -1,5 +1,5 @@
 //EncuestasLista
-export default function EncuestasLista({ encuestasExistentes, onSelectEncuesta, onRelanzar, formatDate }) {
+export default function EncuestasLista({ encuestasExistentes, onSelectEncuesta, onRelanzar, onEliminar, formatDate }) {
 
   // Agrupar encuestas por conjunto de preguntas y fechas
   const encuestasAgrupadas = Object.values(
@@ -60,6 +60,14 @@ export default function EncuestasLista({ encuestasExistentes, onSelectEncuesta, 
                     Relanzar
                   </button>
                 )}
+                {onEliminar && (
+    <button
+      onClick={() => onEliminar(enc.id)}
+      className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs"
+    >
+      Eliminar
+    </button>
+  )}
               </div>
             </li>
           ))}

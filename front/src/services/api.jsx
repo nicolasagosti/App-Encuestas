@@ -61,6 +61,8 @@ export const relanzarEncuesta = (id, data) =>
 export function editarEncuesta(id, data) {
   return api.put(`/encuestas/${id}`, data);
 }
+export const eliminarEncuesta = (id) => api.delete(`/encuestas/${id}`);
+
 export function obtenerEncuestas() {
   return api.get('/encuestas');
 }

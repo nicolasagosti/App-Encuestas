@@ -33,7 +33,7 @@ public class Encuesta {
     @Column
     private LocalDate fechaPCompletarFin;
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany
     @JoinTable(
             name = "encuesta_x_pregunta",
             joinColumns = @JoinColumn(name = "encuesta_id"),

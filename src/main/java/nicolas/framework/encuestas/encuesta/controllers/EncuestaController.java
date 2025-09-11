@@ -84,4 +84,10 @@ public class EncuestaController {
         EncuestaOutputDTO actualizada = encuestaService.editarEncuesta(id, dto);
         return ResponseEntity.ok(actualizada);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<HttpStatus> eliminarEncuesta(@PathVariable Long id) {
+        encuestaService.eliminarEncuesta(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 }

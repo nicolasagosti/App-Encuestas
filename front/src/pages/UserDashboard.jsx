@@ -56,6 +56,14 @@ function colorDeFondoPorGrupo(nombreGrupo = '') {
   return color;
 }
 
+const encuestaCompletadaLocal = (encuesta, respuestas) => {
+  if (!encuesta?.preguntas?.length) return false;
+  return encuesta.preguntas.every(p => {
+    const clave = `${encuesta.id}_${p.id}`;
+    return respuestas[clave]?.puntaje; // tiene puntaje asignado
+  });
+};
+
 // --- Logo helpers ---
 const buildImageSrc = (raw) => {
   if (!raw) return null;
@@ -404,13 +412,16 @@ const handleJustificacionChange = (preguntaId, encuestaId, justificacion) => {
                       'Enviar respuestas'
                     )}
                   </button>
-                  <button
-  type="button"
-  onClick={() => replicarRespuestasDeEncuesta(encuesta.id)}
-  className="mt-4 w-full rounded-md bg-green-600 text-white px-5 py-2.5 text-sm font-semibold shadow hover:bg-green-700 transition"
->
-  📋 Replicar respuestas a otras encuestas
-</button>
+                  {encuestaCompletadaLocal(encuesta, respuestas) && encuestas.length > 1 && (
+  <button
+    type="button"
+    onClick={() => replicarRespuestasDeEncuesta(encuesta.id)}
+    className="mt-4 w-full rounded-md bg-green-600 text-white px-5 py-2.5 text-sm font-semibold shadow hover:bg-green-700 transition"
+  >
+    📋 Replicar respuestas a otras encuestas
+  </button>
+)}
+
 
                 </div>
               ))}

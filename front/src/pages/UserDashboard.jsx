@@ -204,23 +204,7 @@ const handleJustificacionChange = (preguntaId, encuestaId, justificacion) => {
 };
 
 
-  const replicarPuntaje = (preguntaId, puntaje) => {
-    const nuevasRespuestas = { ...respuestas };
-    encuestas.forEach(encuesta => {
-      (encuesta.preguntas || []).forEach(preg => {
-        if (preg.id === preguntaId) {
-          const clave = `${encuesta.id}_${preg.id}`;
-          nuevasRespuestas[clave] = {
-            ...nuevasRespuestas[clave],
-            grupoId: encuesta.grupoDelCliente?.id || 1,
-            puntaje
-          };
-        }
-      });
-    });
-    setRespuestas(nuevasRespuestas);
-    setMensaje('✅ Puntaje replicado a todas las encuestas');
-  };
+  
 
   // Valida y devuelve la primera clave con error (o null si está todo OK)
   const validarEncuesta = (encuesta) => {
@@ -402,15 +386,6 @@ const handleJustificacionChange = (preguntaId, encuestaId, justificacion) => {
 )}
 
                           </div>
-
-                          <button
-                            type="button"
-                            onClick={() => replicarPuntaje(pregunta.id, valor || '')}
-                            className="flex items-center gap-1 text-sm text-blue-600 hover:underline"
-                          >
-                            <CopyIcon className="w-4 h-4" />
-                            Aplicar puntaje a todas las encuestas
-                          </button>
                         </div>
                       );
                     })}

@@ -24,23 +24,32 @@ const COLORES_GRUPO = [
 ];
 
 
-
 const formatPeriodoMeses = (inicio, fin) => {
   if (!inicio || !fin) return '-';
 
-  // separa año-mes-día
   const [añoIni, mesIni] = inicio.split('-').map(Number);
   const [añoFin, mesFin] = fin.split('-').map(Number);
 
-  // opciones para mostrar solo mes y año
-  const opts = { year: 'numeric', month: 'long' };
+  const optsMes = { month: 'long' };
+  const optsMesAnio = { month: 'long', year: 'numeric' };
 
-  // crea fechas "locales" respetando solo año y mes
   const fechaIni = new Date(añoIni, mesIni - 1);
   const fechaFin = new Date(añoFin, mesFin - 1);
 
-  return `${fechaIni.toLocaleDateString('es-AR', opts)} — ${fechaFin.toLocaleDateString('es-AR', opts)}`;
+  // mismo año → Octubre - Diciembre 2025
+  if (añoIni === añoFin) {
+    const mesInicio = fechaIni.toLocaleDateString('es-AR', optsMes);
+    const mesFin = fechaFin.toLocaleDateString('es-AR', optsMesAnio);
+    return `${capitalize(mesInicio)} - ${capitalize(mesFin)}`;
+  }
+
+  // distinto año → Diciembre 2024 - Febrero 2025
+  return `${capitalize(fechaIni.toLocaleDateString('es-AR', optsMesAnio))} - ${capitalize(fechaFin.toLocaleDateString('es-AR', optsMesAnio))}`;
 };
+
+// helper para capitalizar primera letra
+const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+
 
 
 const grupoColorMap = new Map();
@@ -324,7 +333,6 @@ const handleJustificacionChange = (preguntaId, encuestaId, justificacion) => {
                     <div className={`rounded-lg px-6 py-4 shadow-sm text-center border ${colorDeFondoPorGrupo(
   encuesta.grupos?.[0]?.descripcion
 )}`}>
-  <h3 className="text-lg font-semibold">📝 Encuesta</h3>
   <p className="text-sm">
     <span className="font-medium">Período evaluado:</span>{' '}
     {formatPeriodoMeses(encuesta.fechaInicio, encuesta.fechaFin)}

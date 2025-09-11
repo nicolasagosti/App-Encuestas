@@ -2,19 +2,37 @@
 export default function EncuestasLista({ encuestasExistentes, onSelectEncuesta, onRelanzar, onEliminar, formatDate }) {
 
   // Agrupar encuestas por conjunto de preguntas y fechas
-  const encuestasAgrupadas = Object.values(
-    encuestasExistentes.reduce((acc, enc) => {
-      const key = [
-        formatDate(enc.fechaInicio),
-        formatDate(enc.fechaFin),
-        (enc.preguntas || []).map(p => (typeof p === 'object' ? p.texto : p)).join('|')
-      ].join('_');
+// Agrupar encuestas por conjunto de preguntas y fechas
+const encuestasAgrupadas = Object.values(
+  encuestasExistentes.reduce((acc, enc) => {
+    const key = [
+      formatDate(enc.fechaInicio),
+      formatDate(enc.fechaFin),
+      (enc.preguntas || []).map(p => (typeof p === 'object' ? p.texto : p)).join('|')
+    ].join('_');
 
-      if (!acc[key]) acc[key] = { ...enc, grupos: [] };
-      acc[key].grupos.push(enc.grupos?.[0] || 'Sin grupo'); // agregamos grupo
-      return acc;
-    }, {})
-  );
+    if (!acc[key]) {
+      // mantenemos el objeto base pero inicializamos arrays vacíos
+      acc[key] = { ...enc, grupos: [], encuestaIds: [] };
+    }
+
+    // agregamos todos los grupos (si enc.grupos es array)
+    if (Array.isArray(enc.grupos)) {
+      acc[key].grupos.push(...enc.grupos);
+    } else if (enc.grupos) {
+      acc[key].grupos.push(enc.grupos);
+    } else {
+      acc[key].grupos.push('Sin grupo');
+    }
+
+    // guardamos la id original (por si hay varias encuestas con mismo key)
+    acc[key].encuestaIds.push(enc.id);
+
+    return acc;
+  }, {})
+);
+
+
 
   return (
     <div className="mt-6">

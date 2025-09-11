@@ -114,26 +114,38 @@ export default function EncuestaForm() {
   };
 
   const handleRelanzarSubmit = async () => {
-    if (!relanzarFechaInicio || !relanzarFechaFin || !relanzarPCompletarInicio || !relanzarPCompletarFin) {
-      setMensaje("⚠️ Debe seleccionar todas las fechas para relanzar");
-      return;
-    }
-    try {
-      await relanzarEncuesta(encuestaARelanzar.id, {
+  if (!relanzarFechaInicio || !relanzarFechaFin || !relanzarPCompletarInicio || !relanzarPCompletarFin) {
+    setMensaje("⚠️ Debe seleccionar todas las fechas para relanzar");
+    return;
+  }
+  if (!encuestaARelanzar) return;
+
+  try {
+    // Si el objeto agrupado tiene encuestaIds (array), relanzamos cada uno.
+    const idsToRelanzar = encuestaARelanzar.encuestaIds && encuestaARelanzar.encuestaIds.length
+      ? encuestaARelanzar.encuestaIds
+      : [encuestaARelanzar.id];
+
+    // opcional: hacer las llamadas en paralelo
+    await Promise.all(idsToRelanzar.map(id =>
+      relanzarEncuesta(id, {
         fechaInicio: relanzarFechaInicio,
         fechaFin: relanzarFechaFin,
         fechaPCompletarInicio: relanzarPCompletarInicio,
         fechaPCompletarFin: relanzarPCompletarFin
-      });
-      setMensaje("✅ Encuesta relanzada correctamente");
-      setRelanzarVisible(false);
-      setEncuestaARelanzar(null);
-      fetchEncuestas();
-    } catch (err) {
-      console.error(err);
-      setMensaje("❌ Error al relanzar encuesta");
-    }
-  };
+      })
+    ));
+
+    setMensaje("✅ Encuestas relanzadas correctamente");
+    setRelanzarVisible(false);
+    setEncuestaARelanzar(null);
+    await fetchEncuestas();
+  } catch (err) {
+    console.error(err);
+    setMensaje("❌ Error al relanzar encuesta(s)");
+  }
+};
+
 
   // filtros dinámicos
   useEffect(() => {
